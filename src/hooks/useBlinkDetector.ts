@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useEffect, type MutableRefObject } from "react";
+import { useRef, useState, useCallback, useEffect, type MutableRefObject } from "react";
 import { computeEAR } from "@/lib/blinkDetection";
 import { drawMesh } from "@/lib/drawMesh";
 import { L_EYE, R_EYE, EAR_THRESHOLD } from "@/lib/faceMeshData";
@@ -20,6 +20,17 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   const cameraReady = useRef(false);
   const lastTimestampRef = useRef(0);
   const warmedUpRef = useRef(false);
+  const [cameraStatus, setCameraStatus] = useState<"idle" | "loading" | "ready" | "denied">("idle");
+
+  // Suppress TensorFlow Lite INFO logs that Next.js dev overlay treats as errors
+  useEffect(() => {
+    const orig = console.error;
+    console.error = (...args: unknown[]) => {
+      if (typeof args[0] === "string" && args[0].includes("TensorFlow Lite")) return;
+      orig.apply(console, args);
+    };
+    return () => { console.error = orig; };
+  }, []);
 
   const safeDetect = useCallback(
     (fl: any, v: HTMLVideoElement, timestamp: number) => {
@@ -109,8 +120,9 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
     detect();
   }, [onBlinkRef, safeDetect]);
 
-  const initCamera = useCallback(async () => {
-    if (cameraReady.current) return;
+  const initCamera = useCallback(async (): Promise<boolean> => {
+    if (cameraReady.current) return true;
+    setCameraStatus("loading");
     try {
       console.log("[Winky] Loading MediaPipe...");
       const { FaceLandmarker, FilesetResolver } = await import(
@@ -158,28 +170,22 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
           canvasRef.current.height = 240;
         }
 
-        // Do a warmup call outside of rAF so any initial error is caught here
-        // and doesn't trigger the Next.js dev error overlay
-        console.log("[Winky] Warming up model...");
-        const v = videoRef.current;
-        if (v.readyState >= 4 && v.videoWidth > 0) {
-          try {
-            flRef.current.detectForVideo(v, performance.now());
-          } catch {
-            // Expected to potentially fail on first call
-          }
-        }
-        // Small delay to let the model stabilize
-        await new Promise<void>((r) => setTimeout(r, 200));
+        await new Promise<void>((r) => setTimeout(r, 300));
         warmedUpRef.current = true;
 
         cameraReady.current = true;
+        setCameraStatus("ready");
         detectLoop();
         console.log("[Winky] Blink detection started");
+        return true;
       }
+      setCameraStatus("denied");
+      return false;
     } catch (e: unknown) {
       const err = e instanceof Error ? e.message : String(e);
       console.error("[Winky] Camera init failed:", err, e);
+      setCameraStatus("denied");
+      return false;
     }
   }, [detectLoop]);
 
@@ -199,5 +205,5 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
     };
   }, []);
 
-  return { videoRef, canvasRef, initCamera, triggerFlash };
+  return { videoRef, canvasRef, initCamera, triggerFlash, cameraStatus };
 }

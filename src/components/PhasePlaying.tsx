@@ -17,7 +17,6 @@ interface PhasePlayingProps {
   txToasts: TxToastData[];
   stake: number;
   canvasRef: RefObject<HTMLCanvasElement | null>;
-  onBlink: () => void;
   onRemoveTx: (id: number) => void;
 }
 
@@ -30,36 +29,35 @@ export function PhasePlaying({
   txToasts,
   stake,
   canvasRef,
-  onBlink,
   onRemoveTx,
 }: PhasePlayingProps) {
   return (
-    <div
-      className="relative flex flex-1 flex-col"
-      onClick={onBlink}
-    >
+    <div className="relative flex flex-1 flex-col">
       {/* Top bar */}
       <div className="z-[3] flex items-center justify-between px-4 py-2.5">
-        <div className="flex items-baseline gap-1.5">
-          <span
-            className={cn(
-              "font-mono text-[38px] font-extrabold leading-none text-wink-pink transition-all duration-100",
-              myBlinking && "scale-105"
-            )}
-            style={{
-              textShadow: myBlinking
-                ? "0 0 25px rgba(255,60,144,0.5)"
-                : "none",
-            }}
-          >
-            {myScore}
-          </span>
-          <span className="text-[11px] text-wink-text-dim">blinks</span>
+        <div className="flex items-center gap-3">
+          <FaceMeshCanvas canvasRef={canvasRef} isBlinking={myBlinking} />
+          <div className="flex items-baseline gap-1.5">
+            <span
+              className={cn(
+                "font-mono text-[38px] font-extrabold leading-none text-wink-pink transition-all duration-100",
+                myBlinking && "scale-105"
+              )}
+              style={{
+                textShadow: myBlinking
+                  ? "0 0 25px rgba(255,60,144,0.5)"
+                  : "none",
+              }}
+            >
+              {myScore}
+            </span>
+            <span className="text-[11px] text-wink-text-dim">blinks</span>
+          </div>
         </div>
 
         <div
           className={cn(
-            "rounded-2xl border border-wink-border bg-black/30 px-3.5 py-1.5 font-mono text-[13px] font-bold backdrop-blur-[10px]",
+            "rounded-2xl border border-wink-border bg-black/30 px-4 py-2 font-mono text-[18px] font-bold backdrop-blur-[10px]",
             timeLeft <= 5
               ? "text-destructive animate-[timer-warn_0.5s_ease_infinite]"
               : "text-wink-text"
@@ -91,9 +89,7 @@ export function PhasePlaying({
       </div>
 
       {/* Bottom bar */}
-      <div className="z-[3] flex items-end justify-between px-4 pb-2.5">
-        <FaceMeshCanvas canvasRef={canvasRef} isBlinking={myBlinking} />
-
+      <div className="z-[3] flex items-end justify-end px-4 pb-2.5">
         <div className="flex items-center gap-2">
           <div className="rounded-2xl border border-wink-border bg-black/30 px-3 py-1.5 font-mono text-[11px] text-wink-pink backdrop-blur-[10px]">
             💰 ${stake * 2}
@@ -106,7 +102,7 @@ export function PhasePlaying({
             /s
           </div>
           <div className="text-[11px] text-wink-text-dim">
-            Space / Click to blink
+            👁 Blink to score
           </div>
         </div>
       </div>

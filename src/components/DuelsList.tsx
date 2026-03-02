@@ -23,12 +23,12 @@ export function DuelsList({
   onLaunch,
 }: DuelsListProps) {
   return (
-    <div className="animate-[fade-in_0.3s_ease]">
-      {/* New Duel card */}
-      <div className="mb-2 rounded-lg border border-wink-border bg-white/[0.02] p-3">
-        <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-wink-text">
+    <div className="animate-[fade-in_0.3s_ease] flex flex-col gap-2">
+      {/* Box 1: New Duel */}
+      <div className="rounded-lg border border-wink-border bg-white/[0.02] p-3">
+        <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-wink-text">
           New Duel
-        </div>
+        </h2>
         <div className="mb-2 flex gap-1">
           {STAKES.map((s) => (
             <button
@@ -54,47 +54,52 @@ export function DuelsList({
         </Button>
       </div>
 
-      {/* Stake filter */}
-      <div className="mb-1.5 flex gap-1">
-        {([null, ...STAKES] as (number | null)[]).map((s) => (
-          <button
-            key={String(s)}
-            onClick={() => setStakeFilter(s)}
-            className={cn(
-              "rounded px-1.5 py-0.5 text-[9px] font-semibold transition-all",
-              s !== null && "font-mono",
-              stakeFilter === s
-                ? "border border-wink-pink/25 bg-wink-pink/[0.07] text-wink-pink"
-                : "border border-transparent text-wink-text-dim hover:text-wink-text"
-            )}
-          >
-            {s === null ? "All" : `$${s}`}
-          </button>
-        ))}
-      </div>
+      {/* Box 2: Engage in a battle */}
+      <div className="rounded-lg border border-wink-border bg-white/[0.02] p-3">
+        <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-wink-text">
+          Engage in a battle
+        </h2>
 
-      {/* Duel list */}
-      <div className="flex flex-col gap-1">
-        {duels.map((d) => (
-          <div
-            key={d.id}
-            onClick={() => onLaunch(d)}
-            className="group flex cursor-pointer items-center gap-1.5 rounded-lg border border-wink-border bg-white/[0.02] px-2.5 py-2 transition-all hover:border-wink-pink/30"
-          >
-            <div className="flex-1">
-              <div className="font-mono text-[10px] text-wink-text">
-                {d.creator}
+        <div className="mb-1.5 flex gap-1">
+          {([null, ...STAKES] as (number | null)[]).map((s) => (
+            <button
+              key={String(s)}
+              onClick={() => setStakeFilter(s)}
+              className={cn(
+                "rounded px-1.5 py-0.5 text-[9px] font-semibold transition-all",
+                s !== null && "font-mono",
+                stakeFilter === s
+                  ? "border border-wink-pink/25 bg-wink-pink/[0.07] text-wink-pink"
+                  : "border border-transparent text-wink-text-dim hover:text-wink-text"
+              )}
+            >
+              {s === null ? "All" : `$${s}`}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-1">
+          {duels.map((d) => (
+            <div
+              key={d.id}
+              onClick={() => onLaunch(d)}
+              className="group flex cursor-pointer items-center gap-1.5 rounded-lg border border-wink-border bg-white/[0.02] px-2.5 py-2 transition-all hover:border-wink-pink/30"
+            >
+              <div className="flex-1">
+                <div className="font-mono text-[10px] text-wink-text">
+                  {d.creator}
+                </div>
+                <div className="text-[9px] text-wink-text-dim">{d.time} ago</div>
               </div>
-              <div className="text-[9px] text-wink-text-dim">{d.time} ago</div>
+              <div className="rounded-[5px] bg-wink-orange/[0.08] px-1.5 py-0.5 font-mono text-xs font-bold text-wink-orange">
+                {d.score}👁️
+              </div>
+              <div className="font-mono text-[11px] font-bold text-wink-pink">
+                ${d.stake}
+              </div>
             </div>
-            <div className="rounded-[5px] bg-wink-orange/[0.08] px-1.5 py-0.5 font-mono text-xs font-bold text-wink-orange">
-              {d.score}👁️
-            </div>
-            <div className="font-mono text-[11px] font-bold text-wink-pink">
-              ${d.stake}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -20,7 +20,7 @@ interface SidebarProps {
 
 const TABS = [
   { id: "duels" as const, icon: "⚔️", label: "Duels" },
-  { id: "leaderboard" as const, icon: "🏆", label: "Leaderboard" },
+  // { id: "leaderboard" as const, icon: "🏆", label: "Leaderboard" },
 ];
 
 export function Sidebar({
@@ -108,7 +108,10 @@ export function Sidebar({
       {/* Footer */}
       <div className="flex justify-between border-t border-wink-border px-3 py-2 text-[9px] text-wink-text-dim">
         <span>⚙️</span>
-        <span>MegaETH</span>
+        <span className="flex items-center gap-1">
+          <img src="/megaeth-icon.svg" alt="MegaETH" className="h-3 w-3 invert" />
+          MegaETH Testnet
+        </span>
       </div>
     </div>
   );

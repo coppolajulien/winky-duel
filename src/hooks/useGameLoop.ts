@@ -6,7 +6,7 @@ import type { GamePhase, Duel, ChartPoint, GameResult } from "@/lib/types";
 
 interface UseGameLoopOptions {
   addTx: () => void;
-  initCamera: () => Promise<void>;
+  initCamera: () => Promise<boolean>;
   triggerFlash: () => void;
 }
 
@@ -104,13 +104,17 @@ export function useGameLoop({ addTx, initCamera, triggerFlash }: UseGameLoopOpti
   }, [challenge, finish]);
 
   const launch = useCallback(
-    (duel: Duel | null = null) => {
+    async (duel: Duel | null = null) => {
       setChallenge(duel);
       if (duel) setStake(duel.stake);
       setPhase("countdown");
       setCountdownNum(3);
 
-      initCamera();
+      const cameraOk = await initCamera();
+      if (!cameraOk) {
+        setPhase("idle");
+        return;
+      }
 
       let c = 3;
       const iv = setInterval(() => {

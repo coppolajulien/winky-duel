@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useCallback } from "react";
 import { useTxToasts } from "@/hooks/useTxToasts";
 import { useBlinkDetector } from "@/hooks/useBlinkDetector";
 import { useGameLoop } from "@/hooks/useGameLoop";
@@ -17,7 +17,7 @@ export default function GamePage() {
   const onBlinkRef = useRef<(() => void) | null>(null);
 
   const { txToasts, addTx, removeTx, resetToasts } = useTxToasts();
-  const { videoRef, canvasRef, initCamera, triggerFlash } = useBlinkDetector({
+  const { videoRef, canvasRef, initCamera, triggerFlash, cameraStatus } = useBlinkDetector({
     onBlinkRef,
   });
 
@@ -50,18 +50,6 @@ export default function GamePage() {
     resetToasts();
   }, [reset, resetToasts]);
 
-  // Spacebar handler
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.code === "Space") {
-        e.preventDefault();
-        doBlink();
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [doBlink]);
-
   return (
     <div className="flex h-screen overflow-hidden font-sans text-white">
       {/* Hidden video element for camera */}
@@ -90,7 +78,18 @@ export default function GamePage() {
       {/* Right: game area */}
       <GridBackground>
         <div className="flex h-full flex-col">
-          {phase === "idle" && <PhaseIdle />}
+          {phase === "idle" && cameraStatus === "denied" && (
+            <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center justify-center">
+              <div className="mb-3 text-[56px] opacity-40">🚫</div>
+              <div className="text-lg font-bold text-wink-pink">
+                Camera access required
+              </div>
+              <div className="mt-1.5 max-w-xs text-center text-xs text-wink-text-dim">
+                Winky Duel uses your webcam to detect blinks. Allow camera access in your browser settings and reload the page.
+              </div>
+            </div>
+          )}
+          {phase === "idle" && cameraStatus !== "denied" && <PhaseIdle />}
           {phase === "countdown" && (
             <PhaseCountdown
               countdownNum={countdownNum}
@@ -108,7 +107,6 @@ export default function GamePage() {
               txToasts={txToasts}
               stake={stake}
               canvasRef={canvasRef}
-              onBlink={doBlink}
               onRemoveTx={removeTx}
             />
           )}
