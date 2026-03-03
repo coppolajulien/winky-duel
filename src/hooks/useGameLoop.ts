@@ -18,7 +18,6 @@ export function useGameLoop({ addTx, initCamera, triggerFlash }: UseGameLoopOpti
   const [myScore, setMyScore] = useState(0);
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
   const [countdownNum, setCountdownNum] = useState(3);
-  const [connected, setConnected] = useState(false);
   const [challenge, setChallenge] = useState<Duel | null>(null);
   const [myBlinking, setMyBlinking] = useState(false);
   const [result, setResult] = useState<GameResult | null>(null);
@@ -161,8 +160,6 @@ export function useGameLoop({ addTx, initCamera, triggerFlash }: UseGameLoopOpti
     myScore,
     chartData,
     countdownNum,
-    connected,
-    setConnected,
     challenge,
     myBlinking,
     result,

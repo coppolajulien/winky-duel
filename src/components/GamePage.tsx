@@ -4,6 +4,7 @@ import { useRef, useCallback } from "react";
 import { useTxToasts } from "@/hooks/useTxToasts";
 import { useBlinkDetector } from "@/hooks/useBlinkDetector";
 import { useGameLoop } from "@/hooks/useGameLoop";
+import { useWallet } from "@/hooks/useWallet";
 import { GridBackground } from "./GridBackground";
 import { Sidebar } from "./Sidebar";
 import { PhaseIdle } from "./PhaseIdle";
@@ -31,8 +32,6 @@ export default function GamePage() {
     myScore,
     chartData,
     countdownNum,
-    connected,
-    setConnected,
     challenge,
     myBlinking,
     result,
@@ -40,6 +39,16 @@ export default function GamePage() {
     reset,
     doBlink,
   } = useGameLoop({ addTx, initCamera, triggerFlash });
+
+  const {
+    ready,
+    authenticated,
+    login,
+    logout,
+    shortAddress,
+    usdmBalance,
+    balanceLoading,
+  } = useWallet();
 
   // Wire the blink ref after both hooks are initialized
   onBlinkRef.current = doBlink;
@@ -67,8 +76,13 @@ export default function GamePage() {
         setStake={setStake}
         stakeFilter={stakeFilter}
         setStakeFilter={setStakeFilter}
-        connected={connected}
-        setConnected={setConnected}
+        authenticated={authenticated}
+        ready={ready}
+        login={login}
+        logout={logout}
+        shortAddress={shortAddress}
+        usdmBalance={usdmBalance}
+        balanceLoading={balanceLoading}
         onLaunch={(duel) => {
           resetToasts();
           launch(duel);

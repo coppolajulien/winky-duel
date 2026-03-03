@@ -6,7 +6,7 @@
 |---|---|---|
 | Phase 1 — Frontend | ✅ Terminé | UI complète, blink detection, game loop, mock data |
 | Phase 2 — Smart Contract | ✅ Terminé | WinkyDuel.sol — escrow + duels + 42 tests passing |
-| Phase 3 — Wallet Auth | ⬜ À faire | Privy login + Pimlico gasless |
+| Phase 3 — Wallet Auth | ✅ Terminé | Privy login (sans Pimlico — users paient le gas) |
 | Phase 4 — Intégration | ⬜ À faire | Connecter frontend ↔ blockchain |
 | Phase 5 — Real-time | ⬜ À faire | WebSockets live feed + leaderboard on-chain |
 | Phase 6 — Deploy | ⬜ À faire | Vercel (frontend) + MegaETH Testnet |
@@ -67,52 +67,38 @@ Le contract Cairo de ton pote est ultra simple (`record_blink` + compteur). Le n
 
 ---
 
-## Phase 3 — Wallet Auth (Privy + Pimlico)
+## Phase 3 — Wallet Auth (Privy)
 
 ### Objectif
-Login sans wallet extension + transactions gasless.
+Login via Privy (email, Google, Twitter, MetaMask) — pas de paymaster, les users paient leur gas (~$0.0002/tx sur MegaETH).
 
-### Comptes à créer
-1. **Privy** (https://privy.io) — compte développeur gratuit
-   - Créer une app, récupérer `PRIVY_APP_ID`
-   - Configurer les méthodes de login (email, Google, Twitter)
-2. **Pimlico** (https://pimlico.io) — paymaster gasless
-   - Créer un compte, récupérer `PIMLICO_API_KEY`
-   - Configurer le sponsoring sur MegaETH
-3. **Wallet de déploiement** — MetaMask ou autre
-   - Pour déployer le smart contract
-   - Alimenter en tokens testnet MegaETH
+### Architecture
+- **Privy** pour l'authentification (embedded wallets pour ceux sans MetaMask)
+- **viem** pour les lectures blockchain (balance USDM)
+- Pas de Pimlico/paymaster — gas trop peu cher pour justifier la complexité
 
 ### Tâches
 
-- [ ] Installer les dépendances
-  ```bash
-  npm install @privy-io/react-auth @privy-io/server-auth
-  npm install permissionless viem
-  ```
+- [x] Installer `@privy-io/react-auth` + `viem`
+- [x] Créer `PrivyClientProvider.tsx` — wrapper PrivyProvider avec config MegaETH
+- [x] Créer `useWallet.ts` — hook auth + lecture balance USDM via viem publicClient
+- [x] Modifier `layout.tsx` — PrivyClientProvider wrapping ThemeProvider
+- [x] Modifier `Sidebar.tsx` — vrai bouton Connect/Disconnect, balance USDM réelle
+- [x] Modifier `DuelsList.tsx` — gating : "Connect to Play" si non authentifié
+- [x] Modifier `GamePage.tsx` — useWallet hook, props auth au Sidebar
+- [x] Ajouter constantes blockchain dans `constants.ts`
 
-- [ ] Créer le Provider Privy (`src/app/providers.tsx`)
-  - Wrapper l'app dans `PrivyProvider`
-  - Config: login methods, MegaETH chain, embedded wallet
-
-- [ ] Créer le hook `useWallet.ts`
-  - Login/logout via Privy
-  - Smart Account (ERC-4337) via Pimlico
-  - `sendTransaction()` gasless
-
-- [ ] Créer le composant `WalletConnect.tsx`
-  - Remplacer le bouton "Connect" mock
-  - Afficher le solde réel du wallet
-
-- [ ] Variables d'environnement
-  ```env
-  NEXT_PUBLIC_PRIVY_APP_ID=...
-  PIMLICO_API_KEY=...
-  NEXT_PUBLIC_MEGAETH_RPC=...
-  ```
-
-### Inspiré de winky-starkzap
-Ton pote utilise Privy + Starkzap SDK + AVNU Paymaster. Nous on utilise Privy + Pimlico (EVM) — même concept, stack différente.
+### Fichiers créés/modifiés
+| Fichier | Action |
+|---|---|
+| `src/components/PrivyClientProvider.tsx` | **Créé** — Provider Privy avec config MegaETH testnet |
+| `src/hooks/useWallet.ts` | **Créé** — Hook auth + balance USDM |
+| `src/app/layout.tsx` | Modifié — Ajout PrivyClientProvider |
+| `src/components/Sidebar.tsx` | Modifié — Vrai login/logout + balance |
+| `src/components/DuelsList.tsx` | Modifié — Gating authenticated |
+| `src/components/GamePage.tsx` | Modifié — useWallet integration |
+| `src/hooks/useGameLoop.ts` | Modifié — Suppression mock connected state |
+| `src/lib/constants.ts` | Modifié — Adresses contracts + ABI ERC20 |
 
 ---
 

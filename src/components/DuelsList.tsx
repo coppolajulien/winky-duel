@@ -12,6 +12,7 @@ interface DuelsListProps {
   setStakeFilter: (s: number | null) => void;
   duels: Duel[];
   onLaunch: (duel: Duel | null) => void;
+  authenticated: boolean;
 }
 
 export function DuelsList({
@@ -21,6 +22,7 @@ export function DuelsList({
   setStakeFilter,
   duels,
   onLaunch,
+  authenticated,
 }: DuelsListProps) {
   return (
     <div className="animate-[fade-in_0.3s_ease] flex flex-col gap-2">
@@ -47,10 +49,11 @@ export function DuelsList({
         </div>
         <Button
           onClick={() => onLaunch(null)}
-          className="w-full bg-gradient-to-br from-wink-pink to-[var(--wink-pink-darker)] text-[11px] font-bold text-white hover:brightness-110"
+          disabled={!authenticated}
+          className="w-full bg-gradient-to-br from-wink-pink to-[var(--wink-pink-darker)] text-[11px] font-bold text-white hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
           size="sm"
         >
-          ⚡ Create & Play
+          {authenticated ? "⚡ Create & Play" : "Connect to Play"}
         </Button>
       </div>
 
@@ -82,8 +85,13 @@ export function DuelsList({
           {duels.map((d) => (
             <div
               key={d.id}
-              onClick={() => onLaunch(d)}
-              className="group flex cursor-pointer items-center gap-1.5 rounded-lg border border-wink-border bg-card px-2.5 py-2 transition-all hover:border-wink-pink/30"
+              onClick={() => authenticated && onLaunch(d)}
+              className={cn(
+                "group flex items-center gap-1.5 rounded-lg border border-wink-border bg-card px-2.5 py-2 transition-all",
+                authenticated
+                  ? "cursor-pointer hover:border-wink-pink/30"
+                  : "cursor-not-allowed opacity-50"
+              )}
             >
               <div className="flex-1">
                 <div className="font-mono text-[10px] text-wink-text">

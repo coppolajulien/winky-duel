@@ -15,8 +15,13 @@ interface SidebarProps {
   setStake: (s: number) => void;
   stakeFilter: number | null;
   setStakeFilter: (s: number | null) => void;
-  connected: boolean;
-  setConnected: (c: boolean) => void;
+  authenticated: boolean;
+  ready: boolean;
+  login: () => void;
+  logout: () => Promise<void>;
+  shortAddress: string | null;
+  usdmBalance: string | null;
+  balanceLoading: boolean;
   onLaunch: (duel: Duel | null) => void;
 }
 
@@ -30,8 +35,13 @@ export function Sidebar({
   setStake,
   stakeFilter,
   setStakeFilter,
-  connected,
-  setConnected,
+  authenticated,
+  ready,
+  login,
+  logout,
+  shortAddress,
+  usdmBalance,
+  balanceLoading,
   onLaunch,
 }: SidebarProps) {
   const [tab, setTab] = useState<"duels" | "leaderboard">("duels");
@@ -57,18 +67,23 @@ export function Sidebar({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setConnected(!connected)}
+          onClick={() => (authenticated ? logout() : login())}
+          disabled={!ready}
           className={cn(
             "h-7 rounded-2xl px-3 text-[10px] font-semibold",
-            connected
+            authenticated
               ? "border-wink-cyan/20 bg-wink-cyan/[0.06] text-wink-cyan"
               : "border-wink-border bg-card text-wink-text"
           )}
         >
-          {connected ? (
+          {authenticated ? (
             <span className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-wink-cyan" />
-              $1,854
+              {balanceLoading
+                ? "..."
+                : usdmBalance !== null
+                  ? `$${usdmBalance}`
+                  : shortAddress}
             </span>
           ) : (
             "Connect"
@@ -105,6 +120,7 @@ export function Sidebar({
             setStakeFilter={setStakeFilter}
             duels={filtered}
             onLaunch={onLaunch}
+            authenticated={authenticated}
           />
         ) : (
           <Leaderboard />
