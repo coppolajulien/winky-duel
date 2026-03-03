@@ -4,7 +4,10 @@ import { useRef, useCallback } from "react";
 import { useTxToasts } from "@/hooks/useTxToasts";
 import { useBlinkDetector } from "@/hooks/useBlinkDetector";
 import { useGameLoop } from "@/hooks/useGameLoop";
-import { useWallet } from "@/hooks/useWallet";
+import { useWallet, publicClient } from "@/hooks/useWallet";
+import { useContract } from "@/hooks/useContract";
+import { useDuels } from "@/hooks/useDuels";
+import type { Duel } from "@/lib/types";
 import { GridBackground } from "./GridBackground";
 import { Sidebar } from "./Sidebar";
 import { PhaseIdle } from "./PhaseIdle";
@@ -17,10 +20,14 @@ export default function GamePage() {
   // Ref-based callback to resolve circular dependency between hooks
   const onBlinkRef = useRef<(() => void) | null>(null);
 
-  const { txToasts, addTx, removeTx, resetToasts } = useTxToasts();
+  const { txToasts, addTx, addBlinkTx, removeTx, resetToasts } = useTxToasts();
   const { videoRef, canvasRef, initCamera, triggerFlash, cameraStatus } = useBlinkDetector({
     onBlinkRef,
   });
+
+  const wallet = useWallet();
+  const contract = useContract();
+  const { duels, loading: duelsLoading, refetchDuels } = useDuels();
 
   const {
     phase,
@@ -38,17 +45,21 @@ export default function GamePage() {
     launch,
     reset,
     doBlink,
-  } = useGameLoop({ addTx, initCamera, triggerFlash });
-
-  const {
-    ready,
-    authenticated,
-    login,
-    logout,
-    shortAddress,
-    usdmBalance,
-    balanceLoading,
-  } = useWallet();
+  } = useGameLoop({
+    addTx,
+    addBlinkTx,
+    initCamera,
+    triggerFlash,
+    contractActions: {
+      createDuel: contract.createDuel,
+      challengeDuel: contract.challengeDuel,
+      recordBlink: contract.recordBlink,
+      ensureAllowance: contract.ensureAllowance,
+      getNextDuelId: contract.getNextDuelId,
+    },
+    refetchDuels,
+    refreshBalance: wallet.refreshBalance,
+  });
 
   // Wire the blink ref after both hooks are initialized
   onBlinkRef.current = doBlink;
@@ -58,6 +69,22 @@ export default function GamePage() {
     reset();
     resetToasts();
   }, [reset, resetToasts]);
+
+  // Cancel duel handler
+  const handleCancel = useCallback(
+    async (duel: Duel) => {
+      try {
+        const hash = await contract.cancelDuel(duel.id);
+        addTx(hash, "Cancel Duel");
+        await publicClient.waitForTransactionReceipt({ hash });
+        refetchDuels();
+        wallet.refreshBalance();
+      } catch (err) {
+        console.error("Cancel failed:", err);
+      }
+    },
+    [contract, addTx, refetchDuels, wallet]
+  );
 
   return (
     <div className="flex h-screen overflow-hidden font-sans text-foreground">
@@ -76,13 +103,17 @@ export default function GamePage() {
         setStake={setStake}
         stakeFilter={stakeFilter}
         setStakeFilter={setStakeFilter}
-        authenticated={authenticated}
-        ready={ready}
-        login={login}
-        logout={logout}
-        shortAddress={shortAddress}
-        usdmBalance={usdmBalance}
-        balanceLoading={balanceLoading}
+        authenticated={wallet.authenticated}
+        ready={wallet.ready}
+        login={wallet.login}
+        logout={wallet.logout}
+        shortAddress={wallet.shortAddress}
+        usdmBalance={wallet.usdmBalance}
+        balanceLoading={wallet.balanceLoading}
+        duels={duels}
+        duelsLoading={duelsLoading}
+        currentAddress={(wallet.address as `0x${string}`) ?? null}
+        onCancel={handleCancel}
         onLaunch={(duel) => {
           resetToasts();
           launch(duel);

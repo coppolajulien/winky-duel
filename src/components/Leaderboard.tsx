@@ -1,7 +1,17 @@
 "use client";
 
-import { MOCK_LEADERBOARD } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
+import type { LeaderboardEntry } from "@/lib/types";
+
+// Temporary mock data (will be replaced by on-chain events in Phase 5)
+const MOCK_LEADERBOARD: LeaderboardEntry[] = [
+  { r: 1, addr: "0x7aB3...c92F", blinks: 1847, wins: 23, earn: 142.5 },
+  { r: 2, addr: "0xfA20...8e1C", blinks: 1623, wins: 19, earn: 98.75 },
+  { r: 3, addr: "0x1De8...44aB", blinks: 1580, wins: 17, earn: 87.2 },
+  { r: 4, addr: "0x44cD...b3F7", blinks: 1402, wins: 15, earn: 65.0 },
+  { r: 5, addr: "0x8bE1...2a6D", blinks: 1295, wins: 12, earn: 43.5 },
+  { r: 6, addr: "0xC7a9...19eF", blinks: 1188, wins: 11, earn: 38.0 },
+];
 
 const MEDAL_COLORS = ["text-yellow-400", "text-gray-400", "text-amber-700"] as const;
 const MEDALS = ["🥇", "🥈", "🥉"] as const;

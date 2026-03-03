@@ -2,33 +2,63 @@
 
 import { useState, useCallback, useRef } from "react";
 import type { TxToastData } from "@/lib/types";
+import { publicClient } from "@/hooks/useWallet";
 
 export function useTxToasts() {
   const [txToasts, setTxToasts] = useState<TxToastData[]>([]);
   const txIdRef = useRef(0);
 
-  const addTx = useCallback(() => {
+  /** Add a real TX toast that watches for confirmation */
+  const addTx = useCallback((hash: `0x${string}`, label?: string) => {
     txIdRef.current++;
     const id = txIdRef.current;
-    const hash =
-      "0x" +
-      Math.random().toString(16).slice(2, 6) +
-      "..." +
-      Math.random().toString(16).slice(2, 6);
 
-    // Add pending
     setTxToasts((prev) =>
-      [{ id, hash, status: "pending" as const }, ...prev].slice(0, 6)
+      [{ id, hash, status: "pending" as const, label }, ...prev].slice(0, 6)
     );
 
-    // Confirm after delay
+    // Watch for confirmation
+    publicClient
+      .waitForTransactionReceipt({ hash, timeout: 30_000 })
+      .then((receipt) => {
+        setTxToasts((prev) =>
+          prev.map((t) =>
+            t.id === id
+              ? { ...t, status: receipt.status === "success" ? ("confirmed" as const) : ("failed" as const) }
+              : t
+          )
+        );
+      })
+      .catch(() => {
+        setTxToasts((prev) =>
+          prev.map((t) =>
+            t.id === id ? { ...t, status: "failed" as const } : t
+          )
+        );
+      });
+
+    return id;
+  }, []);
+
+  /** Fire-and-forget toast for recordBlink (event-only, fast on MegaETH) */
+  const addBlinkTx = useCallback((hash: `0x${string}`) => {
+    txIdRef.current++;
+    const id = txIdRef.current;
+
+    setTxToasts((prev) =>
+      [{ id, hash, status: "pending" as const, label: "Blink" }, ...prev].slice(0, 6)
+    );
+
+    // Auto-confirm after short delay
     setTimeout(() => {
       setTxToasts((prev) =>
         prev.map((t) =>
           t.id === id ? { ...t, status: "confirmed" as const } : t
         )
       );
-    }, 200 + Math.random() * 300);
+    }, 500);
+
+    return id;
   }, []);
 
   const removeTx = useCallback((id: number) => {
@@ -40,5 +70,5 @@ export function useTxToasts() {
     txIdRef.current = 0;
   }, []);
 
-  return { txToasts, addTx, removeTx, resetToasts };
+  return { txToasts, addTx, addBlinkTx, removeTx, resetToasts };
 }

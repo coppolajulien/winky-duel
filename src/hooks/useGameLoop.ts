@@ -1,16 +1,39 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { parseUnits } from "viem";
 import { DURATION } from "@/lib/constants";
+import { publicClient } from "@/hooks/useWallet";
+import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI } from "@/lib/constants";
 import type { GamePhase, Duel, ChartPoint, GameResult } from "@/lib/types";
 
-interface UseGameLoopOptions {
-  addTx: () => void;
-  initCamera: () => Promise<boolean>;
-  triggerFlash: () => void;
+interface ContractActions {
+  createDuel: (score: number, stakeUsdm: number) => Promise<`0x${string}`>;
+  challengeDuel: (duelId: bigint, score: number, stakeRaw: bigint) => Promise<`0x${string}`>;
+  recordBlink: (duelId: bigint) => Promise<`0x${string}`>;
+  ensureAllowance: (amount: bigint) => Promise<`0x${string}` | null>;
+  getNextDuelId: () => Promise<bigint>;
 }
 
-export function useGameLoop({ addTx, initCamera, triggerFlash }: UseGameLoopOptions) {
+interface UseGameLoopOptions {
+  addTx: (hash: `0x${string}`, label?: string) => number;
+  addBlinkTx: (hash: `0x${string}`) => number;
+  initCamera: () => Promise<boolean>;
+  triggerFlash: () => void;
+  contractActions: ContractActions;
+  refetchDuels: () => Promise<void>;
+  refreshBalance: () => Promise<void>;
+}
+
+export function useGameLoop({
+  addTx,
+  addBlinkTx,
+  initCamera,
+  triggerFlash,
+  contractActions,
+  refetchDuels,
+  refreshBalance,
+}: UseGameLoopOptions) {
   const [phase, setPhase] = useState<GamePhase>("idle");
   const [stake, setStake] = useState(5);
   const [stakeFilter, setStakeFilter] = useState<number | null>(null);
@@ -28,15 +51,15 @@ export function useGameLoop({ addTx, initCamera, triggerFlash }: UseGameLoopOpti
   const chartIvRef = useRef<ReturnType<typeof setInterval>>(null);
   const phaseRef = useRef<GamePhase>("idle");
   const timeLeftRef = useRef(DURATION);
+  const pendingDuelIdRef = useRef<bigint>(0n);
+  const challengeRef = useRef<Duel | null>(null);
+  const stakeRef = useRef(5);
 
   // Keep refs in sync
-  useEffect(() => {
-    phaseRef.current = phase;
-  }, [phase]);
-
-  useEffect(() => {
-    timeLeftRef.current = timeLeft;
-  }, [timeLeft]);
+  useEffect(() => { phaseRef.current = phase; }, [phase]);
+  useEffect(() => { timeLeftRef.current = timeLeft; }, [timeLeft]);
+  useEffect(() => { challengeRef.current = challenge; }, [challenge]);
+  useEffect(() => { stakeRef.current = stake; }, [stake]);
 
   // Chart data accumulation
   useEffect(() => {
@@ -62,24 +85,84 @@ export function useGameLoop({ addTx, initCamera, triggerFlash }: UseGameLoopOpti
     setMyScore(myScoreRef.current);
     setMyBlinking(true);
     triggerFlash();
-    addTx();
     setTimeout(() => setMyBlinking(false), 150);
-  }, [addTx, triggerFlash]);
 
-  const finish = useCallback(() => {
+    // Fire-and-forget recordBlink on-chain
+    const duelId = pendingDuelIdRef.current;
+    contractActions
+      .recordBlink(duelId)
+      .then((hash) => addBlinkTx(hash))
+      .catch((err) => {
+        // Silent failure — recordBlink is cosmetic (event-only)
+        console.warn("recordBlink failed:", err);
+      });
+  }, [contractActions, addBlinkTx, triggerFlash]);
+
+  const finish = useCallback(async () => {
     setPhase("submitting");
-    setTimeout(() => {
-      const s = myScoreRef.current;
-      const ts = challenge?.score ?? null;
+
+    const score = myScoreRef.current;
+    const currentChallenge = challengeRef.current;
+    const isChallenge = !!currentChallenge;
+
+    try {
+      let hash: `0x${string}`;
+
+      if (isChallenge) {
+        hash = await contractActions.challengeDuel(
+          currentChallenge!.id,
+          score,
+          currentChallenge!.stakeRaw
+        );
+        addTx(hash, "Challenge Duel");
+      } else {
+        hash = await contractActions.createDuel(score, stakeRef.current);
+        addTx(hash, "Create Duel");
+      }
+
+      // Wait for confirmation
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+
+      if (receipt.status === "reverted") {
+        throw new Error("Transaction reverted");
+      }
+
+      // Determine result
+      if (isChallenge) {
+        const targetScore = currentChallenge!.score;
+        setResult({
+          my: score,
+          target: targetScore,
+          won: score > targetScore ? true : score < targetScore ? false : null,
+          isChallenge: true,
+        });
+      } else {
+        setResult({
+          my: score,
+          target: null,
+          won: null,
+          isChallenge: false,
+        });
+      }
+
+      setPhase("result");
+
+      // Refresh duels list and balance
+      refetchDuels();
+      refreshBalance();
+    } catch (err) {
+      console.error("Submit failed:", err);
+      const errorMsg = err instanceof Error ? err.message : "Transaction failed";
       setResult({
-        my: s,
-        target: ts,
-        won: ts !== null ? s > ts : null,
-        isChallenge: !!challenge,
+        my: score,
+        target: currentChallenge?.score ?? null,
+        won: null,
+        isChallenge,
+        error: errorMsg,
       });
       setPhase("result");
-    }, 1200);
-  }, [challenge]);
+    }
+  }, [contractActions, addTx, refetchDuels, refreshBalance]);
 
   const go = useCallback(() => {
     myScoreRef.current = 0;
@@ -109,12 +192,38 @@ export function useGameLoop({ addTx, initCamera, triggerFlash }: UseGameLoopOpti
       setPhase("countdown");
       setCountdownNum(3);
 
-      const cameraOk = await initCamera();
+      // Start camera init and USDM approval in parallel
+      const stakeAmount = duel
+        ? duel.stakeRaw
+        : parseUnits(String(stakeRef.current), 18);
+
+      const [cameraOk] = await Promise.all([
+        initCamera(),
+        // Pre-approve USDM during countdown
+        contractActions.ensureAllowance(stakeAmount).then((hash) => {
+          if (hash) addTx(hash, "Approve USDM");
+        }).catch((err) => {
+          console.warn("Pre-approval failed, will retry at submit:", err);
+        }),
+      ]);
+
       if (!cameraOk) {
         setPhase("idle");
         return;
       }
 
+      // Read nextDuelId for blink events
+      if (!duel) {
+        try {
+          pendingDuelIdRef.current = await contractActions.getNextDuelId();
+        } catch {
+          pendingDuelIdRef.current = 0n;
+        }
+      } else {
+        pendingDuelIdRef.current = duel.id;
+      }
+
+      // Countdown 3-2-1
       let c = 3;
       const iv = setInterval(() => {
         c--;
@@ -126,7 +235,7 @@ export function useGameLoop({ addTx, initCamera, triggerFlash }: UseGameLoopOpti
         }
       }, 1000);
     },
-    [initCamera, go]
+    [initCamera, go, contractActions, addTx]
   );
 
   const reset = useCallback(() => {

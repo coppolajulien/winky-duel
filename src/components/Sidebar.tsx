@@ -5,7 +5,6 @@ import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { MOCK_DUELS } from "@/lib/mockData";
 import type { Duel } from "@/lib/types";
 import { DuelsList } from "./DuelsList";
 import { Leaderboard } from "./Leaderboard";
@@ -23,6 +22,10 @@ interface SidebarProps {
   usdmBalance: string | null;
   balanceLoading: boolean;
   onLaunch: (duel: Duel | null) => void;
+  duels: Duel[];
+  duelsLoading: boolean;
+  currentAddress: `0x${string}` | null;
+  onCancel?: (duel: Duel) => void;
 }
 
 const TABS = [
@@ -43,6 +46,10 @@ export function Sidebar({
   usdmBalance,
   balanceLoading,
   onLaunch,
+  duels,
+  duelsLoading,
+  currentAddress,
+  onCancel,
 }: SidebarProps) {
   const [tab, setTab] = useState<"duels" | "leaderboard">("duels");
   const { resolvedTheme, setTheme } = useTheme();
@@ -51,8 +58,8 @@ export function Sidebar({
   useEffect(() => setMounted(true), []);
 
   const filtered = stakeFilter
-    ? MOCK_DUELS.filter((d) => d.stake === stakeFilter)
-    : MOCK_DUELS;
+    ? duels.filter((d) => d.stake === stakeFilter)
+    : duels;
 
   return (
     <div className="flex w-[300px] min-w-[300px] flex-col border-r border-wink-border bg-sidebar backdrop-blur-[20px]">
@@ -121,6 +128,9 @@ export function Sidebar({
             duels={filtered}
             onLaunch={onLaunch}
             authenticated={authenticated}
+            duelsLoading={duelsLoading}
+            currentAddress={currentAddress}
+            onCancel={onCancel}
           />
         ) : (
           <Leaderboard />
