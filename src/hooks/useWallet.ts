@@ -19,8 +19,8 @@ export function useWallet() {
   const [usdmBalance, setUsdmBalance] = useState<string | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
 
-  // First EVM wallet (embedded or external)
-  const wallet = wallets.find((w) => w.chainType === "ethereum") ?? null;
+  // First wallet (only EVM chains configured)
+  const wallet = wallets[0] ?? null;
   const address = wallet?.address ?? null;
 
   // Abbreviated: "0x7aB3...c92F"
