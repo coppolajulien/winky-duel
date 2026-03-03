@@ -17,6 +17,7 @@ export function PrivyClientProvider({ children }: { children: React.ReactNode })
         },
         appearance: {
           theme: "dark",
+          walletList: ["metamask"],
         },
       }}
     >
