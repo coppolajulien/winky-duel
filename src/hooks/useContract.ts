@@ -10,6 +10,15 @@ import {
   ERC20_ABI,
 } from "@/lib/constants";
 
+// MegaETH has ~60K intrinsic gas — explicit limits to avoid estimation issues
+const GAS_LIMITS = {
+  approve: 150_000n,
+  createDuel: 300_000n,
+  challengeDuel: 400_000n,
+  cancelDuel: 250_000n,
+  recordBlink: 150_000n,
+} as const;
+
 export function useContract() {
   const { getWalletClient, address } = useWallet();
 
@@ -33,6 +42,7 @@ export function useContract() {
         abi: ERC20_ABI,
         functionName: "approve",
         args: [WINKY_DUEL_ADDRESS, amount],
+        gas: GAS_LIMITS.approve,
       });
       await publicClient.waitForTransactionReceipt({ hash });
       return hash;
@@ -64,6 +74,7 @@ export function useContract() {
         abi: WINKY_DUEL_ABI,
         functionName: "createDuel",
         args: [score, amount],
+        gas: GAS_LIMITS.createDuel,
       });
     },
     [getWalletClient, ensureAllowance]
@@ -80,6 +91,7 @@ export function useContract() {
         abi: WINKY_DUEL_ABI,
         functionName: "challengeDuel",
         args: [duelId, score],
+        gas: GAS_LIMITS.challengeDuel,
       });
     },
     [getWalletClient, ensureAllowance]
@@ -94,6 +106,7 @@ export function useContract() {
         abi: WINKY_DUEL_ABI,
         functionName: "cancelDuel",
         args: [duelId],
+        gas: GAS_LIMITS.cancelDuel,
       });
     },
     [getWalletClient]
@@ -108,6 +121,7 @@ export function useContract() {
         abi: WINKY_DUEL_ABI,
         functionName: "recordBlink",
         args: [duelId],
+        gas: GAS_LIMITS.recordBlink,
       });
     },
     [getWalletClient]
