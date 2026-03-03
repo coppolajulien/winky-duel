@@ -51,7 +51,7 @@ export function PhaseResult({ result, stake, onReset }: PhaseResultProps) {
       </div>
 
       {/* Score comparison */}
-      <div className="mb-5 flex gap-5 rounded-xl border border-wink-border bg-black/20 px-8 py-4 backdrop-blur-[10px]">
+      <div className="mb-5 flex gap-5 rounded-xl border border-wink-border bg-[var(--glass-bg)] px-8 py-4 backdrop-blur-[10px]">
         <div className="text-center">
           <div className="font-mono text-[32px] font-extrabold text-wink-pink">
             {result.my}
@@ -75,14 +75,14 @@ export function PhaseResult({ result, stake, onReset }: PhaseResultProps) {
       <div className="flex gap-2">
         <Button
           onClick={onReset}
-          className="bg-gradient-to-br from-wink-pink to-[#cc2070] text-white hover:brightness-110"
+          className="bg-gradient-to-br from-wink-pink to-[var(--wink-pink-darker)] text-white hover:brightness-110"
         >
           ⚔️ Again
         </Button>
         <Button
           variant="outline"
           onClick={onReset}
-          className="border-wink-border bg-black/20 text-wink-text-dim hover:text-wink-text"
+          className="border-wink-border bg-[var(--glass-bg)] text-wink-text-dim hover:text-wink-text"
         >
           Back
         </Button>

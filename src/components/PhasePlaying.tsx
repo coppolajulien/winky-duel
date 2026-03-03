@@ -45,7 +45,7 @@ export function PhasePlaying({
               )}
               style={{
                 textShadow: myBlinking
-                  ? "0 0 25px rgba(255,60,144,0.5)"
+                  ? "0 0 25px var(--glow-pink)"
                   : "none",
               }}
             >
@@ -57,7 +57,7 @@ export function PhasePlaying({
 
         <div
           className={cn(
-            "rounded-2xl border border-wink-border bg-black/30 px-4 py-2 font-mono text-[18px] font-bold backdrop-blur-[10px]",
+            "rounded-2xl border border-wink-border bg-[var(--glass-bg)] px-4 py-2 font-mono text-[18px] font-bold backdrop-blur-[10px]",
             timeLeft <= 5
               ? "text-destructive animate-[timer-warn_0.5s_ease_infinite]"
               : "text-wink-text"
@@ -91,10 +91,10 @@ export function PhasePlaying({
       {/* Bottom bar */}
       <div className="z-[3] flex items-end justify-end px-4 pb-2.5">
         <div className="flex items-center gap-2">
-          <div className="rounded-2xl border border-wink-border bg-black/30 px-3 py-1.5 font-mono text-[11px] text-wink-pink backdrop-blur-[10px]">
+          <div className="rounded-2xl border border-wink-border bg-[var(--glass-bg)] px-3 py-1.5 font-mono text-[11px] text-wink-pink backdrop-blur-[10px]">
             💰 ${stake * 2}
           </div>
-          <div className="rounded-2xl border border-wink-border bg-black/30 px-3 py-1.5 font-mono text-[10px] text-wink-text-dim backdrop-blur-[10px]">
+          <div className="rounded-2xl border border-wink-border bg-[var(--glass-bg)] px-3 py-1.5 font-mono text-[10px] text-wink-text-dim backdrop-blur-[10px]">
             ⚡{" "}
             {myScore > 0
               ? (myScore / Math.max(1, DURATION - timeLeft)).toFixed(1)

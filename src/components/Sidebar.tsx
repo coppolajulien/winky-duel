@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
+import { Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MOCK_DUELS } from "@/lib/mockData";
@@ -33,13 +35,17 @@ export function Sidebar({
   onLaunch,
 }: SidebarProps) {
   const [tab, setTab] = useState<"duels" | "leaderboard">("duels");
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const filtered = stakeFilter
     ? MOCK_DUELS.filter((d) => d.stake === stakeFilter)
     : MOCK_DUELS;
 
   return (
-    <div className="flex w-[300px] min-w-[300px] flex-col border-r border-wink-border bg-[rgba(13,6,18,0.95)] backdrop-blur-[20px]">
+    <div className="flex w-[300px] min-w-[300px] flex-col border-r border-wink-border bg-sidebar backdrop-blur-[20px]">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-wink-border px-4 py-3.5">
         <div className="flex items-center gap-2">
@@ -56,7 +62,7 @@ export function Sidebar({
             "h-7 rounded-2xl px-3 text-[10px] font-semibold",
             connected
               ? "border-wink-cyan/20 bg-wink-cyan/[0.06] text-wink-cyan"
-              : "border-wink-border bg-white/[0.02] text-wink-text"
+              : "border-wink-border bg-card text-wink-text"
           )}
         >
           {connected ? (
@@ -107,9 +113,23 @@ export function Sidebar({
 
       {/* Footer */}
       <div className="flex justify-between border-t border-wink-border px-3 py-2 text-[9px] text-wink-text-dim">
-        <span>⚙️</span>
+        {mounted ? (
+          <button
+            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+            className="rounded-md p-1 text-wink-text-dim transition-colors hover:text-wink-text"
+            aria-label="Toggle theme"
+          >
+            {resolvedTheme === "dark" ? (
+              <Sun className="h-3.5 w-3.5" />
+            ) : (
+              <Moon className="h-3.5 w-3.5" />
+            )}
+          </button>
+        ) : (
+          <span className="h-3.5 w-3.5" />
+        )}
         <span className="flex items-center gap-1">
-          <img src="/megaeth-icon.svg" alt="MegaETH" className="h-3 w-3 invert" />
+          <img src="/megaeth-icon.svg" alt="MegaETH" className="h-3 w-3 dark:invert" />
           MegaETH Testnet
         </span>
       </div>

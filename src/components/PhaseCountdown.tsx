@@ -14,7 +14,7 @@ export function PhaseCountdown({ countdownNum, challenge, stake }: PhaseCountdow
       </div>
       <div
         className="font-mono text-[140px] font-black leading-none text-wink-pink animate-[count-boom_1s_ease_infinite]"
-        style={{ textShadow: "0 0 60px rgba(255,60,144,0.4)" }}
+        style={{ textShadow: "0 0 60px var(--glow-pink)" }}
       >
         {countdownNum}
       </div>

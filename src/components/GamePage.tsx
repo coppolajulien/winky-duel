@@ -51,7 +51,7 @@ export default function GamePage() {
   }, [reset, resetToasts]);
 
   return (
-    <div className="flex h-screen overflow-hidden font-sans text-white">
+    <div className="flex h-screen overflow-hidden font-sans text-foreground">
       {/* Hidden video element for camera */}
       <video
         ref={videoRef}

@@ -10,7 +10,7 @@ export function Leaderboard() {
   return (
     <div className="animate-[fade-in_0.3s_ease]">
       {/* Prize pool */}
-      <div className="mb-2 rounded-lg border border-wink-pink/[0.13] bg-gradient-to-br from-wink-pink/[0.08] to-[rgba(200,50,150,0.03)] p-3 text-center">
+      <div className="mb-2 rounded-lg border border-wink-pink/[0.13] bg-gradient-to-br from-wink-pink/[0.08] to-transparent p-3 text-center">
         <div className="mb-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-wink-text-dim">
           Weekly Pool
         </div>

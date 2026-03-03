@@ -10,15 +10,15 @@
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
 
-  /* Custom game colors */
-  --color-wink-pink: #ff3c90;
-  --color-wink-cyan: #00ffc8;
-  --color-wink-orange: #ffaa55;
-  --color-wink-bg: #0d0612;
-  --color-wink-bg-light: #150a1e;
-  --color-wink-border: rgba(255, 100, 180, 0.1);
-  --color-wink-text-dim: rgba(255, 200, 230, 0.35);
-  --color-wink-text: rgba(255, 200, 230, 0.7);
+  /* Custom game colors — reference CSS variables so they switch with theme */
+  --color-wink-pink: var(--wink-pink);
+  --color-wink-cyan: var(--wink-cyan);
+  --color-wink-orange: var(--wink-orange);
+  --color-wink-bg: var(--wink-bg);
+  --color-wink-bg-light: var(--wink-bg-light);
+  --color-wink-border: var(--wink-border);
+  --color-wink-text-dim: var(--wink-text-dim);
+  --color-wink-text: var(--wink-text);
 
   /* shadcn */
   --color-sidebar-ring: var(--sidebar-ring);
@@ -67,41 +67,6 @@
   --animate-pulse-glow: pulse-glow 2s ease infinite;
 }
 
-:root {
-  --radius: 0.625rem;
-  --background: #0d0612;
-  --foreground: #fff;
-  --card: rgba(255, 255, 255, 0.02);
-  --card-foreground: rgba(255, 200, 230, 0.7);
-  --popover: #150a1e;
-  --popover-foreground: #fff;
-  --primary: #ff3c90;
-  --primary-foreground: #fff;
-  --secondary: rgba(255, 255, 255, 0.02);
-  --secondary-foreground: rgba(255, 200, 230, 0.35);
-  --muted: rgba(255, 255, 255, 0.02);
-  --muted-foreground: rgba(255, 200, 230, 0.35);
-  --accent: rgba(255, 60, 144, 0.08);
-  --accent-foreground: #ff3c90;
-  --destructive: #ff3c60;
-  --border: rgba(255, 100, 180, 0.1);
-  --input: rgba(255, 100, 180, 0.1);
-  --ring: #ff3c90;
-  --chart-1: #ff3c90;
-  --chart-2: #00ffc8;
-  --chart-3: #ffaa55;
-  --chart-4: #c840e9;
-  --chart-5: #ff7090;
-  --sidebar: rgba(13, 6, 18, 0.95);
-  --sidebar-foreground: rgba(255, 200, 230, 0.7);
-  --sidebar-primary: #ff3c90;
-  --sidebar-primary-foreground: #fff;
-  --sidebar-accent: rgba(255, 60, 144, 0.08);
-  --sidebar-accent-foreground: #ff3c90;
-  --sidebar-border: rgba(255, 100, 180, 0.1);
-  --sidebar-ring: #ff3c90;
-}
-
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -144,6 +109,127 @@
     @apply bg-wink-bg text-foreground;
     overflow: hidden;
   }
+
+  /* ===== LIGHT MODE (MegaETH official colors) ===== */
+  :root {
+    --radius: 0.625rem;
+
+    /* wink-* system */
+    --wink-pink: #FF8AA8;
+    --wink-cyan: #6DD0A9;
+    --wink-orange: #F5AF94;
+    --wink-bg: #ECE8E8;
+    --wink-bg-light: #DFD9D9;
+    --wink-text: rgba(25, 25, 26, 0.85);
+    --wink-text-dim: rgba(25, 25, 26, 0.5);
+    --wink-border: rgba(25, 25, 26, 0.1);
+
+    /* shadcn */
+    --background: #ECE8E8;
+    --foreground: #19191A;
+    --card: rgba(255, 255, 255, 0.6);
+    --card-foreground: rgba(25, 25, 26, 0.85);
+    --popover: #DFD9D9;
+    --popover-foreground: #19191A;
+    --primary: #FF8AA8;
+    --primary-foreground: #19191A;
+    --secondary: rgba(25, 25, 26, 0.05);
+    --secondary-foreground: rgba(25, 25, 26, 0.5);
+    --muted: rgba(25, 25, 26, 0.05);
+    --muted-foreground: rgba(25, 25, 26, 0.5);
+    --accent: rgba(255, 138, 168, 0.1);
+    --accent-foreground: #FF8AA8;
+    --destructive: #e53e3e;
+    --border: rgba(25, 25, 26, 0.1);
+    --input: rgba(25, 25, 26, 0.1);
+    --ring: #FF8AA8;
+    --chart-1: #FF8AA8;
+    --chart-2: #6DD0A9;
+    --chart-3: #F5AF94;
+    --chart-4: #F786C6;
+    --chart-5: #F5949D;
+    --sidebar: rgba(236, 232, 232, 0.95);
+    --sidebar-foreground: rgba(25, 25, 26, 0.85);
+    --sidebar-primary: #FF8AA8;
+    --sidebar-primary-foreground: #19191A;
+    --sidebar-accent: rgba(255, 138, 168, 0.1);
+    --sidebar-accent-foreground: #FF8AA8;
+    --sidebar-border: rgba(25, 25, 26, 0.1);
+    --sidebar-ring: #FF8AA8;
+
+    /* Canvas & gradient helpers */
+    --canvas-bg-1: #ECE8E8;
+    --canvas-bg-2: #DFD9D9;
+    --canvas-grid-stroke: rgba(25, 25, 26, 0.04);
+    --canvas-grid-dot: 25, 25, 26;
+    --canvas-mesh-bg: #DFD9D9;
+    --canvas-mesh-noface: rgba(25, 25, 26, 0.2);
+    --wink-pink-darker: #e0708e;
+    --toast-pending-bg: rgba(223, 217, 217, 0.9);
+    --toast-confirmed-from: #F786C6;
+    --glass-bg: rgba(255, 255, 255, 0.3);
+    --glow-pink: rgba(255, 138, 168, 0.4);
+    --blink-shadow: rgba(255, 138, 168, 0.3);
+    --idle-shadow: rgba(255, 138, 168, 0.08);
+  }
+
+  /* ===== DARK MODE (Euphoria — current theme, unchanged) ===== */
+  .dark {
+    --wink-pink: #ff3c90;
+    --wink-cyan: #00ffc8;
+    --wink-orange: #ffaa55;
+    --wink-bg: #0d0612;
+    --wink-bg-light: #150a1e;
+    --wink-text: rgba(255, 200, 230, 0.7);
+    --wink-text-dim: rgba(255, 200, 230, 0.35);
+    --wink-border: rgba(255, 100, 180, 0.1);
+
+    --background: #0d0612;
+    --foreground: #fff;
+    --card: rgba(255, 255, 255, 0.02);
+    --card-foreground: rgba(255, 200, 230, 0.7);
+    --popover: #150a1e;
+    --popover-foreground: #fff;
+    --primary: #ff3c90;
+    --primary-foreground: #fff;
+    --secondary: rgba(255, 255, 255, 0.02);
+    --secondary-foreground: rgba(255, 200, 230, 0.35);
+    --muted: rgba(255, 255, 255, 0.02);
+    --muted-foreground: rgba(255, 200, 230, 0.35);
+    --accent: rgba(255, 60, 144, 0.08);
+    --accent-foreground: #ff3c90;
+    --destructive: #ff3c60;
+    --border: rgba(255, 100, 180, 0.1);
+    --input: rgba(255, 100, 180, 0.1);
+    --ring: #ff3c90;
+    --chart-1: #ff3c90;
+    --chart-2: #00ffc8;
+    --chart-3: #ffaa55;
+    --chart-4: #c840e9;
+    --chart-5: #ff7090;
+    --sidebar: rgba(13, 6, 18, 0.95);
+    --sidebar-foreground: rgba(255, 200, 230, 0.7);
+    --sidebar-primary: #ff3c90;
+    --sidebar-primary-foreground: #fff;
+    --sidebar-accent: rgba(255, 60, 144, 0.08);
+    --sidebar-accent-foreground: #ff3c90;
+    --sidebar-border: rgba(255, 100, 180, 0.1);
+    --sidebar-ring: #ff3c90;
+
+    --canvas-bg-1: #0d0612;
+    --canvas-bg-2: #150a1e;
+    --canvas-grid-stroke: rgba(255, 80, 160, 0.02);
+    --canvas-grid-dot: 255, 100, 180;
+    --canvas-mesh-bg: #08040e;
+    --canvas-mesh-noface: rgba(255, 200, 230, 0.1);
+    --wink-pink-darker: #cc2070;
+    --toast-pending-bg: rgba(20, 12, 30, 0.9);
+    --toast-confirmed-from: #c840e9;
+    --glass-bg: rgba(0, 0, 0, 0.3);
+    --glow-pink: rgba(255, 60, 144, 0.4);
+    --blink-shadow: rgba(255, 60, 100, 0.3);
+    --idle-shadow: rgba(255, 60, 144, 0.06);
+  }
 }
 
 /* Custom scrollbar */
@@ -151,6 +237,6 @@
   width: 3px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 100, 180, 0.15);
+  background: var(--wink-border);
   border-radius: 3px;
 }

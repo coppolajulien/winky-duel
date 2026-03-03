@@ -5,7 +5,7 @@
 | Phase | Statut | Description |
 |---|---|---|
 | Phase 1 — Frontend | ✅ Terminé | UI complète, blink detection, game loop, mock data |
-| Phase 2 — Smart Contract | ⬜ À faire | Solidity escrow + duels sur MegaETH |
+| Phase 2 — Smart Contract | ✅ Terminé | WinkyDuel.sol — escrow + duels + 42 tests passing |
 | Phase 3 — Wallet Auth | ⬜ À faire | Privy login + Pimlico gasless |
 | Phase 4 — Intégration | ⬜ À faire | Connecter frontend ↔ blockchain |
 | Phase 5 — Real-time | ⬜ À faire | WebSockets live feed + leaderboard on-chain |
@@ -20,11 +20,14 @@ Smart contract sur MegaETH pour gérer les duels et l'escrow des mises.
 
 ### Tâches
 
-- [ ] Installer Hardhat dans le projet
+- [x] Installer Hardhat dans le projet
   ```
   winky-duel/
   └── contracts/
       ├── hardhat.config.ts
+      ├── package.json
+      ├── tsconfig.json
+      ├── .env.example
       ├── contracts/
       │   └── WinkyDuel.sol
       ├── scripts/
@@ -33,24 +36,30 @@ Smart contract sur MegaETH pour gérer les duels et l'escrow des mises.
           └── WinkyDuel.test.ts
   ```
 
-- [ ] Écrire `WinkyDuel.sol`
-  - `createDuel(uint256 score)` — créer un duel avec stake (ETH envoyé)
-  - `challengeDuel(uint256 duelId, uint256 score)` — challenger (même stake)
-  - `settleDuel(uint256 duelId)` — comparer scores, envoyer gains (95%)
-  - `recordBlink(uint256 duelId)` — enregistrer chaque blink on-chain
-  - `getOpenDuels()` — lister les duels ouverts
-  - Events: `DuelCreated`, `DuelChallenged`, `DuelSettled`, `BlinkRecorded`
+- [x] Écrire `WinkyDuel.sol`
+  - `createDuel(uint32 score)` payable — créer un duel avec stake + score
+  - `challengeDuel(uint256 duelId, uint32 score)` payable — challenge + auto-settlement
+  - `cancelDuel(uint256 duelId)` — créateur annule, récupère sa mise
+  - `recordBlink(uint256 duelId)` — event-only (pas de SSTORE, économise gas)
+  - `getOpenDuels()` / `getDuel()` — lire les duels
+  - `withdrawRake()` — owner retire les 5% de commission
+  - Events: `DuelCreated`, `DuelSettled`, `DuelCancelled`, `BlinkRecorded`, `RakeWithdrawn`
 
-- [ ] Écrire les tests (Hardhat + Chai)
+- [x] Écrire les tests (Hardhat + Chai) — **42 tests passing**
   - Création de duel avec stake
-  - Challenge avec score supérieur → gagnant reçoit 95%
-  - Challenge avec score inférieur → perdant perd sa mise
-  - Settlement automatique
-  - Edge cases (même score, duel déjà settled, mauvais stake)
+  - Challenge gagnant → challenger gagne 95%
+  - Challenge perdant → creator gagne 95%
+  - Égalité → les deux récupèrent leur mise (pas de rake)
+  - Cancel → creator récupère sa mise
+  - Edge cases (même score, duel déjà settled, mauvais stake, duel inexistant, self-challenge)
+  - recordBlink event
+  - getOpenDuels swap-and-pop correctness
+  - withdrawRake + ownership
 
-- [ ] Déployer sur MegaETH Testnet
-  - Obtenir des tokens testnet MegaETH
-  - Script de déploiement Hardhat
+- [ ] Déployer sur MegaETH Testnet (Chain ID 6343)
+  - Obtenir des tokens testnet via https://docs.megaeth.com/faucet
+  - `npm run deploy:megaeth` depuis contracts/
+  - Vérifier sur https://megaeth-testnet-v2.blockscout.com/
 
 ### Inspiré de winky-starkzap
 Le contract Cairo de ton pote est ultra simple (`record_blink` + compteur). Le nôtre est plus complexe car il gère l'**escrow** des mises et le **settlement** automatique des duels.

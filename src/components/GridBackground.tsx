@@ -1,9 +1,13 @@
 "use client";
 
 import { useRef, useEffect, type ReactNode } from "react";
+import { useThemeColors, type ThemeColors } from "@/lib/theme";
 
 export function GridBackground({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const colors = useThemeColors();
+  const colorsRef = useRef<ThemeColors>(colors);
+  colorsRef.current = colors;
 
   useEffect(() => {
     const c = ref.current;
@@ -24,16 +28,17 @@ export function GridBackground({ children }: { children: ReactNode }) {
     window.addEventListener("resize", resize);
 
     const draw = () => {
+      const cl = colorsRef.current;
       t += 0.001;
       const bg = ctx.createLinearGradient(0, 0, c.width, c.height);
-      bg.addColorStop(0, "#0d0612");
-      bg.addColorStop(0.5, "#150a1e");
-      bg.addColorStop(1, "#0d0612");
+      bg.addColorStop(0, cl.canvasBg1);
+      bg.addColorStop(0.5, cl.canvasBg2);
+      bg.addColorStop(1, cl.canvasBg1);
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, c.width, c.height);
 
       const gap = 70;
-      ctx.strokeStyle = "rgba(255,80,160,0.02)";
+      ctx.strokeStyle = cl.canvasGridStroke;
       ctx.lineWidth = 0.5;
       for (let x = gap; x < c.width; x += gap) {
         ctx.beginPath();
@@ -52,7 +57,7 @@ export function GridBackground({ children }: { children: ReactNode }) {
         for (let y = gap; y < c.height; y += gap) {
           ctx.beginPath();
           ctx.arc(x, y, 1.2, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255,100,180,${0.2 + 0.1 * Math.sin(t * 2 + x * 0.008 + y * 0.008)})`;
+          ctx.fillStyle = `rgba(${cl.canvasGridDot},${0.2 + 0.1 * Math.sin(t * 2 + x * 0.008 + y * 0.008)})`;
           ctx.fill();
         }
       }

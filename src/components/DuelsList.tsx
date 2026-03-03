@@ -25,7 +25,7 @@ export function DuelsList({
   return (
     <div className="animate-[fade-in_0.3s_ease] flex flex-col gap-2">
       {/* Box 1: New Duel */}
-      <div className="rounded-lg border border-wink-border bg-white/[0.02] p-3">
+      <div className="rounded-lg border border-wink-border bg-card p-3">
         <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-wink-text">
           New Duel
         </h2>
@@ -47,7 +47,7 @@ export function DuelsList({
         </div>
         <Button
           onClick={() => onLaunch(null)}
-          className="w-full bg-gradient-to-br from-wink-pink to-[#cc2070] text-[11px] font-bold text-white hover:brightness-110"
+          className="w-full bg-gradient-to-br from-wink-pink to-[var(--wink-pink-darker)] text-[11px] font-bold text-white hover:brightness-110"
           size="sm"
         >
           ⚡ Create & Play
@@ -55,7 +55,7 @@ export function DuelsList({
       </div>
 
       {/* Box 2: Engage in a battle */}
-      <div className="rounded-lg border border-wink-border bg-white/[0.02] p-3">
+      <div className="rounded-lg border border-wink-border bg-card p-3">
         <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-wink-text">
           Engage in a battle
         </h2>
@@ -83,7 +83,7 @@ export function DuelsList({
             <div
               key={d.id}
               onClick={() => onLaunch(d)}
-              className="group flex cursor-pointer items-center gap-1.5 rounded-lg border border-wink-border bg-white/[0.02] px-2.5 py-2 transition-all hover:border-wink-pink/30"
+              className="group flex cursor-pointer items-center gap-1.5 rounded-lg border border-wink-border bg-card px-2.5 py-2 transition-all hover:border-wink-pink/30"
             >
               <div className="flex-1">
                 <div className="font-mono text-[10px] text-wink-text">

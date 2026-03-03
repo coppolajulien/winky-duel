@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { P } from "@/lib/theme";
+import { useThemeColors } from "@/lib/theme";
 import type { ChartPoint } from "@/lib/types";
 
 interface BlinkChartProps {
@@ -17,6 +17,8 @@ interface BlinkChartProps {
 }
 
 export function BlinkChart({ data, hasTarget }: BlinkChartProps) {
+  const colors = useThemeColors();
+
   return (
     <div className="relative h-full w-full">
       {/* Legend */}
@@ -37,14 +39,14 @@ export function BlinkChart({ data, hasTarget }: BlinkChartProps) {
         <AreaChart data={data} margin={{ top: 24, right: 0, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="gradientPink" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={P.pink} stopOpacity={0.35} />
-              <stop offset="60%" stopColor={P.pink} stopOpacity={0.08} />
-              <stop offset="100%" stopColor={P.pink} stopOpacity={0} />
+              <stop offset="0%" stopColor={colors.pink} stopOpacity={0.35} />
+              <stop offset="60%" stopColor={colors.pink} stopOpacity={0.08} />
+              <stop offset="100%" stopColor={colors.pink} stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid
             strokeDasharray="0"
-            stroke="rgba(255,100,180,0.03)"
+            stroke={colors.canvasGridStroke}
             vertical={false}
           />
           <XAxis dataKey="t" hide />
@@ -52,7 +54,7 @@ export function BlinkChart({ data, hasTarget }: BlinkChartProps) {
           <Area
             type="monotone"
             dataKey="you"
-            stroke={P.pink}
+            stroke={colors.pink}
             strokeWidth={2.5}
             fill="url(#gradientPink)"
             dot={false}
@@ -62,7 +64,7 @@ export function BlinkChart({ data, hasTarget }: BlinkChartProps) {
             <Area
               type="monotone"
               dataKey="target"
-              stroke={P.orange}
+              stroke={colors.orange}
               strokeWidth={1.5}
               fill="none"
               dot={false}

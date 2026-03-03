@@ -35,8 +35,8 @@ export function TxToast({ tx, onDone }: TxToastProps) {
       className={cn(
         "flex items-center gap-2.5 rounded-full px-4 py-2.5 font-mono text-[13px] font-semibold whitespace-nowrap transition-all duration-300",
         confirmed
-          ? "bg-gradient-to-br from-[#c840e9] to-wink-pink text-white shadow-[0_4px_20px_rgba(200,64,233,0.3),0_0_40px_rgba(255,60,144,0.15)]"
-          : "border border-wink-border bg-[rgba(20,12,30,0.9)] text-wink-text-dim shadow-[0_4px_16px_rgba(0,0,0,0.4)] backdrop-blur-[16px]"
+          ? "bg-gradient-to-br from-[var(--toast-confirmed-from)] to-wink-pink text-white shadow-[0_4px_20px_var(--glow-pink)]"
+          : "border border-wink-border bg-[var(--toast-pending-bg)] text-wink-text-dim shadow-[0_4px_16px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
       )}
       style={{
         opacity: vis ? 1 : 0,

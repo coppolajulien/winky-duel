@@ -4,6 +4,7 @@ import { useRef, useState, useCallback, useEffect, type MutableRefObject } from 
 import { computeEAR } from "@/lib/blinkDetection";
 import { drawMesh } from "@/lib/drawMesh";
 import { L_EYE, R_EYE, EAR_THRESHOLD } from "@/lib/faceMeshData";
+import { useThemeColors, type ThemeColors } from "@/lib/theme";
 
 interface UseBlinkDetectorOptions {
   onBlinkRef: MutableRefObject<(() => void) | null>;
@@ -21,6 +22,9 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   const lastTimestampRef = useRef(0);
   const warmedUpRef = useRef(false);
   const [cameraStatus, setCameraStatus] = useState<"idle" | "loading" | "ready" | "denied">("idle");
+  const themeColors = useThemeColors();
+  const themeColorsRef = useRef<ThemeColors>(themeColors);
+  themeColorsRef.current = themeColors;
 
   // Suppress TensorFlow Lite INFO logs that Next.js dev overlay treats as errors
   useEffect(() => {
@@ -84,7 +88,7 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
 
       // Skip detection until warmup is done
       if (!warmedUpRef.current) {
-        drawMesh(ctx, null, cv.width, cv.height, 0);
+        drawMesh(ctx, null, cv.width, cv.height, 0, themeColorsRef.current);
         animRef.current = requestAnimationFrame(detect);
         return;
       }
@@ -110,9 +114,9 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
         }
 
         if (flashRef.current > 0) flashRef.current--;
-        drawMesh(ctx, landmarks, cv.width, cv.height, flashRef.current / 10);
+        drawMesh(ctx, landmarks, cv.width, cv.height, flashRef.current / 10, themeColorsRef.current);
       } else {
-        drawMesh(ctx, null, cv.width, cv.height, 0);
+        drawMesh(ctx, null, cv.width, cv.height, 0, themeColorsRef.current);
       }
 
       animRef.current = requestAnimationFrame(detect);
