@@ -45,8 +45,8 @@ Smart contract sur MegaETH pour gérer les duels et l'escrow des mises.
   - `withdrawRake()` — owner retire les 5% de commission
   - Events: `DuelCreated`, `DuelSettled`, `DuelCancelled`, `BlinkRecorded`, `RakeWithdrawn`
 
-- [x] Écrire les tests (Hardhat + Chai) — **42 tests passing**
-  - Création de duel avec stake
+- [x] Écrire les tests (Hardhat + Chai) — **46 tests passing**
+  - Création de duel avec stake USDM
   - Challenge gagnant → challenger gagne 95%
   - Challenge perdant → creator gagne 95%
   - Égalité → les deux récupèrent leur mise (pas de rake)
@@ -55,11 +55,12 @@ Smart contract sur MegaETH pour gérer les duels et l'escrow des mises.
   - recordBlink event
   - getOpenDuels swap-and-pop correctness
   - withdrawRake + ownership
+  - USDM balance consistency
 
-- [ ] Déployer sur MegaETH Testnet (Chain ID 6343)
-  - Obtenir des tokens testnet via https://docs.megaeth.com/faucet
-  - `npm run deploy:megaeth` depuis contracts/
-  - Vérifier sur https://megaeth-testnet-v2.blockscout.com/
+- [x] Déployer sur MegaETH Testnet (Chain ID 6343)
+  - **WinkyDuel** : `0x558aB486A0FfA1f4Aa52DeFb9e0d9E03e3CD6F3a`
+  - **MockUSDM** : `0x8A017435e8dD3aeCA65a1eA4411eD81b9302Ae9C`
+  - Explorer : https://megaeth-testnet-v2.blockscout.com/address/0x558aB486A0FfA1f4Aa52DeFb9e0d9E03e3CD6F3a
 
 ### Inspiré de winky-starkzap
 Le contract Cairo de ton pote est ultra simple (`record_blink` + compteur). Le nôtre est plus complexe car il gère l'**escrow** des mises et le **settlement** automatique des duels.
