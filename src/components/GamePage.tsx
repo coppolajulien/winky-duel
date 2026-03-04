@@ -123,6 +123,9 @@ export default function GamePage() {
           {phase === "idle" && cameraStatus !== "denied" && <PhaseIdle />}
           {phase === "approving" && (
             <div className="flex flex-1 animate-[fade-in_0.3s_ease] flex-col items-center justify-center gap-4">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-wink-text-dim">
+                Step 1/3 — Approve stake
+              </div>
               <div className="rounded-2xl border border-wink-border bg-[var(--glass-bg)] px-6 py-3 backdrop-blur-[10px]">
                 <span className="font-mono text-[32px] font-extrabold text-wink-pink">
                   ${stake}
@@ -132,6 +135,44 @@ export default function GamePage() {
               <div className="flex items-center gap-2">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-wink-pink border-t-transparent" />
                 <span className="text-sm text-wink-text-dim">Confirm in your wallet…</span>
+              </div>
+            </div>
+          )}
+          {phase === "camera" && (
+            <div className="flex flex-1 animate-[fade-in_0.3s_ease] flex-col items-center justify-center gap-5">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-wink-text-dim">
+                Step 2/3 — Camera setup
+              </div>
+              <div className="relative overflow-hidden rounded-2xl border border-wink-border">
+                <canvas
+                  ref={canvasRef}
+                  width={320}
+                  height={240}
+                  className="block"
+                  style={{ background: "var(--canvas-mesh-bg)" }}
+                />
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                {cameraStatus === "loading" && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-wink-cyan border-t-transparent" />
+                      <span className="text-sm text-wink-text-dim">Loading camera…</span>
+                    </div>
+                    <p className="max-w-xs text-center text-[11px] text-wink-text-dim">
+                      We need your camera to detect blinks. Nothing is recorded or shared.
+                    </p>
+                  </>
+                )}
+                {cameraStatus === "ready" && (
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 animate-pulse rounded-full bg-wink-cyan" />
+                    <span className="text-sm font-semibold text-wink-cyan">Face detected — starting…</span>
+                  </div>
+                )}
+                {cameraStatus === "denied" && (
+                  <span className="text-sm text-red-400">Camera access denied. Please allow camera in your browser settings.</span>
+                )}
               </div>
             </div>
           )}

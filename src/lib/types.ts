@@ -1,4 +1,4 @@
-export type GamePhase = "idle" | "approving" | "countdown" | "playing" | "submitting" | "result";
+export type GamePhase = "idle" | "approving" | "camera" | "countdown" | "playing" | "submitting" | "result";
 
 // ─── On-chain types ─────────────────────────────────────────────
 

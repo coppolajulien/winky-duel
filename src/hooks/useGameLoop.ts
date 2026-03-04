@@ -184,7 +184,7 @@ export function useGameLoop({
       setChallenge(duel);
       if (duel) setStake(duel.stake);
 
-      // Phase "approving" — Privy popup opens here
+      // ── Step 1: Approve USDM via Privy ──
       setPhase("approving");
 
       const stakeAmount = duel
@@ -200,9 +200,8 @@ export function useGameLoop({
         return;
       }
 
-      // Approval done → init camera
-      setPhase("countdown");
-      setCountdownNum(3);
+      // ── Step 2: Camera access + face detection ──
+      setPhase("camera");
 
       const cameraOk = await initCamera();
       if (!cameraOk) {
@@ -210,7 +209,8 @@ export function useGameLoop({
         return;
       }
 
-      // Countdown 3-2-1
+      // ── Step 3: Countdown 3-2-1 ──
+      setPhase("countdown");
       let c = 3;
       setCountdownNum(3);
       const iv = setInterval(() => {
