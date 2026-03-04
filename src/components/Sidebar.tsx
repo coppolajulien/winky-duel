@@ -117,9 +117,10 @@ export function Sidebar({
           <div className="mt-2 flex items-center justify-between">
             <button
               onClick={copyAddress}
-              className="flex items-center gap-1.5 text-[10px] text-wink-text-dim transition-colors hover:text-wink-text"
+              className="flex items-center gap-1 text-[10px] text-wink-text-dim transition-colors hover:text-wink-text"
             >
               <span>My wallet</span>
+              <span className="font-mono text-[9px]">{shortAddress}</span>
               {copied ? (
                 <Check className="h-3 w-3 text-wink-cyan" />
               ) : (
