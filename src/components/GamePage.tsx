@@ -45,6 +45,7 @@ export default function GamePage() {
     myBlinking,
     overtook,
     result,
+    approvalStatus,
     launch,
     reset,
     doBlink,
@@ -142,6 +143,7 @@ export default function GamePage() {
               countdownNum={countdownNum}
               challenge={challenge}
               stake={stake}
+              approvalStatus={approvalStatus}
             />
           )}
           {phase === "playing" && (

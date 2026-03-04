@@ -22,6 +22,8 @@ interface UseGameLoopOptions {
   refreshBalance: () => Promise<void>;
 }
 
+export type ApprovalStatus = "idle" | "approving" | "approved" | "failed";
+
 export function useGameLoop({
   addTx,
   initCamera,
@@ -41,6 +43,7 @@ export function useGameLoop({
   const [myBlinking, setMyBlinking] = useState(false);
   const [overtook, setOvertook] = useState(false);
   const [result, setResult] = useState<GameResult | null>(null);
+  const [approvalStatus, setApprovalStatus] = useState<ApprovalStatus>("idle");
 
   const myScoreRef = useRef(0);
   const chartRef = useRef<ChartPoint[]>([]);
@@ -185,29 +188,37 @@ export function useGameLoop({
       if (duel) setStake(duel.stake);
       setPhase("countdown");
       setCountdownNum(3);
+      setApprovalStatus("approving");
 
-      // Start camera init and USDM approval in parallel
+      // Step 1: Camera + USDM approval — wait for BOTH before countdown
       const stakeAmount = duel
         ? duel.stakeRaw
         : parseUnits(String(stakeRef.current), 18);
 
+      let approvalOk = false;
       const [cameraOk] = await Promise.all([
         initCamera(),
-        // Pre-approve USDM during countdown
         contractActions.ensureAllowance(stakeAmount).then((hash) => {
           if (hash) addTx(hash, "Approve USDM");
+          setApprovalStatus("approved");
+          approvalOk = true;
         }).catch((err) => {
-          console.warn("Pre-approval failed, will retry at submit:", err);
+          console.warn("Approval failed:", err);
+          setApprovalStatus("failed");
         }),
       ]);
 
-      if (!cameraOk) {
+      if (!cameraOk || !approvalOk) {
+        // If approval failed but camera is fine, user rejected in Privy
+        if (!approvalOk) setApprovalStatus("failed");
         setPhase("idle");
+        setApprovalStatus("idle");
         return;
       }
 
-      // Countdown 3-2-1
+      // Step 2: Countdown 3-2-1 starts only after approval
       let c = 3;
+      setCountdownNum(3);
       const iv = setInterval(() => {
         c--;
         if (c <= 0) {
@@ -230,6 +241,7 @@ export function useGameLoop({
     setChartData([]);
     setChallenge(null);
     setResult(null);
+    setApprovalStatus("idle");
     myScoreRef.current = 0;
     chartRef.current = [];
   }, []);
@@ -256,6 +268,7 @@ export function useGameLoop({
     myBlinking,
     overtook,
     result,
+    approvalStatus,
     launch,
     reset,
     doBlink,
