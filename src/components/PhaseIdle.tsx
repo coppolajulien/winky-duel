@@ -3,10 +3,17 @@ export function PhaseIdle() {
     <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center justify-center gap-8">
       {/* Title */}
       <div className="text-center">
-        <img
-          src="/duel.svg"
-          alt="Blinkit duel"
-          className="mx-auto mb-2 h-14 w-14 dark:invert"
+        <span
+          className="mx-auto mb-2 inline-block h-20 w-20"
+          style={{
+            WebkitMaskImage: "url(/duel.svg)",
+            WebkitMaskSize: "contain",
+            WebkitMaskRepeat: "no-repeat",
+            maskImage: "url(/duel.svg)",
+            maskSize: "contain",
+            maskRepeat: "no-repeat",
+            backgroundColor: "var(--wink-text)",
+          }}
         />
         <h2 className="text-2xl font-extrabold text-wink-text">
           Blink the fastest. Win the pot.

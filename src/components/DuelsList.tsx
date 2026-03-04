@@ -146,8 +146,8 @@ export function DuelsList({
                   </div>
                   <div className="text-[9px] text-wink-text-dim">{d.time}</div>
                 </div>
-                <div className="flex items-center gap-0.5 rounded-[5px] bg-wink-orange/[0.08] px-1.5 py-0.5 font-mono text-xs font-bold text-wink-orange">
-                  {d.score}<img src="/duel.svg" alt="" className="h-3 w-3 dark:invert opacity-60" />
+                <div className="rounded-[5px] bg-wink-orange/[0.08] px-1.5 py-0.5 font-mono text-xs font-bold text-wink-orange">
+                  {d.score}👁
                 </div>
                 <div className="font-mono text-[11px] font-bold text-wink-pink">
                   ${d.stake}
@@ -231,7 +231,7 @@ export function DuelsList({
                   {h.status === DuelStatus.Settled && (
                     <div
                       className={cn(
-                        "flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-bold",
+                        "rounded px-1.5 py-0.5 text-[9px] font-bold",
                         h.won === true
                           ? "bg-wink-cyan/10 text-wink-cyan"
                           : h.won === false
@@ -239,11 +239,7 @@ export function DuelsList({
                             : "bg-wink-border text-wink-text-dim"
                       )}
                     >
-                      {h.won === true ? (
-                        <><img src="/victory.svg" alt="" className="h-3 w-3 dark:invert" />WON</>
-                      ) : h.won === false ? (
-                        <><img src="/lost.svg" alt="" className="h-3 w-3 dark:invert" />LOST</>
-                      ) : "DRAW"}
+                      {h.won === true ? "WON" : h.won === false ? "LOST" : "DRAW"}
                     </div>
                   )}
                   {h.status === DuelStatus.Cancelled && (

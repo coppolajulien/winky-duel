@@ -80,12 +80,19 @@ export function Sidebar({
       <div className="border-b border-wink-border px-4 py-3.5">
         <div className="flex items-center justify-between">
           <a href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <img
-              src="/logo-blinkit.svg"
-              alt="Blinkit"
-              className="h-5 w-5 dark:invert opacity-80"
+            <span
+              className="inline-block h-5 w-5"
+              style={{
+                WebkitMaskImage: "url(/logo-blinkit.svg)",
+                WebkitMaskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskImage: "url(/logo-blinkit.svg)",
+                maskSize: "contain",
+                maskRepeat: "no-repeat",
+                backgroundColor: "var(--wink-text)",
+              }}
             />
-            <span className="text-sm font-bold tracking-wide text-wink-text opacity-80">BLINKIT</span>
+            <span className="text-sm font-bold tracking-wide text-wink-text">BLINKIT</span>
           </a>
           <Button
             variant="outline"
