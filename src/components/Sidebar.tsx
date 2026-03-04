@@ -79,12 +79,13 @@ export function Sidebar({
       {/* Header */}
       <div className="border-b border-wink-border px-4 py-3.5">
         <div className="flex items-center justify-between">
-          <a href="/" className="flex items-center transition-opacity hover:opacity-80">
+          <a href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <img
-              src="/logo-blankit.png"
+              src="/logo-blinkit.svg"
               alt="Blinkit"
-              className="h-5 dark:brightness-100 brightness-0"
+              className="h-5 w-5 dark:invert"
             />
+            <span className="text-sm font-bold tracking-wide text-wink-text">BLINKIT</span>
           </a>
           <Button
             variant="outline"
