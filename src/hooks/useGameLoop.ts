@@ -10,14 +10,11 @@ import type { GamePhase, Duel, ChartPoint, GameResult } from "@/lib/types";
 interface ContractActions {
   createDuel: (score: number, stakeUsdm: number) => Promise<`0x${string}`>;
   challengeDuel: (duelId: bigint, score: number, stakeRaw: bigint) => Promise<`0x${string}`>;
-  recordBlink: (duelId: bigint) => Promise<`0x${string}`>;
   ensureAllowance: (amount: bigint) => Promise<`0x${string}` | null>;
-  getNextDuelId: () => Promise<bigint>;
 }
 
 interface UseGameLoopOptions {
   addTx: (hash: `0x${string}`, label?: string) => number;
-  addBlinkTx: (hash: `0x${string}`) => number;
   initCamera: () => Promise<boolean>;
   triggerFlash: () => void;
   contractActions: ContractActions;
@@ -27,7 +24,6 @@ interface UseGameLoopOptions {
 
 export function useGameLoop({
   addTx,
-  addBlinkTx,
   initCamera,
   triggerFlash,
   contractActions,
@@ -51,7 +47,6 @@ export function useGameLoop({
   const chartIvRef = useRef<ReturnType<typeof setInterval>>(null);
   const phaseRef = useRef<GamePhase>("idle");
   const timeLeftRef = useRef(DURATION);
-  const pendingDuelIdRef = useRef<bigint>(0n);
   const challengeRef = useRef<Duel | null>(null);
   const stakeRef = useRef(5);
 
@@ -86,17 +81,7 @@ export function useGameLoop({
     setMyBlinking(true);
     triggerFlash();
     setTimeout(() => setMyBlinking(false), 150);
-
-    // Fire-and-forget recordBlink on-chain
-    const duelId = pendingDuelIdRef.current;
-    contractActions
-      .recordBlink(duelId)
-      .then((hash) => addBlinkTx(hash))
-      .catch((err) => {
-        // Silent failure — recordBlink is cosmetic (event-only)
-        console.warn("recordBlink failed:", err);
-      });
-  }, [contractActions, addBlinkTx, triggerFlash]);
+  }, [triggerFlash]);
 
   const finish = useCallback(async () => {
     setPhase("submitting");
@@ -210,17 +195,6 @@ export function useGameLoop({
       if (!cameraOk) {
         setPhase("idle");
         return;
-      }
-
-      // Read nextDuelId for blink events
-      if (!duel) {
-        try {
-          pendingDuelIdRef.current = await contractActions.getNextDuelId();
-        } catch {
-          pendingDuelIdRef.current = 0n;
-        }
-      } else {
-        pendingDuelIdRef.current = duel.id;
       }
 
       // Countdown 3-2-1

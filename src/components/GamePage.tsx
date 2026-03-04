@@ -20,7 +20,7 @@ export default function GamePage() {
   // Ref-based callback to resolve circular dependency between hooks
   const onBlinkRef = useRef<(() => void) | null>(null);
 
-  const { txToasts, addTx, addBlinkTx, removeTx, resetToasts } = useTxToasts();
+  const { txToasts, addTx, removeTx, resetToasts } = useTxToasts();
   const { videoRef, canvasRef, initCamera, triggerFlash, cameraStatus } = useBlinkDetector({
     onBlinkRef,
   });
@@ -47,15 +47,12 @@ export default function GamePage() {
     doBlink,
   } = useGameLoop({
     addTx,
-    addBlinkTx,
     initCamera,
     triggerFlash,
     contractActions: {
       createDuel: contract.createDuel,
       challengeDuel: contract.challengeDuel,
-      recordBlink: contract.recordBlink,
       ensureAllowance: contract.ensureAllowance,
-      getNextDuelId: contract.getNextDuelId,
     },
     refetchDuels,
     refreshBalance: wallet.refreshBalance,
@@ -108,6 +105,7 @@ export default function GamePage() {
         login={wallet.login}
         logout={wallet.logout}
         shortAddress={wallet.shortAddress}
+        address={wallet.address}
         usdmBalance={wallet.usdmBalance}
         balanceLoading={wallet.balanceLoading}
         duels={duels}

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { Duel } from "@/lib/types";
@@ -19,6 +19,7 @@ interface SidebarProps {
   login: () => void;
   logout: () => Promise<void>;
   shortAddress: string | null;
+  address: string | null;
   usdmBalance: string | null;
   balanceLoading: boolean;
   onLaunch: (duel: Duel | null) => void;
@@ -43,6 +44,7 @@ export function Sidebar({
   login,
   logout,
   shortAddress,
+  address,
   usdmBalance,
   balanceLoading,
   onLaunch,
@@ -54,8 +56,17 @@ export function Sidebar({
   const [tab, setTab] = useState<"duels" | "leaderboard">("duels");
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => setMounted(true), []);
+
+  const copyAddress = useCallback(() => {
+    if (!address) return;
+    navigator.clipboard.writeText(address).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [address]);
 
   const filtered = stakeFilter
     ? duels.filter((d) => d.stake === stakeFilter)
@@ -64,38 +75,65 @@ export function Sidebar({
   return (
     <div className="flex w-[300px] min-w-[300px] flex-col border-r border-wink-border bg-sidebar backdrop-blur-[20px]">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-wink-border px-4 py-3.5">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">👁️</span>
-          <span className="text-[15px] font-extrabold italic text-wink-pink">
-            winky
-          </span>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => (authenticated ? logout() : login())}
-          disabled={!ready}
-          className={cn(
-            "h-7 rounded-2xl px-3 text-[10px] font-semibold",
-            authenticated
-              ? "border-wink-cyan/20 bg-wink-cyan/[0.06] text-wink-cyan"
-              : "border-wink-border bg-card text-wink-text"
-          )}
-        >
-          {authenticated ? (
-            <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-wink-cyan" />
-              {balanceLoading
-                ? "..."
-                : usdmBalance !== null
-                  ? `$${usdmBalance}`
-                  : shortAddress}
+      <div className="border-b border-wink-border px-4 py-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">👁️</span>
+            <span className="text-[15px] font-extrabold italic text-wink-pink">
+              winky
             </span>
-          ) : (
-            "Connect"
-          )}
-        </Button>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => (authenticated ? logout() : login())}
+            disabled={!ready}
+            className={cn(
+              "h-7 rounded-2xl px-3 text-[10px] font-semibold",
+              authenticated
+                ? "border-wink-cyan/20 bg-wink-cyan/[0.06] text-wink-cyan"
+                : "border-wink-border bg-card text-wink-text"
+            )}
+          >
+            {authenticated ? (
+              <span className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-wink-cyan" />
+                {balanceLoading
+                  ? "..."
+                  : usdmBalance !== null
+                    ? `$${usdmBalance}`
+                    : shortAddress}
+              </span>
+            ) : (
+              "Connect"
+            )}
+          </Button>
+        </div>
+
+        {/* Wallet address with copy button */}
+        {authenticated && shortAddress && (
+          <button
+            onClick={copyAddress}
+            className="mt-2 flex w-full items-center justify-between rounded-lg bg-wink-cyan/[0.04] px-3 py-1.5 transition-colors hover:bg-wink-cyan/[0.08]"
+          >
+            <span className="font-mono text-[11px] text-wink-text-dim">
+              {shortAddress}
+            </span>
+            <span className="flex items-center gap-1 text-[9px] text-wink-text-dim">
+              {copied ? (
+                <>
+                  <Check className="h-3 w-3 text-wink-cyan" />
+                  <span className="text-wink-cyan">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3 w-3" />
+                  <span>Copy</span>
+                </>
+              )}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Tab navigation */}
