@@ -55,25 +55,17 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   const detectLoop = useCallback(() => {
     const detect = () => {
       const v = videoRef.current;
-      const cv = canvasRef.current;
       const fl = flRef.current;
 
-      // Wait until video is fully ready with actual pixel data
+      // Video + model must be ready (canvas is optional — detection runs without it)
       if (
         !v ||
-        !cv ||
         !fl ||
         v.paused ||
         v.readyState < 4 ||
         v.videoWidth === 0 ||
         v.videoHeight === 0
       ) {
-        animRef.current = requestAnimationFrame(detect);
-        return;
-      }
-
-      const ctx = cv.getContext("2d");
-      if (!ctx) {
         animRef.current = requestAnimationFrame(detect);
         return;
       }
@@ -86,13 +78,18 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
       }
       lastTimestampRef.current = now;
 
+      // Canvas + context (optional — only needed for mesh drawing)
+      const cv = canvasRef.current;
+      const ctx = cv ? cv.getContext("2d") : null;
+
       // Skip detection until warmup is done
       if (!warmedUpRef.current) {
-        drawMesh(ctx, null, cv.width, cv.height, 0, themeColorsRef.current);
+        if (ctx && cv) drawMesh(ctx, null, cv.width, cv.height, 0, themeColorsRef.current);
         animRef.current = requestAnimationFrame(detect);
         return;
       }
 
+      // Always run face detection — keeps MediaPipe warm even when canvas is absent
       const landmarks = safeDetect(fl, v, now);
 
       if (landmarks) {
@@ -114,8 +111,12 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
         }
 
         if (flashRef.current > 0) flashRef.current--;
-        drawMesh(ctx, landmarks, cv.width, cv.height, flashRef.current / 10, themeColorsRef.current);
-      } else {
+
+        // Draw mesh only when canvas is available
+        if (ctx && cv) {
+          drawMesh(ctx, landmarks, cv.width, cv.height, flashRef.current / 10, themeColorsRef.current);
+        }
+      } else if (ctx && cv) {
         drawMesh(ctx, null, cv.width, cv.height, 0, themeColorsRef.current);
       }
 
