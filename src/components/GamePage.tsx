@@ -161,6 +161,7 @@ export default function GamePage() {
             <PhaseResult
               result={result}
               stake={stake}
+              chartData={chartData}
               onReset={handleReset}
             />
           )}

@@ -1,19 +1,24 @@
 "use client";
 
-import { useCallback } from "react";
+import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import type { GameResult } from "@/lib/types";
+import { Image, Check, Download } from "lucide-react";
+import type { GameResult, ChartPoint } from "@/lib/types";
+import { copyShareCard } from "@/lib/shareCard";
 
 const APP_URL = "https://winky-duel.vercel.app";
 
 interface PhaseResultProps {
   result: GameResult;
   stake: number;
+  chartData: ChartPoint[];
   onReset: () => void;
 }
 
-export function PhaseResult({ result, stake, onReset }: PhaseResultProps) {
+export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultProps) {
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "copied" | "downloaded">("idle");
+
   const shareOnX = useCallback(() => {
     let text: string;
     if (result.isChallenge && result.won) {
@@ -27,6 +32,18 @@ export function PhaseResult({ result, stake, onReset }: PhaseResultProps) {
     const url = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   }, [result, stake]);
+
+  const handleCopyImage = useCallback(async () => {
+    setCopyStatus("copying");
+    try {
+      const status = await copyShareCard(chartData, result, stake);
+      setCopyStatus(status);
+      setTimeout(() => setCopyStatus("idle"), 2500);
+    } catch (err) {
+      console.error("Share card failed:", err);
+      setCopyStatus("idle");
+    }
+  }, [chartData, result, stake]);
   return (
     <div className="flex flex-1 animate-[fade-in_0.4s_ease] flex-col items-center justify-center p-5">
       {/* Emoji */}
@@ -88,12 +105,37 @@ export function PhaseResult({ result, stake, onReset }: PhaseResultProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap justify-center gap-2">
         <Button
           onClick={onReset}
           className="bg-gradient-to-br from-wink-pink to-[var(--wink-pink-darker)] text-white hover:brightness-110"
         >
           ⚔️ Again
+        </Button>
+        <Button
+          onClick={handleCopyImage}
+          disabled={copyStatus === "copying"}
+          variant="outline"
+          className="border-wink-cyan/30 bg-wink-cyan/[0.06] text-wink-cyan hover:bg-wink-cyan/[0.12]"
+        >
+          {copyStatus === "copying" ? (
+            "Generating..."
+          ) : copyStatus === "copied" ? (
+            <span className="flex items-center gap-1.5">
+              <Check className="h-3.5 w-3.5" />
+              Copied!
+            </span>
+          ) : copyStatus === "downloaded" ? (
+            <span className="flex items-center gap-1.5">
+              <Download className="h-3.5 w-3.5" />
+              Downloaded!
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5">
+              <Image className="h-3.5 w-3.5" />
+              Copy Image
+            </span>
+          )}
         </Button>
         <Button
           onClick={shareOnX}
