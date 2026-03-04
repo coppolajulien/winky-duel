@@ -1,8 +1,11 @@
 "use client";
 
+import { useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { GameResult } from "@/lib/types";
+
+const APP_URL = "https://winky-duel.vercel.app";
 
 interface PhaseResultProps {
   result: GameResult;
@@ -11,6 +14,19 @@ interface PhaseResultProps {
 }
 
 export function PhaseResult({ result, stake, onReset }: PhaseResultProps) {
+  const shareOnX = useCallback(() => {
+    let text: string;
+    if (result.isChallenge && result.won) {
+      text = `👁️ I just won a Winky Duel!\n\n${result.my} vs ${result.target} blinks — earned $${(stake * 2 * 0.95 - stake).toFixed(0)} USDM 💰\n\nThink you can blink faster? 👀`;
+    } else if (result.isChallenge && !result.won) {
+      text = `👁️ Lost a Winky Duel... ${result.my} vs ${result.target} blinks 💀\n\nI need a rematch! Can you beat ${result.target} blinks?`;
+    } else {
+      text = `👁️ I just scored ${result.my} blinks in a Winky Duel!\n\nStaked $${stake} USDM — who dares to challenge me? ⚔️`;
+    }
+    text += `\n\n${APP_URL}`;
+    const url = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  }, [result, stake]);
   return (
     <div className="flex flex-1 animate-[fade-in_0.4s_ease] flex-col items-center justify-center p-5">
       {/* Emoji */}
@@ -78,6 +94,15 @@ export function PhaseResult({ result, stake, onReset }: PhaseResultProps) {
           className="bg-gradient-to-br from-wink-pink to-[var(--wink-pink-darker)] text-white hover:brightness-110"
         >
           ⚔️ Again
+        </Button>
+        <Button
+          onClick={shareOnX}
+          className="bg-black text-white hover:bg-black/80"
+        >
+          <svg className="mr-1.5 h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          </svg>
+          Share
         </Button>
         <Button
           variant="outline"

@@ -77,12 +77,12 @@ export function Sidebar({
       {/* Header */}
       <div className="border-b border-wink-border px-4 py-3.5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <a href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <span className="text-lg">👁️</span>
             <span className="text-[15px] font-extrabold italic text-wink-pink">
               winky
             </span>
-          </div>
+          </a>
           <Button
             variant="outline"
             size="sm"
@@ -117,7 +117,7 @@ export function Sidebar({
             className="mt-2 flex w-full items-center justify-between rounded-lg bg-wink-cyan/[0.04] px-3 py-1.5 transition-colors hover:bg-wink-cyan/[0.08]"
           >
             <span className="font-mono text-[11px] text-wink-text-dim">
-              {shortAddress}
+              <span className="text-[9px] text-wink-text-dim/60">My wallet: </span>{shortAddress}
             </span>
             <span className="flex items-center gap-1 text-[9px] text-wink-text-dim">
               {copied ? (
