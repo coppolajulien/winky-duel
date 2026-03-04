@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useTxToasts } from "@/hooks/useTxToasts";
 import { useBlinkDetector } from "@/hooks/useBlinkDetector";
 import { useGameLoop } from "@/hooks/useGameLoop";
@@ -15,6 +15,7 @@ import { PhaseCountdown } from "./PhaseCountdown";
 import { PhasePlaying } from "./PhasePlaying";
 import { PhaseSubmitting } from "./PhaseSubmitting";
 import { PhaseResult } from "./PhaseResult";
+import { SendModal } from "./SendModal";
 
 export default function GamePage() {
   // Ref-based callback to resolve circular dependency between hooks
@@ -28,6 +29,7 @@ export default function GamePage() {
   const wallet = useWallet();
   const contract = useContract();
   const { duels, loading: duelsLoading, refetchDuels } = useDuels();
+  const [sendModalOpen, setSendModalOpen] = useState(false);
 
   const {
     phase,
@@ -112,6 +114,7 @@ export default function GamePage() {
         duelsLoading={duelsLoading}
         currentAddress={(wallet.address as `0x${string}`) ?? null}
         onCancel={handleCancel}
+        onOpenSend={() => setSendModalOpen(true)}
         onLaunch={(duel) => {
           resetToasts();
           launch(duel);
@@ -163,6 +166,15 @@ export default function GamePage() {
           )}
         </div>
       </GridBackground>
+
+      {/* Send USDM Modal */}
+      <SendModal
+        isOpen={sendModalOpen}
+        onClose={() => setSendModalOpen(false)}
+        usdmBalance={wallet.usdmBalance}
+        transferUSDM={contract.transferUSDM}
+        refreshBalance={wallet.refreshBalance}
+      />
     </div>
   );
 }

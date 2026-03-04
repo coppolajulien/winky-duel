@@ -10,6 +10,20 @@ import {
   ERC20_ABI,
 } from "@/lib/constants";
 
+// ERC-20 transfer ABI (separate from the approve/allowance ABI)
+const ERC20_TRANSFER_ABI = [
+  {
+    name: "transfer",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "to", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+  },
+] as const;
+
 // MegaETH has ~60K intrinsic gas — explicit limits to avoid estimation issues
 const GAS_LIMITS = {
   approve: 150_000n,
@@ -17,6 +31,7 @@ const GAS_LIMITS = {
   challengeDuel: 400_000n,
   cancelDuel: 250_000n,
   recordBlink: 150_000n,
+  transfer: 150_000n,
 } as const;
 
 export function useContract() {
@@ -136,6 +151,21 @@ export function useContract() {
     });
   }, []);
 
+  /** Transfer USDM to another address. Returns TX hash. */
+  const transferUSDM = useCallback(
+    async (to: `0x${string}`, amount: bigint): Promise<`0x${string}`> => {
+      const wc = await getWalletClient();
+      return wc.writeContract({
+        address: MOCK_USDM_ADDRESS,
+        abi: ERC20_TRANSFER_ABI,
+        functionName: "transfer",
+        args: [to, amount],
+        gas: GAS_LIMITS.transfer,
+      });
+    },
+    [getWalletClient]
+  );
+
   return {
     checkAllowance,
     approveUSDM,
@@ -145,5 +175,6 @@ export function useContract() {
     cancelDuel,
     recordBlink,
     getNextDuelId,
+    transferUSDM,
   };
 }

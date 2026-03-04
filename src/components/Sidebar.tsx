@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Copy, Check } from "lucide-react";
+import { Sun, Moon, Copy, Check, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { Duel } from "@/lib/types";
@@ -27,6 +27,7 @@ interface SidebarProps {
   duelsLoading: boolean;
   currentAddress: `0x${string}` | null;
   onCancel?: (duel: Duel) => void;
+  onOpenSend?: () => void;
 }
 
 const TABS = [
@@ -52,6 +53,7 @@ export function Sidebar({
   duelsLoading,
   currentAddress,
   onCancel,
+  onOpenSend,
 }: SidebarProps) {
   const [tab, setTab] = useState<"duels" | "leaderboard">("duels");
   const { resolvedTheme, setTheme } = useTheme();
@@ -110,29 +112,33 @@ export function Sidebar({
           </Button>
         </div>
 
-        {/* Wallet address with copy button */}
+        {/* Wallet address with copy + send */}
         {authenticated && shortAddress && (
-          <button
-            onClick={copyAddress}
-            className="mt-2 flex w-full items-center justify-between rounded-lg bg-wink-cyan/[0.04] px-3 py-1.5 transition-colors hover:bg-wink-cyan/[0.08]"
-          >
-            <span className="font-mono text-[11px] text-wink-text-dim">
-              <span className="text-[9px] text-wink-text-dim/60">My wallet: </span>{shortAddress}
-            </span>
-            <span className="flex items-center gap-1 text-[9px] text-wink-text-dim">
-              {copied ? (
-                <>
+          <div className="mt-2 flex items-center gap-1.5">
+            <button
+              onClick={copyAddress}
+              className="flex flex-1 items-center justify-between rounded-lg bg-wink-cyan/[0.04] px-3 py-1.5 transition-colors hover:bg-wink-cyan/[0.08]"
+            >
+              <span className="font-mono text-[11px] text-wink-text-dim">
+                <span className="text-[9px] text-wink-text-dim/60">My wallet: </span>{shortAddress}
+              </span>
+              <span className="flex items-center gap-1 text-[9px] text-wink-text-dim">
+                {copied ? (
                   <Check className="h-3 w-3 text-wink-cyan" />
-                  <span className="text-wink-cyan">Copied!</span>
-                </>
-              ) : (
-                <>
+                ) : (
                   <Copy className="h-3 w-3" />
-                  <span>Copy</span>
-                </>
-              )}
-            </span>
-          </button>
+                )}
+              </span>
+            </button>
+            <button
+              onClick={onOpenSend}
+              className="flex items-center gap-1 rounded-lg bg-wink-pink/10 px-2.5 py-1.5 text-[10px] font-semibold text-wink-pink transition-colors hover:bg-wink-pink/20"
+              title="Send USDM"
+            >
+              <ArrowUpRight className="h-3 w-3" />
+              Send
+            </button>
+          </div>
         )}
       </div>
 
