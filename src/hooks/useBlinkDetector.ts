@@ -55,17 +55,25 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   const detectLoop = useCallback(() => {
     const detect = () => {
       const v = videoRef.current;
+      const cv = canvasRef.current;
       const fl = flRef.current;
 
-      // Video + model must be ready (canvas is optional — detection runs without it)
+      // All three must be ready — detection pauses when canvas is absent (saves GPU)
       if (
         !v ||
+        !cv ||
         !fl ||
         v.paused ||
         v.readyState < 4 ||
         v.videoWidth === 0 ||
         v.videoHeight === 0
       ) {
+        animRef.current = requestAnimationFrame(detect);
+        return;
+      }
+
+      const ctx = cv.getContext("2d");
+      if (!ctx) {
         animRef.current = requestAnimationFrame(detect);
         return;
       }
@@ -78,18 +86,13 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
       }
       lastTimestampRef.current = now;
 
-      // Canvas + context (optional — only needed for mesh drawing)
-      const cv = canvasRef.current;
-      const ctx = cv ? cv.getContext("2d") : null;
-
       // Skip detection until warmup is done
       if (!warmedUpRef.current) {
-        if (ctx && cv) drawMesh(ctx, null, cv.width, cv.height, 0, themeColorsRef.current);
+        drawMesh(ctx, null, cv.width, cv.height, 0, themeColorsRef.current);
         animRef.current = requestAnimationFrame(detect);
         return;
       }
 
-      // Always run face detection — keeps MediaPipe warm even when canvas is absent
       const landmarks = safeDetect(fl, v, now);
 
       if (landmarks) {
@@ -102,21 +105,18 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
         } else {
           if (frameCtRef.current >= 2) {
             const t = Date.now();
-            if (t - lastBlinkRef.current > 300) {
+            if (t - lastBlinkRef.current > 250) {
               lastBlinkRef.current = t;
-              onBlinkRef.current?.();
+              flashRef.current = 10; // Visual flash on mesh (works in ALL phases)
+              onBlinkRef.current?.(); // Score callback (only counts during playing)
             }
           }
           frameCtRef.current = 0;
         }
 
         if (flashRef.current > 0) flashRef.current--;
-
-        // Draw mesh only when canvas is available
-        if (ctx && cv) {
-          drawMesh(ctx, landmarks, cv.width, cv.height, flashRef.current / 10, themeColorsRef.current);
-        }
-      } else if (ctx && cv) {
+        drawMesh(ctx, landmarks, cv.width, cv.height, flashRef.current / 10, themeColorsRef.current);
+      } else {
         drawMesh(ctx, null, cv.width, cv.height, 0, themeColorsRef.current);
       }
 
