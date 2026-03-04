@@ -104,43 +104,51 @@ export function DuelsList({
             const isOwn =
               currentAddress &&
               d.creatorFull.toLowerCase() === currentAddress.toLowerCase();
+            const isHighStake = d.stake >= 25;
 
             return (
               <div
                 key={String(d.id)}
-                onClick={() => !isOwn && authenticated && onLaunch(d)}
                 className={cn(
-                  "group flex items-center gap-1.5 rounded-lg border border-wink-border bg-card px-2.5 py-2 transition-all",
-                  isOwn
-                    ? "border-wink-cyan/20 opacity-70"
-                    : authenticated
-                      ? "cursor-pointer hover:border-wink-pink/30"
-                      : "cursor-not-allowed opacity-50"
+                  !isOwn && "duel-fuse",
+                  !isOwn && isHighStake && "duel-fuse-fast"
                 )}
               >
-                <div className="flex-1">
-                  <div className="font-mono text-[10px] text-wink-text">
-                    {isOwn ? "You" : d.creator}
+                <div
+                  onClick={() => !isOwn && authenticated && onLaunch(d)}
+                  className={cn(
+                    "duel-fuse-inner group flex items-center gap-1.5 rounded-lg bg-card px-2.5 py-2 transition-all",
+                    isOwn
+                      ? "border border-wink-cyan/20 opacity-70"
+                      : authenticated
+                        ? "cursor-pointer hover:brightness-110"
+                        : "cursor-not-allowed opacity-50"
+                  )}
+                >
+                  <div className="flex-1">
+                    <div className="font-mono text-[10px] text-wink-text">
+                      {isOwn ? "You" : d.creator}
+                    </div>
+                    <div className="text-[9px] text-wink-text-dim">{d.time}</div>
                   </div>
-                  <div className="text-[9px] text-wink-text-dim">{d.time}</div>
+                  <div className="rounded-[5px] bg-wink-orange/[0.08] px-1.5 py-0.5 font-mono text-xs font-bold text-wink-orange">
+                    {d.score}👁️
+                  </div>
+                  <div className="font-mono text-[11px] font-bold text-wink-pink">
+                    ${d.stake}
+                  </div>
+                  {isOwn && onCancel && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCancel(d);
+                      }}
+                      className="rounded px-1.5 py-0.5 text-[9px] font-semibold text-red-400 transition-colors hover:bg-red-500/10"
+                    >
+                      Cancel
+                    </button>
+                  )}
                 </div>
-                <div className="rounded-[5px] bg-wink-orange/[0.08] px-1.5 py-0.5 font-mono text-xs font-bold text-wink-orange">
-                  {d.score}👁️
-                </div>
-                <div className="font-mono text-[11px] font-bold text-wink-pink">
-                  ${d.stake}
-                </div>
-                {isOwn && onCancel && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onCancel(d);
-                    }}
-                    className="rounded px-1.5 py-0.5 text-[9px] font-semibold text-red-400 transition-colors hover:bg-red-500/10"
-                  >
-                    Cancel
-                  </button>
-                )}
               </div>
             );
           })}

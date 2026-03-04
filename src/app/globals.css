@@ -246,6 +246,47 @@
   }
 }
 
+/* ===== Fuse / dynamite border effect ===== */
+@property --fuse-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes fuse-spin {
+  to { --fuse-angle: 360deg; }
+}
+
+.duel-fuse {
+  position: relative;
+  border-radius: 8px;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--fuse-angle),
+    transparent 50%,
+    var(--wink-pink) 75%,
+    var(--wink-orange) 85%,
+    transparent 95%
+  );
+  animation: fuse-spin 2.5s linear infinite;
+}
+
+.duel-fuse-fast {
+  animation-duration: 1.8s;
+  background: conic-gradient(
+    from var(--fuse-angle),
+    transparent 40%,
+    var(--wink-orange) 60%,
+    var(--wink-pink) 75%,
+    var(--wink-orange) 85%,
+    transparent 95%
+  );
+}
+
+.duel-fuse > .duel-fuse-inner {
+  border-radius: 6.5px;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 3px;
