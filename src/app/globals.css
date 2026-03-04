@@ -272,6 +272,7 @@
 
 .duel-fuse > .duel-fuse-inner {
   border-radius: 7px;
+  background: var(--background) !important;
 }
 
 /* Custom scrollbar */
