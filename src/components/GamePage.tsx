@@ -22,7 +22,7 @@ export default function GamePage() {
   const onBlinkRef = useRef<(() => void) | null>(null);
 
   const { txToasts, addTx, removeTx, resetToasts } = useTxToasts();
-  const { videoRef, canvasRef, initCamera, triggerFlash, cameraStatus } = useBlinkDetector({
+  const { videoRef, canvasRef, initCamera, triggerFlash, cameraStatus, isCameraReady } = useBlinkDetector({
     onBlinkRef,
   });
 
@@ -48,9 +48,11 @@ export default function GamePage() {
     launch,
     reset,
     doBlink,
+    confirmCamera,
   } = useGameLoop({
     addTx,
     initCamera,
+    isCameraReady,
     triggerFlash,
     contractActions: {
       createDuel: contract.createDuel,
@@ -152,7 +154,7 @@ export default function GamePage() {
                   style={{ background: "var(--canvas-mesh-bg)" }}
                 />
               </div>
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center gap-3">
                 {cameraStatus === "loading" && (
                   <>
                     <div className="flex items-center gap-2">
@@ -165,10 +167,18 @@ export default function GamePage() {
                   </>
                 )}
                 {cameraStatus === "ready" && (
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 animate-pulse rounded-full bg-wink-cyan" />
-                    <span className="text-sm font-semibold text-wink-cyan">Face detected — starting…</span>
-                  </div>
+                  <>
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 animate-pulse rounded-full bg-wink-cyan" />
+                      <span className="text-sm font-semibold text-wink-cyan">Face detected</span>
+                    </div>
+                    <button
+                      onClick={confirmCamera}
+                      className="rounded-xl bg-gradient-to-br from-wink-pink to-[var(--wink-pink-darker)] px-8 py-2.5 text-sm font-bold text-white shadow-lg shadow-wink-pink/20 transition-all hover:scale-105 hover:brightness-110 active:scale-95"
+                    >
+                      ▶ Start
+                    </button>
+                  </>
                 )}
                 {cameraStatus === "denied" && (
                   <span className="text-sm text-red-400">Camera access denied. Please allow camera in your browser settings.</span>

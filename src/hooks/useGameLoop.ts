@@ -16,6 +16,7 @@ interface ContractActions {
 interface UseGameLoopOptions {
   addTx: (hash: `0x${string}`, label?: string) => number;
   initCamera: () => Promise<boolean>;
+  isCameraReady: () => boolean;
   triggerFlash: () => void;
   contractActions: ContractActions;
   refetchDuels: () => Promise<void>;
@@ -25,6 +26,7 @@ interface UseGameLoopOptions {
 export function useGameLoop({
   addTx,
   initCamera,
+  isCameraReady,
   triggerFlash,
   contractActions,
   refetchDuels,
@@ -41,6 +43,9 @@ export function useGameLoop({
   const [myBlinking, setMyBlinking] = useState(false);
   const [overtook, setOvertook] = useState(false);
   const [result, setResult] = useState<GameResult | null>(null);
+
+  // Ref to hold resolve function for camera "Start" button
+  const cameraConfirmRef = useRef<(() => void) | null>(null);
 
   const myScoreRef = useRef(0);
   const chartRef = useRef<ChartPoint[]>([]);
@@ -200,13 +205,20 @@ export function useGameLoop({
         return;
       }
 
-      // ── Step 2: Camera access + face detection ──
-      setPhase("camera");
+      // ── Step 2: Camera (first time only — show canvas + Start button) ──
+      if (!isCameraReady()) {
+        setPhase("camera");
 
-      const cameraOk = await initCamera();
-      if (!cameraOk) {
-        setPhase("idle");
-        return;
+        const cameraOk = await initCamera();
+        if (!cameraOk) {
+          setPhase("idle");
+          return;
+        }
+
+        // Camera ready — wait for user to click "Start"
+        await new Promise<void>((resolve) => {
+          cameraConfirmRef.current = resolve;
+        });
       }
 
       // ── Step 3: Countdown 3-2-1 ──
@@ -223,8 +235,14 @@ export function useGameLoop({
         }
       }, 1000);
     },
-    [initCamera, go, contractActions, addTx]
+    [initCamera, isCameraReady, go, contractActions, addTx]
   );
+
+  /** Called by the "Start" button on the camera screen */
+  const confirmCamera = useCallback(() => {
+    cameraConfirmRef.current?.();
+    cameraConfirmRef.current = null;
+  }, []);
 
   const reset = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -264,5 +282,6 @@ export function useGameLoop({
     launch,
     reset,
     doBlink,
+    confirmCamera,
   };
 }

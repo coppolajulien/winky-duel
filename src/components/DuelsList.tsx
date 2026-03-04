@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { STAKES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DuelStatus } from "@/lib/types";
 import type { Duel, HistoryDuel } from "@/lib/types";
+
+const HISTORY_PAGE_SIZE = 5;
 
 interface DuelsListProps {
   stake: number;
@@ -31,6 +34,13 @@ export function DuelsList({
   duelsLoading,
   currentAddress,
 }: DuelsListProps) {
+  const [historyPage, setHistoryPage] = useState(0);
+  const totalPages = Math.ceil(history.length / HISTORY_PAGE_SIZE);
+  const paginatedHistory = history.slice(
+    historyPage * HISTORY_PAGE_SIZE,
+    (historyPage + 1) * HISTORY_PAGE_SIZE
+  );
+
   return (
     <div className="animate-[fade-in_0.3s_ease] flex flex-col gap-2">
       {/* Box 1: New Duel */}
@@ -155,7 +165,7 @@ export function DuelsList({
             My History
           </h2>
           <div className="flex flex-col gap-1">
-            {history.map((h) => {
+            {paginatedHistory.map((h) => {
               const isCreator =
                 currentAddress &&
                 h.creatorFull.toLowerCase() === currentAddress.toLowerCase();
@@ -211,6 +221,29 @@ export function DuelsList({
               );
             })}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-2 flex items-center justify-between">
+              <button
+                onClick={() => setHistoryPage((p) => Math.max(0, p - 1))}
+                disabled={historyPage === 0}
+                className="rounded px-2 py-0.5 text-[10px] font-semibold text-wink-text-dim transition-colors hover:text-wink-text disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                ← Prev
+              </button>
+              <span className="text-[9px] text-wink-text-dim">
+                {historyPage + 1} / {totalPages}
+              </span>
+              <button
+                onClick={() => setHistoryPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={historyPage >= totalPages - 1}
+                className="rounded px-2 py-0.5 text-[10px] font-semibold text-wink-text-dim transition-colors hover:text-wink-text disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Next →
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

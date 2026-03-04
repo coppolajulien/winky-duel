@@ -209,5 +209,7 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
     };
   }, []);
 
-  return { videoRef, canvasRef, initCamera, triggerFlash, cameraStatus };
+  const isCameraReady = useCallback(() => cameraReady.current, []);
+
+  return { videoRef, canvasRef, initCamera, triggerFlash, cameraStatus, isCameraReady };
 }
