@@ -35,8 +35,16 @@ export function DuelsList({
   currentAddress,
 }: DuelsListProps) {
   const [historyPage, setHistoryPage] = useState(0);
-  const totalPages = Math.ceil(history.length / HISTORY_PAGE_SIZE);
-  const paginatedHistory = history.slice(
+  const [historyFilter, setHistoryFilter] = useState<"all" | "won" | "lost">("all");
+
+  const filteredHistory = historyFilter === "all"
+    ? history
+    : historyFilter === "won"
+      ? history.filter((h) => h.won === true)
+      : history.filter((h) => h.won === false);
+
+  const totalPages = Math.ceil(filteredHistory.length / HISTORY_PAGE_SIZE);
+  const paginatedHistory = filteredHistory.slice(
     historyPage * HISTORY_PAGE_SIZE,
     (historyPage + 1) * HISTORY_PAGE_SIZE
   );
@@ -138,8 +146,8 @@ export function DuelsList({
                   </div>
                   <div className="text-[9px] text-wink-text-dim">{d.time}</div>
                 </div>
-                <div className="rounded-[5px] bg-wink-orange/[0.08] px-1.5 py-0.5 font-mono text-xs font-bold text-wink-orange">
-                  {d.score}👁️
+                <div className="flex items-center gap-0.5 rounded-[5px] bg-wink-orange/[0.08] px-1.5 py-0.5 font-mono text-xs font-bold text-wink-orange">
+                  {d.score}<img src="/duel.svg" alt="" className="h-3 w-3 dark:invert opacity-60" />
                 </div>
                 <div className="font-mono text-[11px] font-bold text-wink-pink">
                   ${d.stake}
@@ -161,9 +169,31 @@ export function DuelsList({
       {/* Box 3: History */}
       {history.length > 0 && (
         <div className="rounded-lg border border-wink-border bg-card p-3">
-          <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-wink-text">
-            My History
-          </h2>
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-[10px] font-semibold uppercase tracking-[0.06em] text-wink-text">
+              My History
+            </h2>
+            <div className="flex gap-1">
+              {(["all", "won", "lost"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => { setHistoryFilter(f); setHistoryPage(0); }}
+                  className={cn(
+                    "rounded px-1.5 py-0.5 text-[9px] font-semibold transition-all",
+                    historyFilter === f
+                      ? f === "won"
+                        ? "border border-wink-cyan/25 bg-wink-cyan/[0.07] text-wink-cyan"
+                        : f === "lost"
+                          ? "border border-red-500/25 bg-red-500/[0.07] text-red-400"
+                          : "border border-wink-pink/25 bg-wink-pink/[0.07] text-wink-pink"
+                      : "border border-transparent text-wink-text-dim hover:text-wink-text"
+                  )}
+                >
+                  {f === "all" ? "All" : f === "won" ? "Won" : "Lost"}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex flex-col gap-1">
             {paginatedHistory.map((h) => {
               const isCreator =
@@ -201,7 +231,7 @@ export function DuelsList({
                   {h.status === DuelStatus.Settled && (
                     <div
                       className={cn(
-                        "rounded px-1.5 py-0.5 text-[9px] font-bold",
+                        "flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-bold",
                         h.won === true
                           ? "bg-wink-cyan/10 text-wink-cyan"
                           : h.won === false
@@ -209,7 +239,11 @@ export function DuelsList({
                             : "bg-wink-border text-wink-text-dim"
                       )}
                     >
-                      {h.won === true ? "WON" : h.won === false ? "LOST" : "DRAW"}
+                      {h.won === true ? (
+                        <><img src="/victory.svg" alt="" className="h-3 w-3 dark:invert" />WON</>
+                      ) : h.won === false ? (
+                        <><img src="/lost.svg" alt="" className="h-3 w-3 dark:invert" />LOST</>
+                      ) : "DRAW"}
                     </div>
                   )}
                   {h.status === DuelStatus.Cancelled && (

@@ -31,7 +31,7 @@ interface SidebarProps {
 }
 
 const TABS = [
-  { id: "duels" as const, icon: "⚔️", label: "Duels" },
+  { id: "duels" as const, icon: "", label: "Duels", svg: "/duel.svg" },
   // { id: "leaderboard" as const, icon: "🏆", label: "Leaderboard" },
 ];
 
@@ -83,9 +83,9 @@ export function Sidebar({
             <img
               src="/logo-blinkit.svg"
               alt="Blinkit"
-              className="h-5 w-5 dark:invert"
+              className="h-5 w-5 dark:invert opacity-80"
             />
-            <span className="text-sm font-bold tracking-wide text-wink-text">BLINKIT</span>
+            <span className="text-sm font-bold tracking-wide text-wink-text opacity-80">BLINKIT</span>
           </a>
           <Button
             variant="outline"
@@ -154,7 +154,11 @@ export function Sidebar({
                 : "text-wink-text-dim hover:text-wink-text"
             )}
           >
-            <span className="text-sm">{n.icon}</span>
+            {n.svg ? (
+              <img src={n.svg} alt="" className="h-4 w-4 dark:invert" />
+            ) : (
+              <span className="text-sm">{n.icon}</span>
+            )}
             {n.label}
           </button>
         ))}

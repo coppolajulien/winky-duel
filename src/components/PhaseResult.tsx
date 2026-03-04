@@ -46,9 +46,17 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
   }, [chartData, result, stake]);
   return (
     <div className="flex flex-1 animate-[fade-in_0.4s_ease] flex-col items-center justify-center p-5">
-      {/* Emoji */}
-      <div className="mb-2.5 text-[52px]">
-        {result.isChallenge ? (result.won ? "🏆" : "💀") : "✅"}
+      {/* Icon */}
+      <div className="mb-2.5">
+        {result.isChallenge ? (
+          result.won ? (
+            <img src="/victory.svg" alt="Victory" className="h-16 w-16 dark:invert" />
+          ) : (
+            <img src="/lost.svg" alt="Defeat" className="h-16 w-16 dark:invert" />
+          )
+        ) : (
+          <img src="/duel.svg" alt="Duel posted" className="h-16 w-16 dark:invert" />
+        )}
       </div>
 
       {/* Title */}
@@ -110,7 +118,7 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
           onClick={onReset}
           className="bg-gradient-to-br from-wink-pink to-[var(--wink-pink-darker)] text-white hover:brightness-110"
         >
-          ⚔️ Again
+          <img src="/duel.svg" alt="" className="mr-1 h-4 w-4 invert" /> Again
         </Button>
         <Button
           onClick={handleCopyImage}

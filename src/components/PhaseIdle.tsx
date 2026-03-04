@@ -4,9 +4,9 @@ export function PhaseIdle() {
       {/* Title */}
       <div className="text-center">
         <img
-          src="/eye-blinkit.png"
-          alt="Blinkit eye"
-          className="mb-2 h-14 w-auto dark:brightness-100 brightness-0"
+          src="/duel.svg"
+          alt="Blinkit duel"
+          className="mx-auto mb-2 h-14 w-14 dark:invert"
         />
         <h2 className="text-2xl font-extrabold text-wink-text">
           Blink the fastest. Win the pot.

@@ -18,8 +18,8 @@ export const metadata: Metadata = {
   title: "Blinkit",
   description: "Blink to win. Every blink is a transaction on MegaETH.",
   icons: {
-    icon: "/eye-blinkit.png",
-    apple: "/eye-blinkit.png",
+    icon: "/logo-blinkit.svg",
+    apple: "/logo-blinkit.svg",
   },
 };
 
