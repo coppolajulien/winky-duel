@@ -133,10 +133,10 @@ export function Sidebar({
             <button
               onClick={onOpenSend}
               className="flex items-center gap-1 rounded-lg bg-wink-pink/10 px-2.5 py-1.5 text-[10px] font-semibold text-wink-pink transition-colors hover:bg-wink-pink/20"
-              title="Send USDM"
+              title="Withdraw USDM"
             >
               <ArrowUpRight className="h-3 w-3" />
-              Send
+              Withdraw
             </button>
           </div>
         )}
