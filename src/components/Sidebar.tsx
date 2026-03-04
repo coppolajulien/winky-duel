@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import { Sun, Moon, Copy, Check, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import type { Duel } from "@/lib/types";
+import type { Duel, HistoryDuel } from "@/lib/types";
 import { DuelsList } from "./DuelsList";
 import { Leaderboard } from "./Leaderboard";
 
@@ -24,9 +24,9 @@ interface SidebarProps {
   balanceLoading: boolean;
   onLaunch: (duel: Duel | null) => void;
   duels: Duel[];
+  history: HistoryDuel[];
   duelsLoading: boolean;
   currentAddress: `0x${string}` | null;
-  onCancel?: (duel: Duel) => void;
   onOpenSend?: () => void;
 }
 
@@ -50,9 +50,9 @@ export function Sidebar({
   balanceLoading,
   onLaunch,
   duels,
+  history,
   duelsLoading,
   currentAddress,
-  onCancel,
   onOpenSend,
 }: SidebarProps) {
   const [tab, setTab] = useState<"duels" | "leaderboard">("duels");
@@ -79,11 +79,12 @@ export function Sidebar({
       {/* Header */}
       <div className="border-b border-wink-border px-4 py-3.5">
         <div className="flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <span className="text-lg">👁️</span>
-            <span className="text-[15px] font-extrabold italic text-wink-pink">
-              winky
-            </span>
+          <a href="/" className="flex items-center transition-opacity hover:opacity-80">
+            <img
+              src="/logo-blankit.png"
+              alt="Blinkit"
+              className="h-5 dark:brightness-100 brightness-0"
+            />
           </a>
           <Button
             variant="outline"
@@ -167,11 +168,11 @@ export function Sidebar({
             stakeFilter={stakeFilter}
             setStakeFilter={setStakeFilter}
             duels={filtered}
+            history={history}
             onLaunch={onLaunch}
             authenticated={authenticated}
             duelsLoading={duelsLoading}
             currentAddress={currentAddress}
-            onCancel={onCancel}
           />
         ) : (
           <Leaderboard />

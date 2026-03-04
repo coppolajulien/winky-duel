@@ -246,7 +246,7 @@
   }
 }
 
-/* ===== Fuse / dynamite border effect ===== */
+/* ===== Fuse / dynamite border effect ($50 duels) ===== */
 @property --fuse-angle {
   syntax: "<angle>";
   inherits: false;
@@ -258,33 +258,20 @@
 }
 
 .duel-fuse {
-  position: relative;
   border-radius: 8px;
-  padding: 1.5px;
+  padding: 1px;
   background: conic-gradient(
     from var(--fuse-angle),
-    transparent 50%,
-    var(--wink-pink) 75%,
-    var(--wink-orange) 85%,
-    transparent 95%
+    var(--wink-border) 80%,
+    var(--wink-orange) 89%,
+    var(--wink-pink) 93%,
+    var(--wink-border) 100%
   );
-  animation: fuse-spin 2.5s linear infinite;
-}
-
-.duel-fuse-fast {
-  animation-duration: 1.8s;
-  background: conic-gradient(
-    from var(--fuse-angle),
-    transparent 40%,
-    var(--wink-orange) 60%,
-    var(--wink-pink) 75%,
-    var(--wink-orange) 85%,
-    transparent 95%
-  );
+  animation: fuse-spin 2s linear infinite;
 }
 
 .duel-fuse > .duel-fuse-inner {
-  border-radius: 6.5px;
+  border-radius: 7px;
 }
 
 /* Custom scrollbar */

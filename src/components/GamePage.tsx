@@ -28,7 +28,7 @@ export default function GamePage() {
 
   const wallet = useWallet();
   const contract = useContract();
-  const { duels, loading: duelsLoading, refetchDuels } = useDuels();
+  const { duels, history, loading: duelsLoading, refetchDuels } = useDuels(wallet.address);
   const [sendModalOpen, setSendModalOpen] = useState(false);
 
   const {
@@ -55,6 +55,7 @@ export default function GamePage() {
     contractActions: {
       createDuel: contract.createDuel,
       challengeDuel: contract.challengeDuel,
+      ensureAllowance: contract.ensureAllowance,
     },
     refetchDuels,
     refreshBalance: wallet.refreshBalance,
@@ -68,22 +69,6 @@ export default function GamePage() {
     reset();
     resetToasts();
   }, [reset, resetToasts]);
-
-  // Cancel duel handler
-  const handleCancel = useCallback(
-    async (duel: Duel) => {
-      try {
-        const hash = await contract.cancelDuel(duel.id);
-        addTx(hash, "Cancel Duel");
-        await publicClient.waitForTransactionReceipt({ hash });
-        refetchDuels();
-        wallet.refreshBalance();
-      } catch (err) {
-        console.error("Cancel failed:", err);
-      }
-    },
-    [contract, addTx, refetchDuels, wallet]
-  );
 
   return (
     <div className="flex h-screen overflow-hidden font-sans text-foreground">
@@ -111,9 +96,9 @@ export default function GamePage() {
         usdmBalance={wallet.usdmBalance}
         balanceLoading={wallet.balanceLoading}
         duels={duels}
+        history={history}
         duelsLoading={duelsLoading}
         currentAddress={(wallet.address as `0x${string}`) ?? null}
-        onCancel={handleCancel}
         onOpenSend={() => setSendModalOpen(true)}
         onLaunch={(duel) => {
           resetToasts();
@@ -131,11 +116,25 @@ export default function GamePage() {
                 Camera access required
               </div>
               <div className="mt-1.5 max-w-xs text-center text-xs text-wink-text-dim">
-                Winky Duel uses your webcam to detect blinks. Allow camera access in your browser settings and reload the page.
+                Blinkit uses your webcam to detect blinks. Allow camera access in your browser settings and reload the page.
               </div>
             </div>
           )}
           {phase === "idle" && cameraStatus !== "denied" && <PhaseIdle />}
+          {phase === "approving" && (
+            <div className="flex flex-1 animate-[fade-in_0.3s_ease] flex-col items-center justify-center gap-4">
+              <div className="rounded-2xl border border-wink-border bg-[var(--glass-bg)] px-6 py-3 backdrop-blur-[10px]">
+                <span className="font-mono text-[32px] font-extrabold text-wink-pink">
+                  ${stake}
+                </span>
+                <span className="ml-2 text-[13px] text-wink-text-dim">USDM</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-wink-pink border-t-transparent" />
+                <span className="text-sm text-wink-text-dim">Confirm in your wallet…</span>
+              </div>
+            </div>
+          )}
           {phase === "countdown" && (
             <PhaseCountdown
               countdownNum={countdownNum}

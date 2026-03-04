@@ -3,7 +3,11 @@ export function PhaseIdle() {
     <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center justify-center gap-8">
       {/* Title */}
       <div className="text-center">
-        <div className="mb-2 text-[56px]">👁️</div>
+        <img
+          src="/eye-blinkit.png"
+          alt="Blinkit eye"
+          className="mb-2 h-14 w-auto dark:brightness-100 brightness-0"
+        />
         <h2 className="text-2xl font-extrabold text-wink-text">
           Blink the fastest. Win the pot.
         </h2>

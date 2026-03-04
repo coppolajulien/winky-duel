@@ -1,4 +1,4 @@
-export type GamePhase = "idle" | "countdown" | "playing" | "submitting" | "result";
+export type GamePhase = "idle" | "approving" | "countdown" | "playing" | "submitting" | "result";
 
 // ─── On-chain types ─────────────────────────────────────────────
 
@@ -52,6 +52,20 @@ export interface ChartPoint {
   t: number;
   you: number;
   target?: number;
+}
+
+/** Settled/cancelled duel for history display */
+export interface HistoryDuel {
+  id: bigint;
+  creator: string;
+  creatorFull: `0x${string}`;
+  challenger: string;
+  challengerFull: `0x${string}`;
+  stake: number;
+  creatorScore: number;
+  challengerScore: number;
+  status: DuelStatus;
+  won: boolean | null; // relative to currentAddress — null = not involved or draw
 }
 
 export interface GameResult {

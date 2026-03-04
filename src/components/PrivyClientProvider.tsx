@@ -1,6 +1,7 @@
 "use client";
 
 import { PrivyProvider } from "@privy-io/react-auth";
+import { SmartWalletsProvider } from "@privy-io/react-auth/smart-wallets";
 import { megaethTestnet } from "viem/chains";
 
 export function PrivyClientProvider({ children }: { children: React.ReactNode }) {
@@ -21,7 +22,9 @@ export function PrivyClientProvider({ children }: { children: React.ReactNode })
         },
       }}
     >
-      {children}
+      <SmartWalletsProvider>
+        {children}
+      </SmartWalletsProvider>
     </PrivyProvider>
   );
 }

@@ -15,8 +15,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Winky Duel",
-  description: "Blink to win. Every blink is a transaction.",
+  title: "Blinkit",
+  description: "Blink to win. Every blink is a transaction on MegaETH.",
+  icons: {
+    icon: "/eye-blinkit.png",
+    apple: "/eye-blinkit.png",
+  },
 };
 
 export default function RootLayout({

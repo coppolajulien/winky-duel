@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { parseUnits } from "viem";
 import { DURATION } from "@/lib/constants";
 import { publicClient } from "@/hooks/useWallet";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI } from "@/lib/constants";
@@ -9,6 +10,7 @@ import type { GamePhase, Duel, ChartPoint, GameResult } from "@/lib/types";
 interface ContractActions {
   createDuel: (score: number, stakeUsdm: number) => Promise<`0x${string}`>;
   challengeDuel: (duelId: bigint, score: number, stakeRaw: bigint) => Promise<`0x${string}`>;
+  ensureAllowance: (amount: bigint) => Promise<`0x${string}` | null>;
 }
 
 interface UseGameLoopOptions {
@@ -181,12 +183,28 @@ export function useGameLoop({
     async (duel: Duel | null = null) => {
       setChallenge(duel);
       if (duel) setStake(duel.stake);
+
+      // Phase "approving" — Privy popup opens here
+      setPhase("approving");
+
+      const stakeAmount = duel
+        ? duel.stakeRaw
+        : parseUnits(String(stakeRef.current), 18);
+
+      try {
+        const hash = await contractActions.ensureAllowance(stakeAmount);
+        if (hash) addTx(hash, "Approve USDM");
+      } catch (err) {
+        console.warn("Approval rejected:", err);
+        setPhase("idle");
+        return;
+      }
+
+      // Approval done → init camera
       setPhase("countdown");
       setCountdownNum(3);
 
-      // Init camera during countdown
       const cameraOk = await initCamera();
-
       if (!cameraOk) {
         setPhase("idle");
         return;
@@ -205,7 +223,7 @@ export function useGameLoop({
         }
       }, 1000);
     },
-    [initCamera, go]
+    [initCamera, go, contractActions, addTx]
   );
 
   const reset = useCallback(() => {
