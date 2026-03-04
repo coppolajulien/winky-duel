@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { parseUnits } from "viem";
 import { DURATION } from "@/lib/constants";
 import { publicClient } from "@/hooks/useWallet";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI } from "@/lib/constants";
@@ -10,7 +9,6 @@ import type { GamePhase, Duel, ChartPoint, GameResult } from "@/lib/types";
 interface ContractActions {
   createDuel: (score: number, stakeUsdm: number) => Promise<`0x${string}`>;
   challengeDuel: (duelId: bigint, score: number, stakeRaw: bigint) => Promise<`0x${string}`>;
-  ensureAllowance: (amount: bigint) => Promise<`0x${string}` | null>;
 }
 
 interface UseGameLoopOptions {
@@ -21,8 +19,6 @@ interface UseGameLoopOptions {
   refetchDuels: () => Promise<void>;
   refreshBalance: () => Promise<void>;
 }
-
-export type ApprovalStatus = "idle" | "approving" | "approved" | "failed";
 
 export function useGameLoop({
   addTx,
@@ -43,7 +39,6 @@ export function useGameLoop({
   const [myBlinking, setMyBlinking] = useState(false);
   const [overtook, setOvertook] = useState(false);
   const [result, setResult] = useState<GameResult | null>(null);
-  const [approvalStatus, setApprovalStatus] = useState<ApprovalStatus>("idle");
 
   const myScoreRef = useRef(0);
   const chartRef = useRef<ChartPoint[]>([]);
@@ -188,35 +183,16 @@ export function useGameLoop({
       if (duel) setStake(duel.stake);
       setPhase("countdown");
       setCountdownNum(3);
-      setApprovalStatus("approving");
 
-      // Step 1: Camera + USDM approval — wait for BOTH before countdown
-      const stakeAmount = duel
-        ? duel.stakeRaw
-        : parseUnits(String(stakeRef.current), 18);
+      // Init camera during countdown
+      const cameraOk = await initCamera();
 
-      let approvalOk = false;
-      const [cameraOk] = await Promise.all([
-        initCamera(),
-        contractActions.ensureAllowance(stakeAmount).then((hash) => {
-          if (hash) addTx(hash, "Approve USDM");
-          setApprovalStatus("approved");
-          approvalOk = true;
-        }).catch((err) => {
-          console.warn("Approval failed:", err);
-          setApprovalStatus("failed");
-        }),
-      ]);
-
-      if (!cameraOk || !approvalOk) {
-        // If approval failed but camera is fine, user rejected in Privy
-        if (!approvalOk) setApprovalStatus("failed");
+      if (!cameraOk) {
         setPhase("idle");
-        setApprovalStatus("idle");
         return;
       }
 
-      // Step 2: Countdown 3-2-1 starts only after approval
+      // Countdown 3-2-1
       let c = 3;
       setCountdownNum(3);
       const iv = setInterval(() => {
@@ -229,7 +205,7 @@ export function useGameLoop({
         }
       }, 1000);
     },
-    [initCamera, go, contractActions, addTx]
+    [initCamera, go]
   );
 
   const reset = useCallback(() => {
@@ -241,7 +217,6 @@ export function useGameLoop({
     setChartData([]);
     setChallenge(null);
     setResult(null);
-    setApprovalStatus("idle");
     myScoreRef.current = 0;
     chartRef.current = [];
   }, []);
@@ -268,7 +243,6 @@ export function useGameLoop({
     myBlinking,
     overtook,
     result,
-    approvalStatus,
     launch,
     reset,
     doBlink,

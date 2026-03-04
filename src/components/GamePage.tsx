@@ -45,7 +45,6 @@ export default function GamePage() {
     myBlinking,
     overtook,
     result,
-    approvalStatus,
     launch,
     reset,
     doBlink,
@@ -56,7 +55,6 @@ export default function GamePage() {
     contractActions: {
       createDuel: contract.createDuel,
       challengeDuel: contract.challengeDuel,
-      ensureAllowance: contract.ensureAllowance,
     },
     refetchDuels,
     refreshBalance: wallet.refreshBalance,
@@ -143,7 +141,6 @@ export default function GamePage() {
               countdownNum={countdownNum}
               challenge={challenge}
               stake={stake}
-              approvalStatus={approvalStatus}
             />
           )}
           {phase === "playing" && (
