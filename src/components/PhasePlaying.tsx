@@ -13,6 +13,7 @@ interface PhasePlayingProps {
   timeLeft: number;
   challenge: Duel | null;
   myBlinking: boolean;
+  overtook: boolean;
   chartData: ChartPoint[];
   txToasts: TxToastData[];
   stake: number;
@@ -25,6 +26,7 @@ export function PhasePlaying({
   timeLeft,
   challenge,
   myBlinking,
+  overtook,
   chartData,
   txToasts,
   stake,
@@ -33,6 +35,21 @@ export function PhasePlaying({
 }: PhasePlayingProps) {
   return (
     <div className="relative flex flex-1 flex-col">
+      {/* Overtake flash */}
+      {overtook && (
+        <>
+          <div className="pointer-events-none absolute inset-0 z-[10] animate-[overtake-flash_1.2s_ease-out_forwards]" />
+          <div className="pointer-events-none absolute inset-0 z-[11] flex items-center justify-center">
+            <div className="animate-[overtake-text_1.2s_ease-out_forwards] text-center">
+              <div className="text-[48px] font-black tracking-tight text-wink-cyan drop-shadow-[0_0_40px_rgba(0,229,255,0.6)]">
+                YOU&apos;RE AHEAD!
+              </div>
+              <div className="text-lg font-bold text-white/50">Keep blinking! 🔥</div>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Top bar */}
       <div className="z-[3] flex items-center justify-between px-4 py-2.5">
         <div className="flex items-center gap-3">

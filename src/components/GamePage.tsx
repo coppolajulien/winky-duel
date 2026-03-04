@@ -43,6 +43,7 @@ export default function GamePage() {
     countdownNum,
     challenge,
     myBlinking,
+    overtook,
     result,
     launch,
     reset,
@@ -149,6 +150,7 @@ export default function GamePage() {
               timeLeft={timeLeft}
               challenge={challenge}
               myBlinking={myBlinking}
+              overtook={overtook}
               chartData={chartData}
               txToasts={txToasts}
               stake={stake}

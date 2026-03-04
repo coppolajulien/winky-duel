@@ -98,6 +98,20 @@
   50% { opacity: 1; }
 }
 
+@keyframes overtake-flash {
+  0% { background: rgba(0, 229, 255, 0.25); }
+  30% { background: rgba(0, 229, 255, 0.12); }
+  100% { background: transparent; }
+}
+
+@keyframes overtake-text {
+  0% { opacity: 0; transform: scale(0.7); }
+  15% { opacity: 1; transform: scale(1.1); }
+  30% { transform: scale(1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

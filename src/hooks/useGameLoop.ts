@@ -39,6 +39,7 @@ export function useGameLoop({
   const [countdownNum, setCountdownNum] = useState(3);
   const [challenge, setChallenge] = useState<Duel | null>(null);
   const [myBlinking, setMyBlinking] = useState(false);
+  const [overtook, setOvertook] = useState(false);
   const [result, setResult] = useState<GameResult | null>(null);
 
   const myScoreRef = useRef(0);
@@ -76,11 +77,19 @@ export function useGameLoop({
 
   const doBlink = useCallback(() => {
     if (phaseRef.current !== "playing") return;
+    const prevScore = myScoreRef.current;
     myScoreRef.current++;
     setMyScore(myScoreRef.current);
     setMyBlinking(true);
     triggerFlash();
     setTimeout(() => setMyBlinking(false), 150);
+
+    // Detect overtake: score goes from <= target to > target
+    const target = challengeRef.current?.score;
+    if (target !== undefined && prevScore <= target && myScoreRef.current > target) {
+      setOvertook(true);
+      setTimeout(() => setOvertook(false), 1200);
+    }
   }, [triggerFlash]);
 
   const finish = useCallback(async () => {
@@ -245,6 +254,7 @@ export function useGameLoop({
     countdownNum,
     challenge,
     myBlinking,
+    overtook,
     result,
     launch,
     reset,
