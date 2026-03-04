@@ -112,27 +112,23 @@ export function Sidebar({
           </Button>
         </div>
 
-        {/* Wallet address with copy + send */}
+        {/* Wallet row */}
         {authenticated && shortAddress && (
-          <div className="mt-2 flex items-center gap-1.5">
+          <div className="mt-2 flex items-center justify-between">
             <button
               onClick={copyAddress}
-              className="flex flex-1 items-center justify-between rounded-lg bg-wink-cyan/[0.04] px-3 py-1.5 transition-colors hover:bg-wink-cyan/[0.08]"
+              className="flex items-center gap-1.5 text-[10px] text-wink-text-dim transition-colors hover:text-wink-text"
             >
-              <span className="font-mono text-[11px] text-wink-text-dim">
-                <span className="text-[9px] text-wink-text-dim/60">My wallet: </span>{shortAddress}
-              </span>
-              <span className="flex items-center gap-1 text-[9px] text-wink-text-dim">
-                {copied ? (
-                  <Check className="h-3 w-3 text-wink-cyan" />
-                ) : (
-                  <Copy className="h-3 w-3" />
-                )}
-              </span>
+              <span>My wallet</span>
+              {copied ? (
+                <Check className="h-3 w-3 text-wink-cyan" />
+              ) : (
+                <Copy className="h-3 w-3" />
+              )}
             </button>
             <button
               onClick={onOpenSend}
-              className="flex items-center gap-1 rounded-lg bg-wink-pink/10 px-2.5 py-1.5 text-[10px] font-semibold text-wink-pink transition-colors hover:bg-wink-pink/20"
+              className="flex items-center gap-1 text-[10px] font-semibold text-wink-pink transition-colors hover:text-wink-pink/80"
               title="Withdraw USDM"
             >
               <ArrowUpRight className="h-3 w-3" />
