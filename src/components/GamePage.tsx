@@ -176,12 +176,26 @@ export default function GamePage() {
                       onClick={confirmCamera}
                       className="rounded-xl bg-gradient-to-br from-wink-pink to-[var(--wink-pink-darker)] px-8 py-2.5 text-sm font-bold text-white shadow-lg shadow-wink-pink/20 transition-all hover:scale-105 hover:brightness-110 active:scale-95"
                     >
-                      ▶ Start
+                      ▶ Duel
                     </button>
                   </>
                 )}
                 {cameraStatus === "denied" && (
-                  <span className="text-sm text-red-400">Camera access denied. Please allow camera in your browser settings.</span>
+                  <div className="flex flex-col items-center gap-3 max-w-xs text-center">
+                    <span className="text-sm font-semibold text-red-400">Camera access required</span>
+                    <p className="text-[11px] text-wink-text-dim">
+                      Blinkit uses your webcam to detect blinks. Allow camera access in your browser settings and reload the page.
+                    </p>
+                    <p className="text-[10px] text-wink-text-dim">
+                      On Mac: System Settings → Privacy → Camera → enable Chrome
+                    </p>
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="rounded-lg border border-wink-border bg-card px-4 py-1.5 text-[11px] font-semibold text-wink-text transition-colors hover:border-wink-pink/30"
+                    >
+                      Reload page
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

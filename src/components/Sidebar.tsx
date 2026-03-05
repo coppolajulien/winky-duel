@@ -81,7 +81,7 @@ export function Sidebar({
         <div className="flex items-center justify-between">
           <a href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <span
-              className="inline-block h-5 w-5"
+              className="inline-block h-7 w-7"
               style={{
                 WebkitMaskImage: "url(/logo-blinkit.svg)",
                 WebkitMaskSize: "contain",
@@ -92,7 +92,7 @@ export function Sidebar({
                 backgroundColor: "var(--wink-text)",
               }}
             />
-            <span className="text-sm font-bold tracking-wide text-wink-text">BLINKIT</span>
+            <span className="text-lg font-bold tracking-wide text-wink-text">BLINKIT</span>
           </a>
           <Button
             variant="outline"

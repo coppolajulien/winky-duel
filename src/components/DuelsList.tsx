@@ -8,6 +8,7 @@ import { DuelStatus } from "@/lib/types";
 import type { Duel, HistoryDuel } from "@/lib/types";
 
 const HISTORY_PAGE_SIZE = 5;
+const DUELS_PAGE_SIZE = 5;
 
 interface DuelsListProps {
   stake: number;
@@ -36,6 +37,7 @@ export function DuelsList({
 }: DuelsListProps) {
   const [historyPage, setHistoryPage] = useState(0);
   const [historyFilter, setHistoryFilter] = useState<"all" | "won" | "lost">("all");
+  const [duelsPage, setDuelsPage] = useState(0);
 
   const filteredHistory = historyFilter === "all"
     ? history
@@ -47,6 +49,12 @@ export function DuelsList({
   const paginatedHistory = filteredHistory.slice(
     historyPage * HISTORY_PAGE_SIZE,
     (historyPage + 1) * HISTORY_PAGE_SIZE
+  );
+
+  const duelsTotalPages = Math.ceil(duels.length / DUELS_PAGE_SIZE);
+  const paginatedDuels = duels.slice(
+    duelsPage * DUELS_PAGE_SIZE,
+    (duelsPage + 1) * DUELS_PAGE_SIZE
   );
 
   return (
@@ -119,7 +127,7 @@ export function DuelsList({
             </div>
           )}
 
-          {duels.map((d) => {
+          {paginatedDuels.map((d) => {
             const isOwn =
               currentAddress &&
               d.creatorFull.toLowerCase() === currentAddress.toLowerCase();
@@ -164,6 +172,29 @@ export function DuelsList({
             );
           })}
         </div>
+
+        {/* Duels pagination */}
+        {duelsTotalPages > 1 && (
+          <div className="mt-2 flex items-center justify-between">
+            <button
+              onClick={() => setDuelsPage((p) => Math.max(0, p - 1))}
+              disabled={duelsPage === 0}
+              className="rounded px-2 py-0.5 text-[10px] font-semibold text-wink-text-dim transition-colors hover:text-wink-text disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              ← Prev
+            </button>
+            <span className="text-[9px] text-wink-text-dim">
+              {duelsPage + 1} / {duelsTotalPages}
+            </span>
+            <button
+              onClick={() => setDuelsPage((p) => Math.min(duelsTotalPages - 1, p + 1))}
+              disabled={duelsPage >= duelsTotalPages - 1}
+              className="rounded px-2 py-0.5 text-[10px] font-semibold text-wink-text-dim transition-colors hover:text-wink-text disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              Next →
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Box 3: History */}

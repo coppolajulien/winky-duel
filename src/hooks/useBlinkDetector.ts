@@ -159,9 +159,16 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
       }
 
       console.log("[Winky] Requesting camera access...");
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 320, height: 240, facingMode: "user" },
-      });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 320, height: 240, facingMode: "user" },
+        });
+      } catch {
+        // Fallback: some browsers/OS reject specific constraints — try minimal
+        console.warn("[Winky] Retrying with minimal video constraints...");
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      }
       console.log("[Winky] Camera stream obtained");
 
       if (videoRef.current) {
