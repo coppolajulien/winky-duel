@@ -22,7 +22,7 @@ export default function GamePage() {
   const onBlinkRef = useRef<(() => void) | null>(null);
 
   const { txToasts, addTx, removeTx, resetToasts } = useTxToasts();
-  const { videoRef, canvasRef, initCamera, triggerFlash, cameraStatus, isCameraReady } = useBlinkDetector({
+  const { videoRef, canvasRef, initCamera, triggerFlash, cameraStatus, cameraError, isCameraReady } = useBlinkDetector({
     onBlinkRef,
   });
 
@@ -182,13 +182,20 @@ export default function GamePage() {
                 )}
                 {cameraStatus === "denied" && (
                   <div className="flex flex-col items-center gap-3 max-w-xs text-center">
+                    <span className="text-3xl mb-1">🚫</span>
                     <span className="text-sm font-semibold text-red-400">Camera access required</span>
                     <p className="text-[11px] text-wink-text-dim">
-                      Blinkit uses your webcam to detect blinks. Allow camera access in your browser settings and reload the page.
+                      {cameraError || "Blinkit uses your webcam to detect blinks. Allow camera access in your browser settings and reload the page."}
                     </p>
-                    <p className="text-[10px] text-wink-text-dim">
-                      On Mac: System Settings → Privacy → Camera → enable Chrome
-                    </p>
+                    <div className="rounded-lg border border-wink-border bg-card/50 p-2.5 text-[10px] text-wink-text-dim">
+                      <p className="font-semibold text-wink-text mb-1">Quick fixes:</p>
+                      <ul className="space-y-0.5 text-left">
+                        <li>• Click the 🔒 icon in your address bar → allow camera</li>
+                        <li>• Close apps using your camera (Zoom, Teams, FaceTime…)</li>
+                        <li>• Mac: System Settings → Privacy → Camera → Chrome ✓</li>
+                        <li>• Windows: Settings → Privacy → Camera → allow apps</li>
+                      </ul>
+                    </div>
                     <button
                       onClick={() => window.location.reload()}
                       className="rounded-lg border border-wink-border bg-card px-4 py-1.5 text-[11px] font-semibold text-wink-text transition-colors hover:border-wink-pink/30"

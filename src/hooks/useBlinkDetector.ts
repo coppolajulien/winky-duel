@@ -22,6 +22,7 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   const lastTimestampRef = useRef(0);
   const warmedUpRef = useRef(false);
   const [cameraStatus, setCameraStatus] = useState<"idle" | "loading" | "ready" | "denied">("idle");
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const themeColors = useThemeColors();
   const themeColorsRef = useRef<ThemeColors>(themeColors);
   themeColorsRef.current = themeColors;
@@ -128,15 +129,26 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   const initCamera = useCallback(async (): Promise<boolean> => {
     if (cameraReady.current) return true;
     setCameraStatus("loading");
+    setCameraError(null);
+
+    // ── Check browser support ──
+    if (!navigator.mediaDevices?.getUserMedia) {
+      console.error("[Blinkit] getUserMedia not available");
+      setCameraError("Your browser doesn't support camera access. Use Chrome or Firefox on HTTPS.");
+      setCameraStatus("denied");
+      return false;
+    }
+
     try {
-      console.log("[Winky] Loading MediaPipe...");
+      // ── Load MediaPipe ──
+      console.log("[Blinkit] Loading MediaPipe...");
       const { FaceLandmarker, FilesetResolver } = await import(
         "@mediapipe/tasks-vision"
       );
       const fs = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.32/wasm"
       );
-      console.log("[Winky] MediaPipe WASM loaded");
+      console.log("[Blinkit] MediaPipe WASM loaded");
 
       const MODEL_URL =
         "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
@@ -147,55 +159,92 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
           runningMode: "VIDEO",
           numFaces: 1,
         });
-        console.log("[Winky] FaceLandmarker created (GPU)");
+        console.log("[Blinkit] FaceLandmarker created (GPU)");
       } catch (gpuErr) {
-        console.warn("[Winky] GPU failed, falling back to CPU:", gpuErr);
+        console.warn("[Blinkit] GPU failed, falling back to CPU:", gpuErr);
         flRef.current = await FaceLandmarker.createFromOptions(fs, {
           baseOptions: { modelAssetPath: MODEL_URL, delegate: "CPU" },
           runningMode: "VIDEO",
           numFaces: 1,
         });
-        console.log("[Winky] FaceLandmarker created (CPU)");
+        console.log("[Blinkit] FaceLandmarker created (CPU)");
       }
 
-      console.log("[Winky] Requesting camera access...");
+      // ── Request camera ──
+      console.log("[Blinkit] Requesting camera access...");
       let stream: MediaStream;
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 320, height: 240, facingMode: "user" },
         });
-      } catch {
-        // Fallback: some browsers/OS reject specific constraints — try minimal
-        console.warn("[Winky] Retrying with minimal video constraints...");
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      }
-      console.log("[Winky] Camera stream obtained");
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await new Promise<void>((r) => {
-          if (videoRef.current) videoRef.current.onloadeddata = () => r();
-        });
-
-        if (canvasRef.current) {
-          canvasRef.current.width = 320;
-          canvasRef.current.height = 240;
+      } catch (firstErr) {
+        console.warn("[Blinkit] Retrying with minimal video constraints...", firstErr);
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        } catch (secondErr) {
+          // Specific error messages based on error type
+          const name = secondErr instanceof DOMException ? secondErr.name : "";
+          if (name === "NotAllowedError") {
+            setCameraError("Camera permission denied. Click the camera icon in your browser's address bar to allow access, then reload.");
+          } else if (name === "NotFoundError") {
+            setCameraError("No camera found. Please connect a webcam and reload the page.");
+          } else if (name === "NotReadableError") {
+            setCameraError("Camera is already in use by another app (Zoom, Teams, etc.). Close it and reload.");
+          } else {
+            setCameraError(`Camera error: ${secondErr instanceof Error ? secondErr.message : String(secondErr)}`);
+          }
+          console.error("[Blinkit] Camera access failed:", secondErr);
+          setCameraStatus("denied");
+          return false;
         }
-
-        await new Promise<void>((r) => setTimeout(r, 300));
-        warmedUpRef.current = true;
-
-        cameraReady.current = true;
-        setCameraStatus("ready");
-        detectLoop();
-        console.log("[Winky] Blink detection started");
-        return true;
       }
-      setCameraStatus("denied");
-      return false;
+      console.log("[Blinkit] Camera stream obtained");
+
+      // ── Attach stream to video element with timeout ──
+      if (!videoRef.current) {
+        setCameraError("Video element not found. Try reloading the page.");
+        setCameraStatus("denied");
+        return false;
+      }
+
+      videoRef.current.srcObject = stream;
+
+      // Wait for video data with a 10s timeout
+      const videoLoaded = await Promise.race([
+        new Promise<true>((resolve) => {
+          const v = videoRef.current!;
+          if (v.readyState >= 4) return resolve(true);
+          v.onloadeddata = () => resolve(true);
+        }),
+        new Promise<false>((resolve) =>
+          setTimeout(() => resolve(false), 10000)
+        ),
+      ]);
+
+      if (!videoLoaded) {
+        setCameraError("Camera stream timed out. Your webcam may be unresponsive. Try unplugging and reconnecting it.");
+        setCameraStatus("denied");
+        stream.getTracks().forEach((t) => t.stop());
+        return false;
+      }
+
+      if (canvasRef.current) {
+        canvasRef.current.width = 320;
+        canvasRef.current.height = 240;
+      }
+
+      await new Promise<void>((r) => setTimeout(r, 300));
+      warmedUpRef.current = true;
+
+      cameraReady.current = true;
+      setCameraStatus("ready");
+      detectLoop();
+      console.log("[Blinkit] Blink detection started");
+      return true;
     } catch (e: unknown) {
       const err = e instanceof Error ? e.message : String(e);
-      console.error("[Winky] Camera init failed:", err, e);
+      console.error("[Blinkit] Camera init failed:", err, e);
+      setCameraError(`Initialization failed: ${err}`);
       setCameraStatus("denied");
       return false;
     }
@@ -219,5 +268,5 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
 
   const isCameraReady = useCallback(() => cameraReady.current, []);
 
-  return { videoRef, canvasRef, initCamera, triggerFlash, cameraStatus, isCameraReady };
+  return { videoRef, canvasRef, initCamera, triggerFlash, cameraStatus, cameraError, isCameraReady };
 }
