@@ -19,7 +19,7 @@ export function MobileGameHeader({ usdmBalance, onBack }: MobileGameHeaderProps)
       </button>
       <a href="/" className="flex items-center gap-1.5">
         <span
-          className="inline-block h-4 w-4"
+          className="inline-block h-5 w-5"
           style={{
             WebkitMaskImage: "url(/logo-blinkit.svg)",
             WebkitMaskSize: "contain",
@@ -30,7 +30,7 @@ export function MobileGameHeader({ usdmBalance, onBack }: MobileGameHeaderProps)
             backgroundColor: "var(--wink-text)",
           }}
         />
-        <span className="text-xs font-bold tracking-wide text-wink-text">BLINKIT</span>
+        <span className="text-sm font-bold tracking-wide text-wink-text">BLINKIT</span>
       </a>
       <div className="text-[10px] font-mono font-semibold text-wink-cyan">
         {usdmBalance !== null ? `$${usdmBalance}` : ""}

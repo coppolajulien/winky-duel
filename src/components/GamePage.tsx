@@ -92,7 +92,7 @@ export default function GamePage() {
       {/* Left sidebar — hidden on mobile during gameplay */}
       <div className={cn(
         isGameActive ? "hidden md:flex" : "flex",
-        "flex-1 md:flex-none"
+        "min-h-0 flex-1 md:flex-none"
       )}>
         <Sidebar
           stake={stake}

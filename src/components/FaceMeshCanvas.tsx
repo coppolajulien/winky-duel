@@ -17,7 +17,7 @@ export function FaceMeshCanvas({ canvasRef, isBlinking, compact }: FaceMeshCanva
         isBlinking
           ? "border-red-500/60 shadow-[0_0_20px_var(--blink-shadow)]"
           : "border-wink-border shadow-[0_0_8px_var(--idle-shadow)]",
-        compact && "absolute bottom-2 right-2 z-10 opacity-90"
+        compact && "shrink-0"
       )}
     >
       <canvas

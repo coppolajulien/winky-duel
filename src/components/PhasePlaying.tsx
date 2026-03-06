@@ -56,9 +56,7 @@ export function PhasePlaying({
       {/* Top bar */}
       <div className="z-[3] flex items-center justify-between px-3 py-2 md:px-4 md:py-2.5">
         <div className="flex items-center gap-2 md:gap-3">
-          {!isMobile && (
-            <FaceMeshCanvas canvasRef={canvasRef} isBlinking={myBlinking} />
-          )}
+          <FaceMeshCanvas canvasRef={canvasRef} isBlinking={myBlinking} compact={isMobile} />
           <div className="flex items-baseline gap-1">
             <span
               className={cn(
@@ -101,10 +99,6 @@ export function PhasePlaying({
       {/* Chart area */}
       <div className="relative min-h-0 flex-1">
         <BlinkChart data={chartData} hasTarget={!!challenge} />
-        {/* Mobile: face mesh as PIP overlay */}
-        {isMobile && (
-          <FaceMeshCanvas canvasRef={canvasRef} isBlinking={myBlinking} compact />
-        )}
 
         {/* TX Toasts overlay */}
         <div className="pointer-events-none absolute bottom-4 right-4 z-[5] flex max-h-[60%] flex-col-reverse gap-1.5 overflow-hidden">

@@ -75,13 +75,13 @@ export function Sidebar({
     : duels;
 
   return (
-    <div className="flex w-full flex-col border-r border-wink-border bg-sidebar backdrop-blur-[20px] md:w-[300px] md:min-w-[300px]">
+    <div className="flex h-full w-full flex-col overflow-hidden border-r border-wink-border bg-sidebar backdrop-blur-[20px] md:w-[300px] md:min-w-[300px]">
       {/* Header */}
       <div className="border-b border-wink-border px-4 py-3.5">
         <div className="flex items-center justify-between">
           <a href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <span
-              className="inline-block h-7 w-7"
+              className="inline-block h-9 w-9 md:h-7 md:w-7"
               style={{
                 WebkitMaskImage: "url(/logo-blinkit.svg)",
                 WebkitMaskSize: "contain",
@@ -92,7 +92,7 @@ export function Sidebar({
                 backgroundColor: "var(--wink-text)",
               }}
             />
-            <span className="text-lg font-bold tracking-wide text-wink-text">BLINKIT</span>
+            <span className="text-xl font-bold tracking-wide text-wink-text md:text-lg">BLINKIT</span>
           </a>
           <Button
             variant="outline"
