@@ -70,7 +70,7 @@ export function DuelsList({
               key={s}
               onClick={() => setStake(s)}
               className={cn(
-                "flex-1 rounded-md py-1.5 font-mono text-[11px] font-bold transition-all",
+                "flex-1 rounded-md py-2 font-mono text-[11px] font-bold transition-all md:py-1.5",
                 stake === s
                   ? "border-[1.5px] border-wink-pink bg-wink-pink/10 text-wink-pink"
                   : "border border-wink-border bg-transparent text-wink-text-dim hover:border-wink-pink/30"
@@ -137,7 +137,7 @@ export function DuelsList({
               <div
                 onClick={() => !isOwn && authenticated && onLaunch(d)}
                 className={cn(
-                  "group flex items-center gap-1.5 rounded-lg bg-card px-2.5 py-2 transition-all",
+                  "group flex items-center gap-1.5 rounded-lg bg-card px-2.5 py-2.5 transition-all md:py-2",
                   hasFuse
                     ? "duel-fuse-inner"
                     : "border border-wink-border",
@@ -238,7 +238,7 @@ export function DuelsList({
                 <div
                   key={String(h.id)}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-lg border px-2.5 py-2",
+                    "flex items-center gap-1.5 rounded-lg border px-2.5 py-2.5 md:py-2",
                     h.status === DuelStatus.Cancelled
                       ? "border-wink-border opacity-50"
                       : h.won === true

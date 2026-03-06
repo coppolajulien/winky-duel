@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback } from "react";
+import { cn } from "@/lib/utils";
 import { useTxToasts } from "@/hooks/useTxToasts";
 import { useBlinkDetector } from "@/hooks/useBlinkDetector";
 import { useGameLoop } from "@/hooks/useGameLoop";
@@ -8,8 +9,10 @@ import { useWallet, publicClient } from "@/hooks/useWallet";
 import { useContract } from "@/hooks/useContract";
 import { useDuels } from "@/hooks/useDuels";
 import type { Duel } from "@/lib/types";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { GridBackground } from "./GridBackground";
 import { Sidebar } from "./Sidebar";
+import { MobileGameHeader } from "./MobileGameHeader";
 import { PhaseIdle } from "./PhaseIdle";
 import { PhaseCountdown } from "./PhaseCountdown";
 import { PhasePlaying } from "./PhasePlaying";
@@ -26,6 +29,7 @@ export default function GamePage() {
     onBlinkRef,
   });
 
+  const isMobile = useIsMobile();
   const wallet = useWallet();
   const contract = useContract();
   const { duels, history, loading: duelsLoading, refetchDuels } = useDuels(wallet.address);
@@ -72,8 +76,10 @@ export default function GamePage() {
     resetToasts();
   }, [reset, resetToasts]);
 
+  const isGameActive = phase !== "idle";
+
   return (
-    <div className="flex h-screen overflow-hidden font-sans text-foreground">
+    <div className="flex h-[100dvh] flex-col overflow-hidden font-sans text-foreground md:h-screen md:flex-row">
       {/* Hidden video element for camera */}
       <video
         ref={videoRef}
@@ -83,33 +89,49 @@ export default function GamePage() {
         className="pointer-events-none absolute h-px w-px opacity-0"
       />
 
-      {/* Left sidebar */}
-      <Sidebar
-        stake={stake}
-        setStake={setStake}
-        stakeFilter={stakeFilter}
-        setStakeFilter={setStakeFilter}
-        authenticated={wallet.authenticated}
-        ready={wallet.ready}
-        login={wallet.login}
-        logout={wallet.logout}
-        shortAddress={wallet.shortAddress}
-        address={wallet.address}
-        usdmBalance={wallet.usdmBalance}
-        balanceLoading={wallet.balanceLoading}
-        duels={duels}
-        history={history}
-        duelsLoading={duelsLoading}
-        currentAddress={(wallet.address as `0x${string}`) ?? null}
-        onOpenSend={() => setSendModalOpen(true)}
-        onLaunch={(duel) => {
-          resetToasts();
-          launch(duel);
-        }}
-      />
+      {/* Left sidebar — hidden on mobile during gameplay */}
+      <div className={cn(
+        isGameActive ? "hidden md:flex" : "flex",
+        "flex-1 md:flex-none"
+      )}>
+        <Sidebar
+          stake={stake}
+          setStake={setStake}
+          stakeFilter={stakeFilter}
+          setStakeFilter={setStakeFilter}
+          authenticated={wallet.authenticated}
+          ready={wallet.ready}
+          login={wallet.login}
+          logout={wallet.logout}
+          shortAddress={wallet.shortAddress}
+          address={wallet.address}
+          usdmBalance={wallet.usdmBalance}
+          balanceLoading={wallet.balanceLoading}
+          duels={duels}
+          history={history}
+          duelsLoading={duelsLoading}
+          currentAddress={(wallet.address as `0x${string}`) ?? null}
+          onOpenSend={() => setSendModalOpen(true)}
+          onLaunch={(duel) => {
+            resetToasts();
+            launch(duel);
+          }}
+        />
+      </div>
 
-      {/* Right: game area */}
-      <GridBackground>
+      {/* Right: game area — full screen on mobile during gameplay */}
+      <div className={cn(
+        isGameActive ? "flex" : "hidden md:flex",
+        "flex-1 flex-col min-h-0"
+      )}>
+        {/* Mobile header during gameplay */}
+        {isGameActive && (
+          <MobileGameHeader
+            usdmBalance={wallet.usdmBalance}
+            onBack={handleReset}
+          />
+        )}
+        <GridBackground>
         <div className="flex h-full flex-col">
           {phase === "idle" && cameraStatus === "denied" && (
             <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center justify-center">
@@ -238,7 +260,8 @@ export default function GamePage() {
             />
           )}
         </div>
-      </GridBackground>
+        </GridBackground>
+      </div>
 
       {/* Send USDM Modal */}
       <SendModal

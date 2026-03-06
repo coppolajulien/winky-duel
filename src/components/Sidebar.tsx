@@ -75,7 +75,7 @@ export function Sidebar({
     : duels;
 
   return (
-    <div className="flex w-[300px] min-w-[300px] flex-col border-r border-wink-border bg-sidebar backdrop-blur-[20px]">
+    <div className="flex w-full flex-col border-r border-wink-border bg-sidebar backdrop-blur-[20px] md:w-[300px] md:min-w-[300px]">
       {/* Header */}
       <div className="border-b border-wink-border px-4 py-3.5">
         <div className="flex items-center justify-between">

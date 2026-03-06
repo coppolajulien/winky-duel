@@ -82,7 +82,7 @@ export function SendModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-[380px] rounded-2xl border border-wink-border bg-background p-5 shadow-2xl">
+      <div className="relative z-10 w-[calc(100vw-32px)] max-w-[380px] rounded-2xl border border-wink-border bg-background p-5 shadow-2xl">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-sm font-bold">Send USDM</h2>

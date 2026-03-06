@@ -2,6 +2,7 @@
 
 import { type RefObject } from "react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { DURATION } from "@/lib/constants";
 import type { Duel, ChartPoint, TxToastData } from "@/lib/types";
 import { BlinkChart } from "./BlinkChart";
@@ -33,6 +34,8 @@ export function PhasePlaying({
   canvasRef,
   onRemoveTx,
 }: PhasePlayingProps) {
+  const isMobile = useIsMobile();
+
   return (
     <div className="relative flex flex-1 flex-col">
       {/* Overtake flash */}
@@ -41,23 +44,25 @@ export function PhasePlaying({
           <div className="pointer-events-none absolute inset-0 z-[10] animate-[overtake-flash_1.2s_ease-out_forwards]" />
           <div className="pointer-events-none absolute inset-0 z-[11] flex items-center justify-center">
             <div className="animate-[overtake-text_1.2s_ease-out_forwards] text-center">
-              <div className="text-[48px] font-black tracking-tight text-wink-cyan drop-shadow-[0_0_40px_rgba(0,229,255,0.6)]">
+              <div className="text-[32px] font-black tracking-tight text-wink-cyan drop-shadow-[0_0_40px_rgba(0,229,255,0.6)] md:text-[48px]">
                 YOU&apos;RE AHEAD!
               </div>
-              <div className="text-lg font-bold text-white/50">Keep blinking! 🔥</div>
+              <div className="text-sm font-bold text-white/50 md:text-lg">Keep blinking! 🔥</div>
             </div>
           </div>
         </>
       )}
 
       {/* Top bar */}
-      <div className="z-[3] flex items-center justify-between px-4 py-2.5">
-        <div className="flex items-center gap-3">
-          <FaceMeshCanvas canvasRef={canvasRef} isBlinking={myBlinking} />
-          <div className="flex items-baseline gap-1.5">
+      <div className="z-[3] flex items-center justify-between px-3 py-2 md:px-4 md:py-2.5">
+        <div className="flex items-center gap-2 md:gap-3">
+          {!isMobile && (
+            <FaceMeshCanvas canvasRef={canvasRef} isBlinking={myBlinking} />
+          )}
+          <div className="flex items-baseline gap-1">
             <span
               className={cn(
-                "font-mono text-[38px] font-extrabold leading-none text-wink-pink transition-all duration-100",
+                "font-mono text-[28px] font-extrabold leading-none text-wink-pink transition-all duration-100 md:text-[38px]",
                 myBlinking && "scale-105"
               )}
               style={{
@@ -68,13 +73,13 @@ export function PhasePlaying({
             >
               {myScore}
             </span>
-            <span className="text-[11px] text-wink-text-dim">blinks</span>
+            <span className="text-[10px] text-wink-text-dim md:text-[11px]">blinks</span>
           </div>
         </div>
 
         <div
           className={cn(
-            "rounded-2xl border border-wink-border bg-[var(--glass-bg)] px-4 py-2 font-mono text-[18px] font-bold backdrop-blur-[10px]",
+            "rounded-2xl border border-wink-border bg-[var(--glass-bg)] px-3 py-1.5 font-mono text-[14px] font-bold backdrop-blur-[10px] md:px-4 md:py-2 md:text-[18px]",
             timeLeft <= 5
               ? "text-destructive animate-[timer-warn_0.5s_ease_infinite]"
               : "text-wink-text"
@@ -84,9 +89,9 @@ export function PhasePlaying({
         </div>
 
         {challenge && (
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[11px] text-wink-text-dim">target</span>
-            <span className="font-mono text-[30px] font-extrabold leading-none text-wink-orange opacity-60">
+          <div className="flex items-baseline gap-1">
+            <span className="text-[10px] text-wink-text-dim md:text-[11px]">target</span>
+            <span className="font-mono text-[22px] font-extrabold leading-none text-wink-orange opacity-60 md:text-[30px]">
               {challenge.score}
             </span>
           </div>
@@ -96,6 +101,10 @@ export function PhasePlaying({
       {/* Chart area */}
       <div className="relative min-h-0 flex-1">
         <BlinkChart data={chartData} hasTarget={!!challenge} />
+        {/* Mobile: face mesh as PIP overlay */}
+        {isMobile && (
+          <FaceMeshCanvas canvasRef={canvasRef} isBlinking={myBlinking} compact />
+        )}
 
         {/* TX Toasts overlay */}
         <div className="pointer-events-none absolute bottom-4 right-4 z-[5] flex max-h-[60%] flex-col-reverse gap-1.5 overflow-hidden">

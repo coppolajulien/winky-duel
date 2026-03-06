@@ -50,12 +50,12 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
       <div className="mb-2.5">
         {result.isChallenge ? (
           result.won ? (
-            <img src="/victory.svg" alt="Victory" className="h-16 w-16 dark:invert" />
+            <img src="/victory.svg" alt="Victory" className="h-12 w-12 dark:invert md:h-16 md:w-16" />
           ) : (
-            <img src="/lost.svg" alt="Defeat" className="h-16 w-16 dark:invert" />
+            <img src="/lost.svg" alt="Defeat" className="h-12 w-12 dark:invert md:h-16 md:w-16" />
           )
         ) : (
-          <img src="/duel.svg" alt="Duel posted" className="h-16 w-16 dark:invert" />
+          <img src="/duel.svg" alt="Duel posted" className="h-12 w-12 dark:invert md:h-16 md:w-16" />
         )}
       </div>
 
@@ -92,9 +92,9 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
       </div>
 
       {/* Score comparison */}
-      <div className="mb-5 flex gap-5 rounded-xl border border-wink-border bg-[var(--glass-bg)] px-8 py-4 backdrop-blur-[10px]">
+      <div className="mb-5 flex gap-3 rounded-xl border border-wink-border bg-[var(--glass-bg)] px-5 py-3 backdrop-blur-[10px] md:gap-5 md:px-8 md:py-4">
         <div className="text-center">
-          <div className="font-mono text-[32px] font-extrabold text-wink-pink">
+          <div className="font-mono text-[24px] font-extrabold text-wink-pink md:text-[32px]">
             {result.my}
           </div>
           <div className="text-[9px] text-wink-text-dim">YOU</div>
@@ -103,7 +103,7 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
           <>
             <div className="w-px bg-wink-border" />
             <div className="text-center">
-              <div className="font-mono text-[32px] font-extrabold text-wink-orange">
+              <div className="font-mono text-[24px] font-extrabold text-wink-orange md:text-[32px]">
                 {result.target}
               </div>
               <div className="text-[9px] text-wink-text-dim">TARGET</div>

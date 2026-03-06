@@ -122,10 +122,13 @@
   body {
     @apply bg-wink-bg text-foreground;
     overflow: hidden;
+    padding-bottom: var(--safe-bottom);
   }
 
   /* ===== LIGHT MODE (MegaETH official colors) ===== */
   :root {
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
     --radius: 0.625rem;
 
     /* wink-* system */
