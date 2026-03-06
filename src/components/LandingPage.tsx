@@ -60,7 +60,7 @@ export default function LandingPage() {
         <nav className="relative z-10 flex items-center justify-between px-6 py-5 md:px-12 md:py-6">
           <a href="/" className="flex items-center gap-2.5">
             <span
-              className="inline-block h-12 w-12"
+              className="inline-block h-[72px] w-[72px]"
               style={{
                 WebkitMaskImage: "url(/logo-blinkit.svg)",
                 WebkitMaskSize: "contain",
@@ -71,7 +71,7 @@ export default function LandingPage() {
                 backgroundColor: "white",
               }}
             />
-            <span className="text-xl font-bold tracking-wide text-white">BLINKIT</span>
+            <span className="text-2xl font-bold tracking-wide text-white">BLINKIT</span>
           </a>
           <Link
             href="/play"
