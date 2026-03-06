@@ -67,6 +67,11 @@
   --animate-pulse-glow: pulse-glow 2s ease infinite;
 }
 
+@keyframes kenburns {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}
+
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }

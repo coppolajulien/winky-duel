@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useTxToasts } from "@/hooks/useTxToasts";
 import { useBlinkDetector } from "@/hooks/useBlinkDetector";
@@ -78,16 +78,41 @@ export default function GamePage() {
 
   const isGameActive = phase !== "idle";
 
+  const MOBILE_SLIDES = [
+    "/mobile-bg.png",
+    "/mobile-bg-1.png",
+    "/mobile-bg-2.png",
+    "/mobile-bg-3.png",
+    "/mobile-bg-4.png",
+    "/mobile-bg-5.png",
+  ];
+  const [slideIdx, setSlideIdx] = useState(0);
+
+  useEffect(() => {
+    if (!isMobile) return;
+    const id = setInterval(() => {
+      setSlideIdx((i) => (i + 1) % MOBILE_SLIDES.length);
+    }, 4000);
+    return () => clearInterval(id);
+  }, [isMobile]);
+
   if (isMobile) {
     return (
-      <div className="relative flex h-[100dvh] flex-col items-center justify-center gap-5 font-sans">
-        {/* Background image */}
-        <img
-          src="/mobile-bg.png"
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        {/* Color overlay for vibrancy */}
+      <div className="relative flex h-[100dvh] flex-col items-center justify-center gap-5 overflow-hidden font-sans">
+        {/* Stacked images with crossfade + Ken Burns */}
+        {MOBILE_SLIDES.map((src, i) => (
+          <img
+            key={src}
+            src={src}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out"
+            style={{
+              opacity: i === slideIdx ? 1 : 0,
+              animation: i === slideIdx ? "kenburns 8s ease-in-out forwards" : "none",
+            }}
+          />
+        ))}
+        {/* Color overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center gap-4">
