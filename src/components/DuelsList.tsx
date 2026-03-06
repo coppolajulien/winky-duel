@@ -64,9 +64,10 @@ export function DuelsList({
     ? duels.filter((d) => d.creatorFull.toLowerCase() === currentAddress.toLowerCase()).length
     : 0;
 
-  const displayedDuels = showMine
+  const displayedDuels = (showMine
     ? duels.filter((d) => currentAddress && d.creatorFull.toLowerCase() === currentAddress.toLowerCase())
-    : duels.filter((d) => !currentAddress || d.creatorFull.toLowerCase() !== currentAddress.toLowerCase());
+    : duels.filter((d) => !currentAddress || d.creatorFull.toLowerCase() !== currentAddress.toLowerCase())
+  ).toSorted((a, b) => b.stake - a.stake);
 
   const duelsTotalPages = Math.ceil(displayedDuels.length / DUELS_PAGE_SIZE);
   const paginatedDuels = displayedDuels.slice(
