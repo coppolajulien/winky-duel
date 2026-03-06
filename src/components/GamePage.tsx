@@ -108,7 +108,8 @@ export default function GamePage() {
             className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out"
             style={{
               opacity: i === slideIdx ? 1 : 0,
-              animation: i === slideIdx ? "kenburns 8s ease-in-out forwards" : "none",
+              animation: "kenburns 8s ease-in-out infinite alternate",
+              animationDelay: `${i * -1.3}s`,
             }}
           />
         ))}
