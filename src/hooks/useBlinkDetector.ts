@@ -22,6 +22,9 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   const lastTimestampRef = useRef(0);
   const warmedUpRef = useRef(false);
   const drawTickRef = useRef(0);
+  const isMobileRef = useRef(
+    typeof navigator !== "undefined" && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+  );
   const [cameraStatus, setCameraStatus] = useState<"idle" | "loading" | "ready" | "denied">("idle");
   const [cameraError, setCameraError] = useState<string | null>(null);
   const themeColors = useThemeColors();
@@ -102,14 +105,17 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
         const re = computeEAR(R_EYE, landmarks);
         const avg = (le + re) / 2;
 
-        if (avg < EAR_THRESHOLD) {
+        const threshold = isMobileRef.current ? EAR_THRESHOLD + 0.06 : EAR_THRESHOLD;
+        if (avg < threshold) {
           frameCtRef.current++;
         } else {
-          if (frameCtRef.current >= 1) {
+          const minFrames = isMobileRef.current ? 1 : 2;
+          const cooldown = isMobileRef.current ? 120 : 250;
+          if (frameCtRef.current >= minFrames) {
             const t = Date.now();
-            if (t - lastBlinkRef.current > 150) {
+            if (t - lastBlinkRef.current > cooldown) {
               lastBlinkRef.current = t;
-              flashRef.current = 8;
+              flashRef.current = 10;
               onBlinkRef.current?.();
             }
           }
@@ -121,7 +127,7 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
         // Throttle rendering: draw every 2nd frame to keep detection fast
         drawTickRef.current++;
         if (drawTickRef.current % 2 === 0 || flashRef.current > 0) {
-          drawMesh(ctx, landmarks, cv.width, cv.height, flashRef.current / 8, themeColorsRef.current);
+          drawMesh(ctx, landmarks, cv.width, cv.height, flashRef.current / 10, themeColorsRef.current);
         }
       } else {
         drawMesh(ctx, null, cv.width, cv.height, 0, themeColorsRef.current);
