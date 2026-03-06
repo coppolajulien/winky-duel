@@ -201,7 +201,13 @@ export default function GamePage() {
               </div>
             </div>
           )}
-          {phase === "idle" && cameraStatus !== "denied" && <PhaseIdle duels={duels} />}
+          {phase === "idle" && cameraStatus !== "denied" && (
+            <PhaseIdle
+              duels={duels}
+              authenticated={wallet.authenticated}
+              onLaunch={(duel) => { resetToasts(); launch(duel); }}
+            />
+          )}
           {phase === "approving" && (
             <div className="flex flex-1 animate-[fade-in_0.3s_ease] flex-col items-center justify-center gap-4">
               <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-wink-text-dim">

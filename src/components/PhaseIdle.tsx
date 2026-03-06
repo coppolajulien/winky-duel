@@ -25,9 +25,11 @@ function shuffle<T>(arr: T[], seed: number): T[] {
 
 interface PhaseIdleProps {
   duels: Duel[];
+  authenticated: boolean;
+  onLaunch: (duel: Duel) => void;
 }
 
-export function PhaseIdle({ duels }: PhaseIdleProps) {
+export function PhaseIdle({ duels, authenticated, onLaunch }: PhaseIdleProps) {
   // Pick up to 3 random duels $25+ with random images
   const featuredDuels = useMemo(() => {
     const big = duels.filter((d) => d.stake >= 25);
@@ -40,7 +42,7 @@ export function PhaseIdle({ duels }: PhaseIdleProps) {
   }, [duels]);
 
   return (
-    <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center justify-center px-8">
+    <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center overflow-y-auto px-8 pt-10">
       {/* Title */}
       <div className="text-center">
         <h2 className="text-4xl font-extrabold text-wink-text">
@@ -61,7 +63,12 @@ export function PhaseIdle({ duels }: PhaseIdleProps) {
             {featuredDuels.map((d) => (
               <div
                 key={String(d.id)}
-                className="group relative aspect-[4/3] overflow-hidden rounded-2xl"
+                onClick={() => authenticated && onLaunch(d)}
+                className={`group relative aspect-[4/3] overflow-hidden rounded-2xl ${
+                  authenticated
+                    ? "cursor-pointer"
+                    : "cursor-not-allowed opacity-60"
+                }`}
               >
                 <img
                   src={d.img}
@@ -74,6 +81,9 @@ export function PhaseIdle({ duels }: PhaseIdleProps) {
                     Blink <span className="text-wink-pink">{d.score}</span> times.
                     <br />
                     Win <span className="text-wink-pink">${d.stake}</span>.
+                  </p>
+                  <p className="mt-1 font-mono text-[9px] text-white/40">
+                    {d.creator}
                   </p>
                 </div>
               </div>

@@ -35,7 +35,7 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   useEffect(() => {
     const orig = console.error;
     console.error = (...args: unknown[]) => {
-      if (typeof args[0] === "string" && args[0].includes("TensorFlow Lite")) return;
+      if (typeof args[0] === "string" && (args[0].includes("TensorFlow Lite") || args[0].includes("isActive"))) return;
       orig.apply(console, args);
     };
     return () => { console.error = orig; };
