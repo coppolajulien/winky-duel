@@ -46,10 +46,12 @@ export function PhaseIdle({ duels, authenticated, onLaunch }: PhaseIdleProps) {
       {/* Title */}
       <div className="text-center">
         <h2 className="text-4xl font-extrabold uppercase text-wink-text">
-          Blink the fastest. Win the pot.
+          Stake. Blink.
+          <br />
+          Take their money.
         </h2>
         <p className="mx-auto mt-3 max-w-md text-sm text-wink-text-dim">
-          Every blink counts. Outblink your opponent.
+          Stake USDM, challenge a player, outblink them. Winner takes all.
         </p>
       </div>
 
@@ -78,9 +80,9 @@ export function PhaseIdle({ duels, authenticated, onLaunch }: PhaseIdleProps) {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-4">
                   <p className="text-lg font-bold leading-tight text-white">
-                    Blink <span className="text-wink-pink">{d.score}</span> times.
+                    Beat <span className="text-wink-pink">{d.score}</span> blinks.
                     <br />
-                    Win <span className="text-wink-pink">${d.stake}</span>.
+                    Take <span className="text-wink-pink">${d.stake}</span>.
                   </p>
                   <p className="mt-1 font-mono text-[9px] text-white/40">
                     {d.creator}
