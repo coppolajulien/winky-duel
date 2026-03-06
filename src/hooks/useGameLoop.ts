@@ -5,6 +5,7 @@ import { parseUnits } from "viem";
 import { DURATION } from "@/lib/constants";
 import { publicClient } from "@/hooks/useWallet";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI } from "@/lib/constants";
+import { DuelStatus } from "@/lib/types";
 import type { GamePhase, Duel, ChartPoint, GameResult } from "@/lib/types";
 
 interface ContractActions {
@@ -108,6 +109,22 @@ export function useGameLoop({
       let hash: `0x${string}`;
 
       if (isChallenge) {
+        // Pre-check: verify duel is still open before spending gas
+        try {
+          const duel = await publicClient.readContract({
+            address: WINKY_DUEL_ADDRESS,
+            abi: WINKY_DUEL_ABI,
+            functionName: "getDuel",
+            args: [currentChallenge!.id],
+          }) as { status: number };
+          if (duel.status !== DuelStatus.Open) {
+            throw new Error("DUEL_TAKEN");
+          }
+        } catch (e) {
+          if (e instanceof Error && e.message === "DUEL_TAKEN") throw e;
+          // If the read fails, proceed anyway — let the TX decide
+        }
+
         hash = await contractActions.challengeDuel(
           currentChallenge!.id,
           score,
@@ -152,9 +169,20 @@ export function useGameLoop({
     } catch (err: unknown) {
       console.error("Submit failed:", err);
       const raw = err instanceof Error ? err.message : String(err);
-      // Extract short reason from viem errors
-      const match = raw.match(/reason:\s*(.+?)(?:\n|$)/);
-      const errorMsg = match?.[1] ?? (raw.length > 120 ? raw.slice(0, 120) + "…" : raw);
+
+      // User-friendly error messages
+      let errorMsg: string;
+      if (raw === "DUEL_TAKEN" || raw.includes("DuelNotOpen")) {
+        errorMsg = "This duel was already taken by another player.";
+      } else if (raw.includes("InsufficientBalance") || raw.includes("transfer amount exceeds balance")) {
+        errorMsg = "Insufficient USDM balance.";
+      } else if (raw.includes("User rejected") || raw.includes("User denied") || raw.includes("rejected the request")) {
+        errorMsg = "Transaction cancelled.";
+      } else {
+        const match = raw.match(/reason:\s*(.+?)(?:\n|$)/);
+        errorMsg = match?.[1] ?? (raw.length > 120 ? raw.slice(0, 120) + "…" : raw);
+      }
+
       setResult({
         my: score,
         target: currentChallenge?.score ?? null,
