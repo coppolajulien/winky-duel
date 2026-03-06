@@ -121,7 +121,6 @@
   }
   body {
     @apply bg-wink-bg text-foreground;
-    overflow: hidden;
     padding-bottom: var(--safe-bottom);
   }
 
