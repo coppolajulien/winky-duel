@@ -72,6 +72,13 @@
   to { transform: scale(1.1); }
 }
 
+@keyframes chart-draw {
+  0% { stroke-dashoffset: 1200; opacity: 0.8; }
+  70% { stroke-dashoffset: 0; opacity: 1; }
+  85% { stroke-dashoffset: 0; opacity: 0.6; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }

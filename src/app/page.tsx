@@ -2,10 +2,10 @@
 
 import dynamic from "next/dynamic";
 
-const GamePage = dynamic(() => import("@/components/GamePage"), {
+const LandingPage = dynamic(() => import("@/components/LandingPage"), {
   ssr: false,
 });
 
 export default function Home() {
-  return <GamePage />;
+  return <LandingPage />;
 }
