@@ -22,8 +22,44 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Blinkit",
-  description: "Blink to win. Every blink is a transaction on MegaETH.",
+  title: {
+    default: "Blinkit — The First PvP Blink-to-Earn Game",
+    template: "%s | Blinkit",
+  },
+  description:
+    "Bet USDM. Blink against your opponent. Most blinks wins the pool. The first real-time PvP blink-to-earn game on MegaETH.",
+  keywords: [
+    "blinkit",
+    "blink to earn",
+    "PvP game",
+    "MegaETH",
+    "crypto game",
+    "USDM",
+    "web3 game",
+    "onchain game",
+  ],
+  authors: [{ name: "Blinkit" }],
+  creator: "Blinkit",
+  metadataBase: new URL("https://blinkit.gg"),
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://blinkit.gg",
+    siteName: "Blinkit",
+    title: "Blinkit — Bet. Blink. Win the Pool.",
+    description:
+      "The first PvP blink-to-earn game. Stake USDM, face your opponent, most blinks takes it all. Built on MegaETH.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blinkit — Bet. Blink. Win the Pool.",
+    description:
+      "The first PvP blink-to-earn game. Stake USDM, face your opponent, most blinks takes it all.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: "/logo-blinkit.svg",
     apple: "/logo-blinkit.svg",

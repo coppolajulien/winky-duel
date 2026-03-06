@@ -106,9 +106,9 @@ export default function LandingPage() {
             />
           )}
 
-          <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-white/40">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.25em] text-white/40">
             The first PvP blink-to-earn game
-          </p>
+          </h2>
 
           <h1 className="max-w-3xl text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
             Bet. Blink.
@@ -122,9 +122,9 @@ export default function LandingPage() {
             </p>
           ) : (
             <>
-              <p className="max-w-md text-base text-white/60 md:text-lg">
+              <h3 className="max-w-md text-base font-normal text-white/60 md:text-lg">
                 Stake USDM. Face your opp. Most blinks takes it all.
-              </p>
+              </h3>
               <Link
                 href="/play"
                 className="mt-4 rounded-full border-2 border-white px-10 py-3.5 text-base font-bold text-white transition-all hover:bg-white hover:text-black"

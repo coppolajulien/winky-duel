@@ -82,9 +82,14 @@ export function Leaderboard({ entries, loading }: LeaderboardProps) {
                   {r.r}
                 </span>
                 <div>
-                  <div className="font-mono text-[11px] text-wink-text">
+                  <a
+                    href={`https://mega.etherscan.io/address/${r.addrFull}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-[11px] text-wink-text transition-colors hover:text-wink-pink"
+                  >
                     {r.addr}
-                  </div>
+                  </a>
                   <div className="text-[9px] text-wink-text-dim">
                     {r.blinks.toLocaleString()} blinks
                   </div>

@@ -99,6 +99,7 @@ export function useLeaderboard() {
       const leaderboard: LeaderboardEntry[] = sorted.map(([addr, s], i) => ({
         r: i + 1,
         addr: shortAddr(addr),
+        addrFull: addr,
         blinks: s.totalBlinks,
         wins: s.wins,
         earn: Math.round(s.totalEarnings * 100) / 100, // 2 decimal places

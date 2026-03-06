@@ -36,6 +36,7 @@ export interface Duel {
 export interface LeaderboardEntry {
   r: number;
   addr: string;
+  addrFull: string;
   blinks: number;
   wins: number;
   earn: number;
