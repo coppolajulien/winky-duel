@@ -19,6 +19,8 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   const animRef = useRef<number>(0);
   const flashRef = useRef(0);
   const cameraReady = useRef(false);
+  const initializingRef = useRef(false);
+  const streamRef = useRef<MediaStream | null>(null);
   const lastTimestampRef = useRef(0);
   const warmedUpRef = useRef(false);
   const drawTickRef = useRef(0);
@@ -84,11 +86,8 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
       }
 
       // Ensure timestamps are monotonically increasing (MediaPipe requirement)
-      const now = performance.now();
-      if (now <= lastTimestampRef.current) {
-        animRef.current = requestAnimationFrame(detect);
-        return;
-      }
+      const rawNow = performance.now();
+      const now = rawNow > lastTimestampRef.current ? rawNow : lastTimestampRef.current + 1;
       lastTimestampRef.current = now;
 
       // Skip detection until warmup is done
@@ -140,6 +139,8 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
 
   const initCamera = useCallback(async (): Promise<boolean> => {
     if (cameraReady.current) return true;
+    if (initializingRef.current) return false; // Prevent concurrent calls
+    initializingRef.current = true;
     setCameraStatus("loading");
     setCameraError(null);
 
@@ -148,6 +149,7 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
       console.error("[Blinkit] getUserMedia not available");
       setCameraError("Your browser doesn't support camera access. Use Chrome or Firefox on HTTPS.");
       setCameraStatus("denied");
+      initializingRef.current = false;
       return false;
     }
 
@@ -207,15 +209,20 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
           }
           console.error("[Blinkit] Camera access failed:", secondErr);
           setCameraStatus("denied");
+          initializingRef.current = false;
           return false;
         }
       }
       console.log("[Blinkit] Camera stream obtained");
+      streamRef.current = stream;
 
       // ── Attach stream to video element with timeout ──
       if (!videoRef.current) {
+        stream.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
         setCameraError("Video element not found. Try reloading the page.");
         setCameraStatus("denied");
+        initializingRef.current = false;
         return false;
       }
 
@@ -237,6 +244,8 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
         setCameraError("Camera stream timed out. Your webcam may be unresponsive. Try unplugging and reconnecting it.");
         setCameraStatus("denied");
         stream.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+        initializingRef.current = false;
         return false;
       }
 
@@ -256,8 +265,14 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
     } catch (e: unknown) {
       const err = e instanceof Error ? e.message : String(e);
       console.error("[Blinkit] Camera init failed:", err, e);
+      // Stop any stream that was acquired before the error
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
       setCameraError(`Initialization failed: ${err}`);
       setCameraStatus("denied");
+      initializingRef.current = false;
       return false;
     }
   }, [detectLoop]);
@@ -270,10 +285,15 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   useEffect(() => {
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
-      if (videoRef.current?.srcObject) {
-        (videoRef.current.srcObject as MediaStream)
-          .getTracks()
-          .forEach((t) => t.stop());
+      // Stop camera stream
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+      // Close FaceLandmarker to free GPU/WASM memory
+      if (flRef.current?.close) {
+        flRef.current.close();
+        flRef.current = null;
       }
     };
   }, []);
