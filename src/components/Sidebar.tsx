@@ -69,7 +69,7 @@ export function Sidebar({
         <div className="flex items-center justify-between">
           <a href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <span
-              className="inline-block h-7 w-7"
+              className="inline-block h-11 w-11"
               style={{
                 WebkitMaskImage: "url(/logo-blinkit.svg)",
                 WebkitMaskSize: "contain",

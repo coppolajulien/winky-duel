@@ -27,8 +27,8 @@ const ERC20_TRANSFER_ABI = [
 // MegaETH has ~60K intrinsic gas — explicit limits to avoid estimation issues
 const GAS_LIMITS = {
   approve: 150_000n,
-  createDuel: 300_000n,
-  challengeDuel: 400_000n,
+  createDuel: 500_000n,
+  challengeDuel: 800_000n,
   cancelDuel: 250_000n,
   recordBlink: 150_000n,
   transfer: 150_000n,

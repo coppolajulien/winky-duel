@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Monitor } from "lucide-react";
+import { Monitor, ChevronDown } from "lucide-react";
 import { STAKES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ export function DuelsList({
   const [historyPage, setHistoryPage] = useState(0);
   const [historyFilter, setHistoryFilter] = useState<"all" | "won" | "lost">("all");
   const [duelsPage, setDuelsPage] = useState(0);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const filteredHistory = historyFilter === "all"
     ? history
@@ -104,7 +105,7 @@ export function DuelsList({
           className="w-full rounded-xl bg-wink-pink text-[11px] font-bold text-white hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
           size="sm"
         >
-          {isMobile ? "Play on Desktop" : authenticated ? "Create & Play" : "Connect to Play"}
+          {isMobile ? "PLAY ON DESKTOP" : authenticated ? "CREATE & PLAY" : "CONNECT TO PLAY"}
         </Button>
       </div>
 
@@ -206,110 +207,128 @@ export function DuelsList({
         )}
       </div>
 
-      {/* Box 3: History */}
+      {/* Box 3: History (collapsible) */}
       {history.length > 0 && (
-        <div className="rounded-xl bg-card p-3.5">
-          <div className="mb-2.5 flex items-center justify-between">
+        <div className="rounded-xl bg-card">
+          <button
+            onClick={() => setHistoryOpen((o) => !o)}
+            className="flex w-full items-center justify-between p-3.5"
+          >
             <h2 className="text-[10px] font-semibold uppercase tracking-[0.08em] text-wink-text-dim">
               My History
+              <span className="ml-1.5 text-wink-text-dim/60">({history.length})</span>
             </h2>
-            <div className="flex gap-1">
-              {(["all", "won", "lost"] as const).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => { setHistoryFilter(f); setHistoryPage(0); }}
-                  className={cn(
-                    "rounded-md px-2 py-0.5 text-[9px] font-semibold transition-all",
-                    historyFilter === f
-                      ? f === "won"
-                        ? "bg-wink-pink/[0.1] text-wink-pink"
-                        : f === "lost"
-                          ? "bg-white/[0.06] text-wink-text-dim"
-                          : "bg-white/[0.1] text-wink-text"
-                      : "text-wink-text-dim hover:text-wink-text"
-                  )}
-                >
-                  {f === "all" ? "All" : f === "won" ? "Won" : "Lost"}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="flex flex-col gap-1">
-            {paginatedHistory.map((h) => {
-              const isCreator =
-                currentAddress &&
-                h.creatorFull.toLowerCase() === currentAddress.toLowerCase();
-              const myScore = isCreator ? h.creatorScore : h.challengerScore;
-              const theirScore = isCreator ? h.challengerScore : h.creatorScore;
-              const opponent = isCreator ? h.challenger : h.creator;
+            <ChevronDown
+              className={cn(
+                "h-3.5 w-3.5 text-wink-text-dim transition-transform duration-200",
+                historyOpen && "rotate-180"
+              )}
+            />
+          </button>
 
-              return (
-                <div
-                  key={String(h.id)}
-                  className={cn(
-                    "flex items-center gap-1.5 rounded-xl px-3 py-2.5",
-                    h.status === DuelStatus.Cancelled
-                      ? "opacity-40"
-                      : h.won === true
-                        ? "bg-wink-pink/[0.04]"
-                        : ""
-                  )}
-                >
-                  <div className="flex-1">
-                    <div className="font-mono text-[10px] text-wink-text">
-                      vs {opponent || "—"}
-                    </div>
-                    <div className="text-[9px] text-wink-text-dim">
-                      {h.status === DuelStatus.Cancelled ? "Cancelled" : `${myScore} - ${theirScore}`}
-                    </div>
-                  </div>
-                  <div className="font-mono text-[11px] font-bold text-wink-text">
-                    ${h.stake}
-                  </div>
-                  {h.status === DuelStatus.Settled && (
+          {historyOpen && (
+            <div className="px-3.5 pb-3.5">
+              {/* Filters */}
+              <div className="mb-2 flex gap-1">
+                {(["all", "won", "lost"] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => { setHistoryFilter(f); setHistoryPage(0); }}
+                    className={cn(
+                      "rounded-md px-2 py-0.5 text-[9px] font-semibold transition-all",
+                      historyFilter === f
+                        ? f === "won"
+                          ? "bg-wink-pink/[0.1] text-wink-pink"
+                          : f === "lost"
+                            ? "bg-white/[0.06] text-wink-text-dim"
+                            : "bg-white/[0.1] text-wink-text"
+                        : "text-wink-text-dim hover:text-wink-text"
+                    )}
+                  >
+                    {f === "all" ? "All" : f === "won" ? "Won" : "Lost"}
+                  </button>
+                ))}
+              </div>
+
+              {/* History items */}
+              <div className="flex flex-col gap-1">
+                {paginatedHistory.map((h) => {
+                  const isCreator =
+                    currentAddress &&
+                    h.creatorFull.toLowerCase() === currentAddress.toLowerCase();
+                  const myScore = isCreator ? h.creatorScore : h.challengerScore;
+                  const theirScore = isCreator ? h.challengerScore : h.creatorScore;
+                  const opponent = isCreator ? h.challenger : h.creator;
+
+                  return (
                     <div
+                      key={String(h.id)}
                       className={cn(
-                        "rounded-md px-1.5 py-0.5 text-[9px] font-bold",
-                        h.won === true
-                          ? "bg-wink-pink/10 text-wink-pink"
-                          : h.won === false
-                            ? "bg-white/[0.04] text-wink-text-dim"
-                            : "bg-white/[0.04] text-wink-text-dim"
+                        "flex items-center gap-1.5 rounded-xl px-3 py-2.5",
+                        h.status === DuelStatus.Cancelled
+                          ? "opacity-40"
+                          : h.won === true
+                            ? "bg-wink-pink/[0.04]"
+                            : ""
                       )}
                     >
-                      {h.won === true ? "WON" : h.won === false ? "LOST" : "DRAW"}
+                      <div className="flex-1">
+                        <div className="font-mono text-[10px] text-wink-text">
+                          vs {opponent || "—"}
+                        </div>
+                        <div className="text-[9px] text-wink-text-dim">
+                          {h.status === DuelStatus.Cancelled ? "Cancelled" : `${myScore} - ${theirScore}`}
+                        </div>
+                      </div>
+                      <div className="font-mono text-[11px] font-bold text-wink-text">
+                        ${h.stake}
+                      </div>
+                      {h.status === DuelStatus.Settled && (
+                        <div
+                          className={cn(
+                            "rounded-md px-1.5 py-0.5 text-[9px] font-bold",
+                            h.won === true
+                              ? "bg-wink-pink/10 text-wink-pink"
+                              : h.won === false
+                                ? "bg-white/[0.04] text-wink-text-dim"
+                                : "bg-white/[0.04] text-wink-text-dim"
+                          )}
+                        >
+                          {h.won === true ? "WON" : h.won === false ? "LOST" : "DRAW"}
+                        </div>
+                      )}
+                      {h.status === DuelStatus.Cancelled && (
+                        <div className="rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-white/[0.04] text-wink-text-dim">
+                          CANCELLED
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {h.status === DuelStatus.Cancelled && (
-                    <div className="rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-white/[0.04] text-wink-text-dim">
-                      CANCELLED
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-2 flex items-center justify-between">
-              <button
-                onClick={() => setHistoryPage((p) => Math.max(0, p - 1))}
-                disabled={historyPage === 0}
-                className="rounded px-2 py-0.5 text-[10px] font-semibold text-wink-text-dim transition-colors hover:text-wink-text disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                ← Prev
-              </button>
-              <span className="text-[9px] text-wink-text-dim">
-                {historyPage + 1} / {totalPages}
-              </span>
-              <button
-                onClick={() => setHistoryPage((p) => Math.min(totalPages - 1, p + 1))}
-                disabled={historyPage >= totalPages - 1}
-                className="rounded px-2 py-0.5 text-[10px] font-semibold text-wink-text-dim transition-colors hover:text-wink-text disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                Next →
-              </button>
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-2 flex items-center justify-between">
+                  <button
+                    onClick={() => setHistoryPage((p) => Math.max(0, p - 1))}
+                    disabled={historyPage === 0}
+                    className="rounded px-2 py-0.5 text-[10px] font-semibold text-wink-text-dim transition-colors hover:text-wink-text disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    ← Prev
+                  </button>
+                  <span className="text-[9px] text-wink-text-dim">
+                    {historyPage + 1} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setHistoryPage((p) => Math.min(totalPages - 1, p + 1))}
+                    disabled={historyPage >= totalPages - 1}
+                    className="rounded px-2 py-0.5 text-[10px] font-semibold text-wink-text-dim transition-colors hover:text-wink-text disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    Next →
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

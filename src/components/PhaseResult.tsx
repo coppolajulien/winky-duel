@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Image, Check, Download } from "lucide-react";
@@ -8,6 +8,15 @@ import type { GameResult, ChartPoint } from "@/lib/types";
 import { copyShareCard } from "@/lib/shareCard";
 
 const APP_URL = "https://winky-duel.vercel.app";
+
+const DESKTOP_SLIDES = [
+  "/desktop-bg.jpg",
+  "/desktop-bg-1.jpg",
+  "/desktop-bg-2.jpg",
+  "/desktop-bg-3.jpg",
+  "/desktop-bg-4.jpg",
+  "/desktop-bg-5.jpg",
+];
 
 interface PhaseResultProps {
   result: GameResult;
@@ -19,11 +28,18 @@ interface PhaseResultProps {
 export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultProps) {
   const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "copied" | "downloaded">("idle");
 
+  const bgImage = useMemo(
+    () => DESKTOP_SLIDES[Math.floor(Math.random() * DESKTOP_SLIDES.length)],
+    []
+  );
+
   const shareOnX = useCallback(() => {
     let text: string;
-    if (result.isChallenge && result.won) {
+    if (result.error) {
+      text = `👁️ I just scored ${result.my} blinks in a Winky Duel!\n\nStaked $${stake} USDM — who dares to challenge me? ⚔️`;
+    } else if (result.isChallenge && result.won === true) {
       text = `👁️ I just won a Winky Duel!\n\n${result.my} vs ${result.target} blinks — earned $${(stake * 2 * 0.95 - stake).toFixed(0)} USDM 💰\n\nThink you can blink faster? 👀`;
-    } else if (result.isChallenge && !result.won) {
+    } else if (result.isChallenge && result.won === false) {
       text = `👁️ Lost a Winky Duel... ${result.my} vs ${result.target} blinks 💀\n\nI need a rematch! Can you beat ${result.target} blinks?`;
     } else {
       text = `👁️ I just scored ${result.my} blinks in a Winky Duel!\n\nStaked $${stake} USDM — who dares to challenge me? ⚔️`;
@@ -47,70 +63,89 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
 
   return (
     <div className="flex flex-1 animate-[fade-in_0.4s_ease] flex-col items-center justify-center p-5">
-      {/* Icon */}
-      <div className="mb-3">
-        {result.isChallenge ? (
-          result.won ? (
-            <img src="/victory.svg" alt="Victory" className="h-14 w-14 dark:invert md:h-16 md:w-16" />
-          ) : (
-            <img src="/lost.svg" alt="Defeat" className="h-14 w-14 dark:invert md:h-16 md:w-16" />
-          )
-        ) : (
-          <img src="/duel.svg" alt="Duel posted" className="h-14 w-14 dark:invert md:h-16 md:w-16" />
-        )}
-      </div>
-
-      {/* Title */}
-      <div
-        className={cn(
-          "mb-1 text-3xl font-black",
-          result.isChallenge
-            ? result.won
-              ? "text-wink-pink"
-              : "text-wink-text-dim"
-            : "text-wink-pink"
-        )}
-      >
-        {result.isChallenge
-          ? result.won
-            ? "YOU WIN!"
-            : "YOU LOSE"
-          : "DUEL POSTED!"}
-      </div>
-
-      {/* Winnings */}
-      {result.isChallenge && result.won && (
-        <div className="font-mono text-lg font-bold text-wink-pink">
-          +${(stake * 2 * 0.95 - stake).toFixed(2)}
-        </div>
-      )}
-
-      {/* Subtitle */}
-      <div className="mb-6 text-center text-[11px] text-wink-text-dim">
-        {result.isChallenge
-          ? `${result.my} vs ${result.target} blinks`
-          : `Score of ${result.my} posted`}
-      </div>
-
-      {/* Score comparison */}
-      <div className="mb-6 flex gap-4 rounded-2xl bg-card px-6 py-4 md:gap-6 md:px-8 md:py-5">
-        <div className="text-center">
-          <div className="font-mono text-[28px] font-extrabold text-wink-pink md:text-[36px]">
-            {result.my}
+      {/* Hero card with background visual */}
+      <div className="relative mb-8 w-full max-w-sm overflow-hidden rounded-2xl">
+        <img
+          src={bgImage}
+          alt=""
+          className="h-56 w-full object-cover md:h-64"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
+          {/* Title */}
+          <div
+            className={cn(
+              "mb-1 text-3xl font-black drop-shadow-lg",
+              result.error
+                ? "text-red-400"
+                : result.isChallenge
+                  ? result.won === true
+                    ? "text-wink-pink"
+                    : result.won === false
+                      ? "text-white/40"
+                      : "text-white/60"
+                  : "text-wink-pink"
+            )}
+          >
+            {result.error
+              ? "TX FAILED"
+              : result.isChallenge
+                ? result.won === true
+                  ? "YOU WIN!"
+                  : result.won === false
+                    ? "YOU LOSE"
+                    : "DRAW"
+                : "DUEL POSTED!"}
           </div>
-          <div className="text-[9px] text-wink-text-dim">YOU</div>
-        </div>
-        {result.target !== null && (
-          <>
-            <div className="w-px bg-wink-border" />
-            <div className="text-center">
-              <div className="font-mono text-[28px] font-extrabold text-wink-text-dim md:text-[36px]">
-                {result.target}
-              </div>
-              <div className="text-[9px] text-wink-text-dim">TARGET</div>
+
+          {/* Error message */}
+          {result.error && (
+            <div className="mb-2 max-w-[260px] text-center text-[11px] text-red-400/80 drop-shadow-lg">
+              Transaction failed — your score was not submitted. Try again.
             </div>
-          </>
-        )}
+          )}
+
+          {/* Winnings */}
+          {result.isChallenge && result.won === true && !result.error && (
+            <div className="font-mono text-lg font-bold text-wink-pink drop-shadow-lg">
+              +${(stake * 2 * 0.95 - stake).toFixed(2)}
+            </div>
+          )}
+
+          {/* Subtitle */}
+          <div className="mb-4 text-center text-[11px] text-white/60">
+            {result.error
+              ? `You blinked ${result.my} times`
+              : result.isChallenge
+                ? `${result.my} vs ${result.target} blinks`
+                : `Score of ${result.my} posted`}
+          </div>
+
+          {/* Score */}
+          <div className="flex gap-4">
+            <div className="text-center">
+              <div className="font-mono text-[36px] font-extrabold text-white drop-shadow-lg md:text-[44px]">
+                {result.my}
+              </div>
+              <div className="text-[9px] font-semibold uppercase tracking-wider text-white/50">
+                You
+              </div>
+            </div>
+            {result.target !== null && (
+              <>
+                <div className="w-px bg-white/20" />
+                <div className="text-center">
+                  <div className="font-mono text-[36px] font-extrabold text-white/40 drop-shadow-lg md:text-[44px]">
+                    {result.target}
+                  </div>
+                  <div className="text-[9px] font-semibold uppercase tracking-wider text-white/30">
+                    Target
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Actions */}
@@ -119,7 +154,7 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
           onClick={onReset}
           className="rounded-full bg-wink-pink text-white hover:brightness-110"
         >
-          <img src="/duel.svg" alt="" className="mr-1 h-4 w-4 invert" /> Again
+          Again
         </Button>
         <Button
           onClick={handleCopyImage}

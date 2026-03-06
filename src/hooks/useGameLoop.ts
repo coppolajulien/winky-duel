@@ -149,9 +149,12 @@ export function useGameLoop({
       // Refresh duels list and balance
       refetchDuels();
       refreshBalance();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Submit failed:", err);
-      const errorMsg = err instanceof Error ? err.message : "Transaction failed";
+      const raw = err instanceof Error ? err.message : String(err);
+      // Extract short reason from viem errors
+      const match = raw.match(/reason:\s*(.+?)(?:\n|$)/);
+      const errorMsg = match?.[1] ?? (raw.length > 120 ? raw.slice(0, 120) + "…" : raw);
       setResult({
         my: score,
         target: currentChallenge?.score ?? null,
