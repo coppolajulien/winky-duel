@@ -64,18 +64,18 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
   return (
     <div className="flex flex-1 animate-[fade-in_0.4s_ease] flex-col items-center justify-center p-5">
       {/* Hero card with background visual */}
-      <div className="relative mb-8 w-full max-w-sm overflow-hidden rounded-2xl">
+      <div className="relative mb-8 w-full max-w-lg overflow-hidden rounded-2xl">
         <img
           src={bgImage}
           alt=""
-          className="h-56 w-full object-cover md:h-64"
+          className="h-64 w-full object-cover md:h-80"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
         <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
           {/* Title */}
           <div
             className={cn(
-              "mb-1 text-3xl font-black drop-shadow-lg",
+              "mb-1 text-4xl font-black drop-shadow-lg md:text-5xl",
               result.error
                 ? "text-red-400"
                 : result.isChallenge
@@ -107,13 +107,13 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
 
           {/* Winnings */}
           {result.isChallenge && result.won === true && !result.error && (
-            <div className="font-mono text-lg font-bold text-wink-pink drop-shadow-lg">
+            <div className="font-mono text-xl font-bold text-wink-pink drop-shadow-lg md:text-2xl">
               +${(stake * 2 * 0.95 - stake).toFixed(2)}
             </div>
           )}
 
           {/* Subtitle */}
-          <div className="mb-4 text-center text-[11px] text-white/60">
+          <div className="mb-4 text-center text-xs text-white/60 md:text-sm">
             {result.error
               ? `You blinked ${result.my} times`
               : result.isChallenge
@@ -124,10 +124,10 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
           {/* Score */}
           <div className="flex gap-4">
             <div className="text-center">
-              <div className="font-mono text-[36px] font-extrabold text-white drop-shadow-lg md:text-[44px]">
+              <div className="font-mono text-[44px] font-extrabold text-white drop-shadow-lg md:text-[56px]">
                 {result.my}
               </div>
-              <div className="text-[9px] font-semibold uppercase tracking-wider text-white/50">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-white/50 md:text-xs">
                 You
               </div>
             </div>
@@ -135,10 +135,10 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
               <>
                 <div className="w-px bg-white/20" />
                 <div className="text-center">
-                  <div className="font-mono text-[36px] font-extrabold text-white/40 drop-shadow-lg md:text-[44px]">
+                  <div className="font-mono text-[44px] font-extrabold text-white/40 drop-shadow-lg md:text-[56px]">
                     {result.target}
                   </div>
-                  <div className="text-[9px] font-semibold uppercase tracking-wider text-white/30">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-white/30 md:text-xs">
                     Target
                   </div>
                 </div>

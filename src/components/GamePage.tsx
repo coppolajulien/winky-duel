@@ -75,6 +75,18 @@ export default function GamePage() {
     resetToasts();
   }, [reset, resetToasts]);
 
+  const handleCancelDuel = useCallback(async (duel: Duel) => {
+    try {
+      const hash = await contract.cancelDuel(duel.id);
+      addTx(hash, "Cancel Duel");
+      await publicClient.waitForTransactionReceipt({ hash });
+      refetchDuels();
+      wallet.refreshBalance();
+    } catch (err) {
+      console.error("Cancel duel failed:", err);
+    }
+  }, [contract, addTx, refetchDuels, wallet]);
+
   const isGameActive = phase !== "idle";
 
   const MOBILE_SLIDES = [
@@ -173,6 +185,7 @@ export default function GamePage() {
             resetToasts();
             launch(duel);
           }}
+          onCancelDuel={handleCancelDuel}
         />
       </div>
 

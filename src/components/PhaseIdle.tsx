@@ -31,12 +31,16 @@ interface PhaseIdleProps {
 }
 
 export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdleProps) {
-  // Pick up to 3 random duels $25+ with random images
+  // Pick up to 3 duels: prioritize $25+, fill remaining slots with cheaper ones
   const featuredDuels = useMemo(() => {
-    const big = duels.filter((d) => d.stake >= 25);
-    const shuffled = shuffle(big, Date.now());
+    const big = shuffle(duels.filter((d) => d.stake >= 25), Date.now());
+    const small = shuffle(duels.filter((d) => d.stake < 25), Date.now() + 2);
+    const picked = [...big.slice(0, 3)];
+    if (picked.length < 3) {
+      picked.push(...small.slice(0, 3 - picked.length));
+    }
     const imgs = shuffle(DESKTOP_SLIDES, Date.now() + 1);
-    return shuffled.slice(0, 3).map((d, i) => ({
+    return picked.slice(0, 3).map((d, i) => ({
       ...d,
       img: imgs[i % imgs.length],
     }));
@@ -59,33 +63,40 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
       {/* Featured battle cards */}
       {featuredDuels.length > 0 && (
         <div className="mt-10 w-full max-w-3xl">
-          <div className="grid grid-cols-3 gap-4">
+          <div className={`grid gap-4 ${featuredDuels.length >= 3 ? "grid-cols-3" : featuredDuels.length === 2 ? "grid-cols-2 max-w-xl mx-auto" : "grid-cols-1 max-w-xs mx-auto"}`}>
             {featuredDuels.map((d) => (
               <div
                 key={String(d.id)}
                 onClick={() => authenticated && onLaunch(d)}
-                className={`group relative aspect-[4/3] overflow-hidden rounded-2xl ${
+                className={`group flex flex-col ${
                   authenticated
                     ? "cursor-pointer"
                     : "cursor-not-allowed opacity-60"
                 }`}
               >
-                <img
-                  src={d.img}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-4">
-                  <p className="text-lg font-bold leading-tight text-white">
-                    Beat <span className="text-wink-pink">{d.score}</span> blinks.
-                    <br />
-                    Take <span className="text-wink-pink">${d.stake}</span>.
-                  </p>
-                  <p className="mt-1 font-mono text-[9px] text-white/40">
-                    {d.creator}
-                  </p>
+                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
+                  <img
+                    src={d.img}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 p-4">
+                    <p className="text-lg font-bold leading-tight text-white">
+                      Beat <span className="text-wink-pink">{d.score}</span> blinks.
+                      <br />
+                      Take <span className="text-wink-pink">${d.stake}</span>.
+                    </p>
+                    <p className="mt-1 font-mono text-[9px] text-white/40">
+                      {d.creator}
+                    </p>
+                  </div>
                 </div>
+                {authenticated && (
+                  <p className="mt-2 text-center text-[11px] font-semibold uppercase tracking-wider text-wink-text-dim transition-colors group-hover:text-wink-pink">
+                    Enter the Battle →
+                  </p>
+                )}
               </div>
             ))}
           </div>

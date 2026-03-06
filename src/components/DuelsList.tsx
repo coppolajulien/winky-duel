@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Monitor, ChevronDown } from "lucide-react";
+import { Monitor, ChevronDown, X } from "lucide-react";
 import { STAKES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,9 @@ interface DuelsListProps {
   duels: Duel[];
   history: HistoryDuel[];
   onLaunch: (duel: Duel | null) => void;
+  onCancelDuel?: (duel: Duel) => void;
   authenticated: boolean;
+  login: () => void;
   duelsLoading: boolean;
   currentAddress: `0x${string}` | null;
 }
@@ -33,7 +35,9 @@ export function DuelsList({
   duels,
   history,
   onLaunch,
+  onCancelDuel,
   authenticated,
+  login,
   duelsLoading,
   currentAddress,
 }: DuelsListProps) {
@@ -109,8 +113,8 @@ export function DuelsList({
           ))}
         </div>
         <Button
-          onClick={() => onLaunch(null)}
-          disabled={!authenticated || isMobile}
+          onClick={() => authenticated ? onLaunch(null) : login()}
+          disabled={isMobile}
           className="w-full rounded-xl bg-wink-pink text-[11px] font-bold text-white hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
           size="sm"
         >
@@ -184,7 +188,7 @@ export function DuelsList({
                   "group flex items-center gap-1.5 rounded-xl px-3 py-2.5 transition-all",
                   isHighStake && "border border-wink-pink/25 duel-high-stake",
                   isOwn
-                    ? "bg-wink-pink/[0.04] opacity-60"
+                    ? "bg-wink-pink/[0.04]"
                     : isMobile
                       ? "cursor-not-allowed opacity-50"
                       : authenticated
@@ -204,6 +208,15 @@ export function DuelsList({
                 <div className="font-mono text-[11px] font-bold text-wink-pink">
                   ${d.stake}
                 </div>
+                {isOwn && onCancelDuel && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onCancelDuel(d); }}
+                    className="flex h-5 w-5 items-center justify-center rounded-full border border-wink-border text-wink-text-dim transition-colors hover:border-red-400/40 hover:text-red-400"
+                    title="Cancel duel"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
               </div>
             );
           })}

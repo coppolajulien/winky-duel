@@ -111,6 +111,7 @@
   100% { opacity: 0; transform: translateY(-20px); }
 }
 
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Copy, Check, ArrowUpRight } from "lucide-react";
+import Link from "next/link";
+import { Copy, Check, ArrowUpRight, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { Duel, HistoryDuel } from "@/lib/types";
@@ -21,6 +22,7 @@ interface SidebarProps {
   usdmBalance: string | null;
   balanceLoading: boolean;
   onLaunch: (duel: Duel | null) => void;
+  onCancelDuel?: (duel: Duel) => void;
   duels: Duel[];
   history: HistoryDuel[];
   duelsLoading: boolean;
@@ -42,6 +44,7 @@ export function Sidebar({
   usdmBalance,
   balanceLoading,
   onLaunch,
+  onCancelDuel,
   duels,
   history,
   duelsLoading,
@@ -146,10 +149,23 @@ export function Sidebar({
           duels={filtered}
           history={history}
           onLaunch={onLaunch}
+          onCancelDuel={onCancelDuel}
           authenticated={authenticated}
+          login={login}
           duelsLoading={duelsLoading}
           currentAddress={currentAddress}
         />
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-wink-border px-5 py-3">
+        <Link
+          href="/leaderboard"
+          className="flex items-center gap-2 text-[10px] font-semibold text-wink-text-dim transition-colors hover:text-wink-pink"
+        >
+          <Trophy className="h-3.5 w-3.5" />
+          Leaderboard
+        </Link>
       </div>
     </div>
   );

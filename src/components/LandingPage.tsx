@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { WinBubbles } from "./WinBubbles";
 
 const MOBILE_SLIDES = [
   "/mobile-bg.png",
@@ -54,6 +55,9 @@ export default function LandingPage() {
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
+
+      {/* Win bubbles animation */}
+      <WinBubbles />
 
       {/* Navbar — desktop only */}
       {!isMobile && (
