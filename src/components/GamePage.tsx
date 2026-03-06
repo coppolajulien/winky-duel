@@ -78,6 +78,27 @@ export default function GamePage() {
 
   const isGameActive = phase !== "idle";
 
+  if (isMobile) {
+    return (
+      <div className="flex h-[100dvh] flex-col items-center justify-center gap-5 bg-background font-sans text-foreground">
+        <span
+          className="inline-block h-16 w-16"
+          style={{
+            WebkitMaskImage: "url(/logo-blinkit.svg)",
+            WebkitMaskSize: "contain",
+            WebkitMaskRepeat: "no-repeat",
+            maskImage: "url(/logo-blinkit.svg)",
+            maskSize: "contain",
+            maskRepeat: "no-repeat",
+            backgroundColor: "var(--wink-text)",
+          }}
+        />
+        <span className="text-2xl font-bold tracking-wide text-wink-text">BLINKIT</span>
+        <span className="text-sm text-wink-text-dim">Blink on Desktop only</span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden font-sans text-foreground md:h-screen md:flex-row">
       {/* Hidden video element for camera */}
