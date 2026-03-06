@@ -27,9 +27,10 @@ interface PhaseIdleProps {
   duels: Duel[];
   authenticated: boolean;
   onLaunch: (duel: Duel) => void;
+  onCreate: () => void;
 }
 
-export function PhaseIdle({ duels, authenticated, onLaunch }: PhaseIdleProps) {
+export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdleProps) {
   // Pick up to 3 random duels $25+ with random images
   const featuredDuels = useMemo(() => {
     const big = duels.filter((d) => d.stake >= 25);
@@ -46,21 +47,18 @@ export function PhaseIdle({ duels, authenticated, onLaunch }: PhaseIdleProps) {
       {/* Title */}
       <div className="text-center">
         <h2 className="text-4xl font-extrabold uppercase text-wink-text">
-          Stake. Blink.
+          Bet. Blink.
           <br />
-          Take their money.
+          Win the pool.
         </h2>
         <p className="mx-auto mt-3 max-w-md text-sm text-wink-text-dim">
-          Stake USDM, challenge a player, outblink them. Winner takes all.
+          Stake USDM. Face your opp. Most blinks takes it all.
         </p>
       </div>
 
       {/* Featured battle cards */}
       {featuredDuels.length > 0 && (
         <div className="mt-10 w-full max-w-3xl">
-          <h3 className="mb-4 text-center text-lg font-bold text-wink-text">
-            Engage in a battle
-          </h3>
           <div className="grid grid-cols-3 gap-4">
             {featuredDuels.map((d) => (
               <div
@@ -94,10 +92,15 @@ export function PhaseIdle({ duels, authenticated, onLaunch }: PhaseIdleProps) {
         </div>
       )}
 
-      {/* CTA hint */}
-      <p className="mt-10 text-xs text-wink-text-dim">
-        Pick a duel from the sidebar to start
-      </p>
+      {/* CTA */}
+      {authenticated && (
+        <button
+          onClick={onCreate}
+          className="mt-10 rounded-full border border-wink-pink/40 px-6 py-2.5 text-sm font-semibold uppercase text-wink-pink transition-all hover:bg-wink-pink/10"
+        >
+          CREATE A DUEL →
+        </button>
+      )}
     </div>
   );
 }

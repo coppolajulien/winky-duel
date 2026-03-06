@@ -192,13 +192,56 @@ export default function GamePage() {
         <div className="flex h-full flex-col">
           {phase === "idle" && cameraStatus === "denied" && (
             <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center justify-center">
-              <div className="mb-3 text-[56px] opacity-40">🚫</div>
-              <div className="text-lg font-bold text-wink-pink">
+              <img src="/lost.svg" alt="" className="mb-4 h-16 w-16 brightness-0 invert opacity-50" />
+              <div className="text-lg font-bold text-wink-text">
                 Camera access required
               </div>
               <div className="mt-1.5 max-w-xs text-center text-xs text-wink-text-dim">
-                Blinkit uses your webcam to detect blinks. Allow camera access in your browser settings and reload the page.
+                Blinkit uses your webcam to detect blinks. Allow camera access to play.
               </div>
+              <div className="mt-4 max-w-sm rounded-xl border border-wink-border bg-card/50 p-4 text-[11px] text-wink-text-dim">
+                <p className="mb-2 font-semibold text-wink-text">How to fix it:</p>
+                {typeof navigator !== "undefined" && /Chrome/i.test(navigator.userAgent) && !/Edg/i.test(navigator.userAgent) ? (
+                  <ol className="list-decimal space-y-1 pl-4 text-left">
+                    <li>Click the <span className="font-semibold text-wink-text">lock icon</span> (🔒) in the address bar</li>
+                    <li>Set <span className="font-semibold text-wink-text">Camera</span> to &quot;Allow&quot;</li>
+                    <li>Reload the page</li>
+                  </ol>
+                ) : typeof navigator !== "undefined" && /Firefox/i.test(navigator.userAgent) ? (
+                  <ol className="list-decimal space-y-1 pl-4 text-left">
+                    <li>Click the <span className="font-semibold text-wink-text">shield icon</span> (🛡️) in the address bar</li>
+                    <li>Clear the camera permission block</li>
+                    <li>Reload the page</li>
+                  </ol>
+                ) : typeof navigator !== "undefined" && /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent) ? (
+                  <ol className="list-decimal space-y-1 pl-4 text-left">
+                    <li>Go to <span className="font-semibold text-wink-text">Safari → Settings → Websites → Camera</span></li>
+                    <li>Set this site to &quot;Allow&quot;</li>
+                    <li>Reload the page</li>
+                  </ol>
+                ) : typeof navigator !== "undefined" && /Edg/i.test(navigator.userAgent) ? (
+                  <ol className="list-decimal space-y-1 pl-4 text-left">
+                    <li>Click the <span className="font-semibold text-wink-text">lock icon</span> (🔒) in the address bar</li>
+                    <li>Set <span className="font-semibold text-wink-text">Camera</span> to &quot;Allow&quot;</li>
+                    <li>Reload the page</li>
+                  </ol>
+                ) : (
+                  <ol className="list-decimal space-y-1 pl-4 text-left">
+                    <li>Open your browser&apos;s site settings</li>
+                    <li>Allow camera access for this site</li>
+                    <li>Reload the page</li>
+                  </ol>
+                )}
+                <p className="mt-2 text-[10px] text-wink-text-dim/60">
+                  Also check: no other app is using the camera (Zoom, Teams, FaceTime...)
+                </p>
+              </div>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-4 rounded-full border border-wink-pink/40 px-5 py-2 text-xs font-semibold text-wink-pink transition-all hover:bg-wink-pink/10"
+              >
+                Reload page
+              </button>
             </div>
           )}
           {phase === "idle" && cameraStatus !== "denied" && (
@@ -206,6 +249,7 @@ export default function GamePage() {
               duels={duels}
               authenticated={wallet.authenticated}
               onLaunch={(duel) => { resetToasts(); launch(duel); }}
+              onCreate={() => { resetToasts(); launch(null); }}
             />
           )}
           {phase === "approving" && (

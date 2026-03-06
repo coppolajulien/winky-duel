@@ -107,9 +107,9 @@ export default function LandingPage() {
           </p>
 
           <h1 className="max-w-3xl text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-            Stake. Blink.
+            Bet. Blink.
             <br />
-            Take their money.
+            Win the pool.
           </h1>
 
           {isMobile ? (
@@ -119,7 +119,7 @@ export default function LandingPage() {
           ) : (
             <>
               <p className="max-w-md text-base text-white/60 md:text-lg">
-                Stake USDM, challenge a player, outblink them. Winner takes all.
+                Stake USDM. Face your opp. Most blinks takes it all.
               </p>
               <Link
                 href="/play"

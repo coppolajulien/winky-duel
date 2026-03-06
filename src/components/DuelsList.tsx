@@ -114,7 +114,7 @@ export function DuelsList({
           className="w-full rounded-xl bg-wink-pink text-[11px] font-bold text-white hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
           size="sm"
         >
-          {isMobile ? "PLAY ON DESKTOP" : authenticated ? "CREATE & PLAY" : "CONNECT TO PLAY"}
+          {isMobile ? "PLAY ON DESKTOP" : authenticated ? "CREATE A DUEL" : "CONNECT TO PLAY"}
         </Button>
       </div>
 
