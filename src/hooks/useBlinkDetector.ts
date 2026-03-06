@@ -21,6 +21,7 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   const cameraReady = useRef(false);
   const lastTimestampRef = useRef(0);
   const warmedUpRef = useRef(false);
+  const drawTickRef = useRef(0);
   const [cameraStatus, setCameraStatus] = useState<"idle" | "loading" | "ready" | "denied">("idle");
   const [cameraError, setCameraError] = useState<string | null>(null);
   const themeColors = useThemeColors();
@@ -104,19 +105,24 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
         if (avg < EAR_THRESHOLD) {
           frameCtRef.current++;
         } else {
-          if (frameCtRef.current >= 2) {
+          if (frameCtRef.current >= 1) {
             const t = Date.now();
-            if (t - lastBlinkRef.current > 250) {
+            if (t - lastBlinkRef.current > 150) {
               lastBlinkRef.current = t;
-              flashRef.current = 10; // Visual flash on mesh (works in ALL phases)
-              onBlinkRef.current?.(); // Score callback (only counts during playing)
+              flashRef.current = 8;
+              onBlinkRef.current?.();
             }
           }
           frameCtRef.current = 0;
         }
 
         if (flashRef.current > 0) flashRef.current--;
-        drawMesh(ctx, landmarks, cv.width, cv.height, flashRef.current / 10, themeColorsRef.current);
+
+        // Throttle rendering: draw every 2nd frame to keep detection fast
+        drawTickRef.current++;
+        if (drawTickRef.current % 2 === 0 || flashRef.current > 0) {
+          drawMesh(ctx, landmarks, cv.width, cv.height, flashRef.current / 8, themeColorsRef.current);
+        }
       } else {
         drawMesh(ctx, null, cv.width, cv.height, 0, themeColorsRef.current);
       }
