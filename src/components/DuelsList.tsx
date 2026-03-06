@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { Monitor } from "lucide-react";
 import { STAKES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DuelStatus } from "@/lib/types";
 import type { Duel, HistoryDuel } from "@/lib/types";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const HISTORY_PAGE_SIZE = 5;
 const DUELS_PAGE_SIZE = 5;
@@ -35,6 +37,7 @@ export function DuelsList({
   duelsLoading,
   currentAddress,
 }: DuelsListProps) {
+  const isMobile = useIsMobile();
   const [historyPage, setHistoryPage] = useState(0);
   const [historyFilter, setHistoryFilter] = useState<"all" | "won" | "lost">("all");
   const [duelsPage, setDuelsPage] = useState(0);
@@ -59,6 +62,21 @@ export function DuelsList({
 
   return (
     <div className="animate-[fade-in_0.3s_ease] flex flex-col gap-2">
+      {/* Mobile alert */}
+      {isMobile && (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/[0.06] p-3">
+          <div className="flex items-center gap-2.5">
+            <Monitor className="h-5 w-5 shrink-0 text-amber-400" />
+            <div>
+              <p className="text-[11px] font-semibold text-amber-400">Desktop only</p>
+              <p className="mt-0.5 text-[10px] text-wink-text-dim">
+                Blinkit uses your webcam to detect blinks. Open this page on a computer to play.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Box 1: New Duel */}
       <div className="rounded-lg border border-wink-border bg-card p-3">
         <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-wink-text">
@@ -82,11 +100,11 @@ export function DuelsList({
         </div>
         <Button
           onClick={() => onLaunch(null)}
-          disabled={!authenticated}
+          disabled={!authenticated || isMobile}
           className="w-full bg-gradient-to-br from-wink-pink to-[var(--wink-pink-darker)] text-[11px] font-bold text-white hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
           size="sm"
         >
-          {authenticated ? "⚡ Create & Play" : "Connect to Play"}
+          {isMobile ? "🖥 Play on Desktop" : authenticated ? "⚡ Create & Play" : "Connect to Play"}
         </Button>
       </div>
 
@@ -135,7 +153,7 @@ export function DuelsList({
 
             const card = (
               <div
-                onClick={() => !isOwn && authenticated && onLaunch(d)}
+                onClick={() => !isOwn && authenticated && !isMobile && onLaunch(d)}
                 className={cn(
                   "group flex items-center gap-1.5 rounded-lg bg-card px-2.5 py-2.5 transition-all md:py-2",
                   hasFuse
@@ -143,9 +161,11 @@ export function DuelsList({
                     : "border border-wink-border",
                   isOwn
                     ? "border-wink-cyan/20 opacity-70"
-                    : authenticated
-                      ? "cursor-pointer hover:border-wink-pink/30"
-                      : "cursor-not-allowed opacity-50"
+                    : isMobile
+                      ? "cursor-not-allowed opacity-50"
+                      : authenticated
+                        ? "cursor-pointer hover:border-wink-pink/30"
+                        : "cursor-not-allowed opacity-50"
                 )}
               >
                 <div className="flex-1">
