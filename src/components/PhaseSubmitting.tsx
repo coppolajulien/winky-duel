@@ -1,9 +1,9 @@
 export function PhaseSubmitting() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center">
-      <div className="h-11 w-11 animate-spin rounded-full border-3 border-wink-pink border-t-transparent" />
-      <div className="mt-3.5 text-xs text-wink-text">
-        Recording on MegaETH...
+      <div className="h-10 w-10 animate-spin rounded-full border-2 border-wink-pink border-t-transparent" />
+      <div className="mt-4 text-sm text-wink-text-dim">
+        Submitting...
       </div>
     </div>
   );

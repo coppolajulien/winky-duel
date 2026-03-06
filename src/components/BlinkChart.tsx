@@ -25,7 +25,7 @@ export function BlinkChart({ data, hasTarget }: BlinkChartProps) {
       <div className="absolute left-3.5 top-1.5 z-[2] flex gap-3 text-[10px] font-medium">
         <span className="text-wink-pink">━ You</span>
         {hasTarget && (
-          <span className="text-wink-orange opacity-50">┅ Target</span>
+          <span className="text-wink-text-dim opacity-50">┅ Target</span>
         )}
       </div>
 
@@ -39,8 +39,8 @@ export function BlinkChart({ data, hasTarget }: BlinkChartProps) {
         <AreaChart data={data} margin={{ top: 24, right: 0, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="gradientPink" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={colors.pink} stopOpacity={0.35} />
-              <stop offset="60%" stopColor={colors.pink} stopOpacity={0.08} />
+              <stop offset="0%" stopColor={colors.pink} stopOpacity={0.25} />
+              <stop offset="60%" stopColor={colors.pink} stopOpacity={0.05} />
               <stop offset="100%" stopColor={colors.pink} stopOpacity={0} />
             </linearGradient>
           </defs>
@@ -64,13 +64,13 @@ export function BlinkChart({ data, hasTarget }: BlinkChartProps) {
             <Area
               type="monotone"
               dataKey="target"
-              stroke={colors.orange}
+              stroke={colors.textDim}
               strokeWidth={1.5}
               fill="none"
               dot={false}
               isAnimationActive={false}
               strokeDasharray="8 4"
-              strokeOpacity={0.4}
+              strokeOpacity={0.3}
             />
           )}
         </AreaChart>

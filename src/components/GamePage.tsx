@@ -10,7 +10,6 @@ import { useContract } from "@/hooks/useContract";
 import { useDuels } from "@/hooks/useDuels";
 import type { Duel } from "@/lib/types";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { GridBackground } from "./GridBackground";
 import { Sidebar } from "./Sidebar";
 import { MobileGameHeader } from "./MobileGameHeader";
 import { PhaseIdle } from "./PhaseIdle";
@@ -189,7 +188,7 @@ export default function GamePage() {
             onBack={handleReset}
           />
         )}
-        <GridBackground>
+        <div className="relative flex-1 overflow-hidden bg-wink-bg">
         <div className="flex h-full flex-col">
           {phase === "idle" && cameraStatus === "denied" && (
             <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center justify-center">
@@ -202,13 +201,13 @@ export default function GamePage() {
               </div>
             </div>
           )}
-          {phase === "idle" && cameraStatus !== "denied" && <PhaseIdle />}
+          {phase === "idle" && cameraStatus !== "denied" && <PhaseIdle duels={duels} />}
           {phase === "approving" && (
             <div className="flex flex-1 animate-[fade-in_0.3s_ease] flex-col items-center justify-center gap-4">
               <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-wink-text-dim">
                 Step 1/3 — Approve stake
               </div>
-              <div className="rounded-2xl border border-wink-border bg-[var(--glass-bg)] px-6 py-3 backdrop-blur-[10px]">
+              <div className="rounded-2xl bg-card px-6 py-3">
                 <span className="font-mono text-[32px] font-extrabold text-wink-pink">
                   ${stake}
                 </span>
@@ -225,7 +224,7 @@ export default function GamePage() {
               <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-wink-text-dim">
                 Step 2/3 — Camera setup
               </div>
-              <div className="relative overflow-hidden rounded-2xl border border-wink-border">
+              <div className="relative overflow-hidden rounded-2xl">
                 <canvas
                   ref={canvasRef}
                   width={320}
@@ -238,7 +237,7 @@ export default function GamePage() {
                 {cameraStatus === "loading" && (
                   <>
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-wink-cyan border-t-transparent" />
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-wink-pink border-t-transparent" />
                       <span className="text-sm text-wink-text-dim">Loading camera…</span>
                     </div>
                     <p className="max-w-xs text-center text-[11px] text-wink-text-dim">
@@ -249,12 +248,12 @@ export default function GamePage() {
                 {cameraStatus === "ready" && (
                   <>
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 animate-pulse rounded-full bg-wink-cyan" />
-                      <span className="text-sm font-semibold text-wink-cyan">Face detected</span>
+                      <div className="h-2 w-2 animate-pulse rounded-full bg-wink-pink" />
+                      <span className="text-sm font-semibold text-wink-pink">Face detected</span>
                     </div>
                     <button
                       onClick={confirmCamera}
-                      className="rounded-xl bg-gradient-to-br from-wink-pink to-[var(--wink-pink-darker)] px-8 py-2.5 text-sm font-bold text-white shadow-lg shadow-wink-pink/20 transition-all hover:scale-105 hover:brightness-110 active:scale-95"
+                      className="rounded-full bg-wink-pink px-8 py-2.5 text-sm font-bold text-white transition-all hover:brightness-110 active:scale-95"
                     >
                       ▶ Duel
                     </button>
@@ -318,7 +317,7 @@ export default function GamePage() {
             />
           )}
         </div>
-        </GridBackground>
+        </div>
       </div>
 
       {/* Send USDM Modal */}

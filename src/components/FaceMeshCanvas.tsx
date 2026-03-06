@@ -13,10 +13,10 @@ export function FaceMeshCanvas({ canvasRef, isBlinking, compact }: FaceMeshCanva
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-lg border transition-all duration-150",
+        "overflow-hidden rounded-xl transition-all duration-150",
         isBlinking
-          ? "border-red-500/60 shadow-[0_0_20px_var(--blink-shadow)]"
-          : "border-wink-border shadow-[0_0_8px_var(--idle-shadow)]",
+          ? "ring-2 ring-wink-pink/40"
+          : "",
         compact && "shrink-0"
       )}
     >

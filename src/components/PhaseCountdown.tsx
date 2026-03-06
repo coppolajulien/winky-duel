@@ -10,11 +10,11 @@ export function PhaseCountdown({ countdownNum, challenge, stake }: PhaseCountdow
   return (
     <div className="flex flex-1 flex-col items-center justify-center">
       {/* Stake & context */}
-      <div className="mb-6 flex flex-col items-center gap-2">
+      <div className="mb-8 flex flex-col items-center gap-2.5">
         <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-wink-text-dim">
           {challenge ? `Challenge · Beat ${challenge.score} blinks` : "New duel"}
         </div>
-        <div className="rounded-2xl border border-wink-border bg-[var(--glass-bg)] px-5 py-2.5 backdrop-blur-[10px]">
+        <div className="rounded-2xl bg-card px-5 py-2.5">
           <span className="font-mono text-[22px] font-extrabold text-wink-pink md:text-[28px]">
             ${stake}
           </span>
@@ -23,10 +23,7 @@ export function PhaseCountdown({ countdownNum, challenge, stake }: PhaseCountdow
       </div>
 
       {/* Countdown number */}
-      <div
-        className="font-mono text-[80px] font-black leading-none text-wink-pink animate-[count-boom_1s_ease_infinite] md:text-[140px]"
-        style={{ textShadow: "0 0 60px var(--glow-pink)" }}
-      >
+      <div className="font-mono text-[80px] font-black leading-none text-wink-text animate-[count-boom_1s_ease_infinite] md:text-[140px]">
         {countdownNum}
       </div>
     </div>

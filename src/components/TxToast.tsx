@@ -41,10 +41,10 @@ export function TxToast({ tx, onDone }: TxToastProps) {
       className={cn(
         "flex items-center gap-2.5 rounded-full px-4 py-2.5 font-mono text-[13px] font-semibold whitespace-nowrap transition-all duration-300",
         confirmed
-          ? "bg-gradient-to-br from-[var(--toast-confirmed-from)] to-wink-pink text-white shadow-[0_4px_20px_var(--glow-pink)]"
+          ? "bg-wink-pink text-white"
           : failed
-            ? "border border-red-500/30 bg-red-500/10 text-red-400 shadow-[0_4px_16px_rgba(0,0,0,0.2)]"
-            : "border border-wink-border bg-[var(--toast-pending-bg)] text-wink-text-dim shadow-[0_4px_16px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
+            ? "bg-red-500/10 text-red-400"
+            : "bg-card text-wink-text-dim"
       )}
       style={{
         opacity: vis ? 1 : 0,

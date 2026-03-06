@@ -30,7 +30,7 @@ export function drawMesh(
   ctx.fillRect(0, 0, w, h);
 
   if (!landmarks || !landmarks.length) {
-    ctx.fillStyle = colors.canvasMeshNoface;
+    ctx.fillStyle = colors.textDim;
     ctx.font = "11px Inter";
     ctx.textAlign = "center";
     ctx.fillText("No face", w / 2, h / 2);
@@ -45,10 +45,10 @@ export function drawMesh(
   // Face triangles — draw every other triangle to save perf
   ctx.lineWidth = 0.5;
   const triColor = g
-    ? "hsla(10,85%,50%,0.5)"
+    ? "hsla(345,70%,55%,0.4)"
     : dark
-      ? "hsla(320,85%,50%,0.18)"
-      : "hsla(345,60%,55%,0.2)";
+      ? "rgba(236,232,232,0.08)"
+      : "hsla(345,60%,55%,0.15)";
   ctx.strokeStyle = triColor;
   ctx.beginPath();
   for (let i = 0; i < FACE_TRIS.length; i += 6) {
@@ -66,16 +66,16 @@ export function drawMesh(
   // Face oval outline
   ctx.lineWidth = g ? 2 : 1.2;
   if (g) {
-    ctx.strokeStyle = "hsla(350,100%,65%,0.8)";
-    ctx.shadowColor = "rgba(255,60,100,0.6)";
+    ctx.strokeStyle = "hsla(345,70%,55%,0.7)";
+    ctx.shadowColor = "rgba(232,69,122,0.3)";
   } else if (dark) {
-    ctx.strokeStyle = "hsla(320,90%,55%,0.5)";
-    ctx.shadowColor = "rgba(255,60,180,0.2)";
+    ctx.strokeStyle = "rgba(236,232,232,0.2)";
+    ctx.shadowColor = "rgba(236,232,232,0.05)";
   } else {
-    ctx.strokeStyle = "hsla(345,70%,60%,0.6)";
-    ctx.shadowColor = "rgba(255,138,168,0.3)";
+    ctx.strokeStyle = "hsla(345,60%,55%,0.5)";
+    ctx.shadowColor = "rgba(232,69,122,0.15)";
   }
-  ctx.shadowBlur = g ? 14 : 5;
+  ctx.shadowBlur = g ? 8 : 3;
 
   ctx.beginPath();
   FACE_OVAL.forEach((idx, i) => {
@@ -92,11 +92,11 @@ export function drawMesh(
   const drawEye = (ids: number[]) => {
     ctx.lineWidth = g ? 1.5 : 0.8;
     if (g) {
-      ctx.strokeStyle = "hsla(30,100%,60%,0.8)";
+      ctx.strokeStyle = "hsla(345,70%,55%,0.7)";
     } else if (dark) {
-      ctx.strokeStyle = "hsla(340,90%,60%,0.6)";
+      ctx.strokeStyle = "rgba(236,232,232,0.25)";
     } else {
-      ctx.strokeStyle = "hsla(345,65%,55%,0.7)";
+      ctx.strokeStyle = "hsla(345,55%,50%,0.6)";
     }
     ctx.beginPath();
     ids.forEach((id, i) => {
@@ -114,11 +114,11 @@ export function drawMesh(
   // Lips
   ctx.lineWidth = g ? 1.2 : 0.6;
   if (g) {
-    ctx.strokeStyle = "hsla(0,100%,60%,0.7)";
+    ctx.strokeStyle = "hsla(345,65%,50%,0.6)";
   } else if (dark) {
-    ctx.strokeStyle = "hsla(330,80%,50%,0.4)";
+    ctx.strokeStyle = "rgba(236,232,232,0.15)";
   } else {
-    ctx.strokeStyle = "hsla(345,60%,55%,0.5)";
+    ctx.strokeStyle = "hsla(345,55%,50%,0.4)";
   }
   ctx.beginPath();
   LIPS.forEach((id, i) => {
@@ -131,10 +131,10 @@ export function drawMesh(
 
   // Scattered dots (sparse)
   ctx.fillStyle = g
-    ? "hsla(20,100%,65%,0.7)"
+    ? "hsla(345,65%,50%,0.6)"
     : dark
-      ? "hsla(320,80%,60%,0.35)"
-      : "hsla(345,55%,55%,0.4)";
+      ? "rgba(236,232,232,0.15)"
+      : "hsla(345,50%,50%,0.3)";
   const dotR = g ? 1.5 : 0.8;
   for (let i = 0; i < landmarks.length; i += 15) {
     const p = landmarks[i];

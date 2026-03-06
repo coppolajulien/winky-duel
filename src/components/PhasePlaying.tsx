@@ -44,30 +44,25 @@ export function PhasePlaying({
           <div className="pointer-events-none absolute inset-0 z-[10] animate-[overtake-flash_1.2s_ease-out_forwards]" />
           <div className="pointer-events-none absolute inset-0 z-[11] flex items-center justify-center">
             <div className="animate-[overtake-text_1.2s_ease-out_forwards] text-center">
-              <div className="text-[32px] font-black tracking-tight text-wink-cyan drop-shadow-[0_0_40px_rgba(0,229,255,0.6)] md:text-[48px]">
+              <div className="text-[32px] font-black tracking-tight text-wink-pink md:text-[48px]">
                 YOU&apos;RE AHEAD!
               </div>
-              <div className="text-sm font-bold text-white/50 md:text-lg">Keep blinking! 🔥</div>
+              <div className="text-sm font-bold text-wink-text-dim md:text-lg">Keep blinking!</div>
             </div>
           </div>
         </>
       )}
 
       {/* Top bar */}
-      <div className="z-[3] flex items-center justify-between px-3 py-2 md:px-4 md:py-2.5">
+      <div className="z-[3] flex items-center justify-between px-3 py-2.5 md:px-4 md:py-3">
         <div className="flex items-center gap-2 md:gap-3">
           <FaceMeshCanvas canvasRef={canvasRef} isBlinking={myBlinking} compact={isMobile} />
           <div className="flex items-baseline gap-1">
             <span
               className={cn(
-                "font-mono text-[28px] font-extrabold leading-none text-wink-pink transition-all duration-100 md:text-[38px]",
-                myBlinking && "scale-105"
+                "font-mono text-[28px] font-extrabold leading-none text-wink-text transition-all duration-100 md:text-[38px]",
+                myBlinking && "scale-105 text-wink-pink"
               )}
-              style={{
-                textShadow: myBlinking
-                  ? "0 0 25px var(--glow-pink)"
-                  : "none",
-              }}
             >
               {myScore}
             </span>
@@ -77,7 +72,7 @@ export function PhasePlaying({
 
         <div
           className={cn(
-            "rounded-2xl border border-wink-border bg-[var(--glass-bg)] px-3 py-1.5 font-mono text-[14px] font-bold backdrop-blur-[10px] md:px-4 md:py-2 md:text-[18px]",
+            "rounded-full bg-card px-3 py-1.5 font-mono text-[14px] font-bold md:px-4 md:py-2 md:text-[18px]",
             timeLeft <= 5
               ? "text-destructive animate-[timer-warn_0.5s_ease_infinite]"
               : "text-wink-text"
@@ -89,7 +84,7 @@ export function PhasePlaying({
         {challenge && (
           <div className="flex items-baseline gap-1">
             <span className="text-[10px] text-wink-text-dim md:text-[11px]">target</span>
-            <span className="font-mono text-[22px] font-extrabold leading-none text-wink-orange opacity-60 md:text-[30px]">
+            <span className="font-mono text-[22px] font-extrabold leading-none text-wink-text-dim md:text-[30px]">
               {challenge.score}
             </span>
           </div>
@@ -109,20 +104,16 @@ export function PhasePlaying({
       </div>
 
       {/* Bottom bar */}
-      <div className="z-[3] flex items-end justify-end px-4 pb-2.5">
+      <div className="z-[3] flex items-end justify-end px-4 pb-3">
         <div className="flex items-center gap-2">
-          <div className="rounded-2xl border border-wink-border bg-[var(--glass-bg)] px-3 py-1.5 font-mono text-[11px] text-wink-pink backdrop-blur-[10px]">
-            💰 ${stake * 2}
+          <div className="rounded-full bg-card px-3 py-1.5 font-mono text-[11px] text-wink-pink">
+            ${stake * 2} pot
           </div>
-          <div className="rounded-2xl border border-wink-border bg-[var(--glass-bg)] px-3 py-1.5 font-mono text-[10px] text-wink-text-dim backdrop-blur-[10px]">
-            ⚡{" "}
+          <div className="rounded-full bg-card px-3 py-1.5 font-mono text-[10px] text-wink-text-dim">
             {myScore > 0
               ? (myScore / Math.max(1, DURATION - timeLeft)).toFixed(1)
               : "0.0"}
             /s
-          </div>
-          <div className="text-[11px] text-wink-text-dim">
-            👁 Blink to score
           </div>
         </div>
       </div>

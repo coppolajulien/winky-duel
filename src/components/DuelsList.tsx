@@ -61,14 +61,14 @@ export function DuelsList({
   );
 
   return (
-    <div className="animate-[fade-in_0.3s_ease] flex flex-col gap-2">
+    <div className="animate-[fade-in_0.3s_ease] flex flex-col gap-2.5">
       {/* Mobile alert */}
       {isMobile && (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/[0.06] p-3">
+        <div className="rounded-xl bg-card p-3">
           <div className="flex items-center gap-2.5">
-            <Monitor className="h-5 w-5 shrink-0 text-amber-400" />
+            <Monitor className="h-5 w-5 shrink-0 text-wink-text-dim" />
             <div>
-              <p className="text-[11px] font-semibold text-amber-400">Desktop only</p>
+              <p className="text-[11px] font-semibold text-wink-text">Desktop only</p>
               <p className="mt-0.5 text-[10px] text-wink-text-dim">
                 Blinkit uses your webcam to detect blinks. Open this page on a computer to play.
               </p>
@@ -78,20 +78,20 @@ export function DuelsList({
       )}
 
       {/* Box 1: New Duel */}
-      <div className="rounded-lg border border-wink-border bg-card p-3">
-        <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-wink-text">
+      <div className="rounded-xl bg-card p-3.5">
+        <h2 className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-wink-text-dim">
           New Duel
         </h2>
-        <div className="mb-2 flex gap-1">
+        <div className="mb-2.5 flex gap-1.5">
           {STAKES.map((s) => (
             <button
               key={s}
               onClick={() => setStake(s)}
               className={cn(
-                "flex-1 rounded-md py-2 font-mono text-[11px] font-bold transition-all md:py-1.5",
+                "flex-1 rounded-lg py-2 font-mono text-[11px] font-bold transition-all md:py-1.5",
                 stake === s
-                  ? "border-[1.5px] border-wink-pink bg-wink-pink/10 text-wink-pink"
-                  : "border border-wink-border bg-transparent text-wink-text-dim hover:border-wink-pink/30"
+                  ? "bg-wink-pink text-white"
+                  : "bg-wink-bg text-wink-text-dim hover:text-wink-text"
               )}
             >
               ${s}
@@ -101,30 +101,30 @@ export function DuelsList({
         <Button
           onClick={() => onLaunch(null)}
           disabled={!authenticated || isMobile}
-          className="w-full bg-gradient-to-br from-wink-pink to-[var(--wink-pink-darker)] text-[11px] font-bold text-white hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full rounded-xl bg-wink-pink text-[11px] font-bold text-white hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
           size="sm"
         >
-          {isMobile ? "🖥 Play on Desktop" : authenticated ? "⚡ Create & Play" : "Connect to Play"}
+          {isMobile ? "Play on Desktop" : authenticated ? "Create & Play" : "Connect to Play"}
         </Button>
       </div>
 
       {/* Box 2: Engage in a battle */}
-      <div className="rounded-lg border border-wink-border bg-card p-3">
-        <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-wink-text">
+      <div className="rounded-xl bg-card p-3.5">
+        <h2 className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-wink-text-dim">
           Engage in a battle
         </h2>
 
-        <div className="mb-1.5 flex gap-1">
+        <div className="mb-2 flex gap-1">
           {([null, ...STAKES] as (number | null)[]).map((s) => (
             <button
               key={String(s)}
               onClick={() => setStakeFilter(s)}
               className={cn(
-                "rounded px-1.5 py-0.5 text-[9px] font-semibold transition-all",
+                "rounded-md px-2 py-0.5 text-[9px] font-semibold transition-all",
                 s !== null && "font-mono",
                 stakeFilter === s
-                  ? "border border-wink-pink/25 bg-wink-pink/[0.07] text-wink-pink"
-                  : "border border-transparent text-wink-text-dim hover:text-wink-text"
+                  ? "bg-white/[0.1] text-wink-text"
+                  : "text-wink-text-dim hover:text-wink-text"
               )}
             >
               {s === null ? "All" : `$${s}`}
@@ -149,22 +149,19 @@ export function DuelsList({
             const isOwn =
               currentAddress &&
               d.creatorFull.toLowerCase() === currentAddress.toLowerCase();
-            const hasFuse = d.stake >= 50 && !isOwn;
 
-            const card = (
+            return (
               <div
+                key={String(d.id)}
                 onClick={() => !isOwn && authenticated && !isMobile && onLaunch(d)}
                 className={cn(
-                  "group flex items-center gap-1.5 rounded-lg bg-card px-2.5 py-2.5 transition-all md:py-2",
-                  hasFuse
-                    ? "duel-fuse-inner"
-                    : "border border-wink-border",
+                  "group flex items-center gap-1.5 rounded-xl px-3 py-2.5 transition-all",
                   isOwn
-                    ? "border-wink-cyan/20 opacity-70"
+                    ? "bg-wink-pink/[0.04] opacity-60"
                     : isMobile
                       ? "cursor-not-allowed opacity-50"
                       : authenticated
-                        ? "cursor-pointer hover:border-wink-pink/30"
+                        ? "cursor-pointer hover:bg-wink-bg"
                         : "cursor-not-allowed opacity-50"
                 )}
               >
@@ -174,21 +171,13 @@ export function DuelsList({
                   </div>
                   <div className="text-[9px] text-wink-text-dim">{d.time}</div>
                 </div>
-                <div className="rounded-[5px] bg-wink-orange/[0.08] px-1.5 py-0.5 font-mono text-xs font-bold text-wink-orange">
+                <div className="rounded-md bg-white/[0.06] px-1.5 py-0.5 font-mono text-xs font-bold text-wink-text-dim">
                   {d.score}👁
                 </div>
                 <div className="font-mono text-[11px] font-bold text-wink-pink">
                   ${d.stake}
                 </div>
               </div>
-            );
-
-            return hasFuse ? (
-              <div key={String(d.id)} className="duel-fuse">
-                {card}
-              </div>
-            ) : (
-              <div key={String(d.id)}>{card}</div>
             );
           })}
         </div>
@@ -219,9 +208,9 @@ export function DuelsList({
 
       {/* Box 3: History */}
       {history.length > 0 && (
-        <div className="rounded-lg border border-wink-border bg-card p-3">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-[10px] font-semibold uppercase tracking-[0.06em] text-wink-text">
+        <div className="rounded-xl bg-card p-3.5">
+          <div className="mb-2.5 flex items-center justify-between">
+            <h2 className="text-[10px] font-semibold uppercase tracking-[0.08em] text-wink-text-dim">
               My History
             </h2>
             <div className="flex gap-1">
@@ -230,14 +219,14 @@ export function DuelsList({
                   key={f}
                   onClick={() => { setHistoryFilter(f); setHistoryPage(0); }}
                   className={cn(
-                    "rounded px-1.5 py-0.5 text-[9px] font-semibold transition-all",
+                    "rounded-md px-2 py-0.5 text-[9px] font-semibold transition-all",
                     historyFilter === f
                       ? f === "won"
-                        ? "border border-wink-cyan/25 bg-wink-cyan/[0.07] text-wink-cyan"
+                        ? "bg-wink-pink/[0.1] text-wink-pink"
                         : f === "lost"
-                          ? "border border-red-500/25 bg-red-500/[0.07] text-red-400"
-                          : "border border-wink-pink/25 bg-wink-pink/[0.07] text-wink-pink"
-                      : "border border-transparent text-wink-text-dim hover:text-wink-text"
+                          ? "bg-white/[0.06] text-wink-text-dim"
+                          : "bg-white/[0.1] text-wink-text"
+                      : "text-wink-text-dim hover:text-wink-text"
                   )}
                 >
                   {f === "all" ? "All" : f === "won" ? "Won" : "Lost"}
@@ -258,14 +247,12 @@ export function DuelsList({
                 <div
                   key={String(h.id)}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-lg border px-2.5 py-2.5 md:py-2",
+                    "flex items-center gap-1.5 rounded-xl px-3 py-2.5",
                     h.status === DuelStatus.Cancelled
-                      ? "border-wink-border opacity-50"
+                      ? "opacity-40"
                       : h.won === true
-                        ? "border-wink-cyan/20 bg-wink-cyan/[0.03]"
-                        : h.won === false
-                          ? "border-red-500/15 bg-red-500/[0.03]"
-                          : "border-wink-border"
+                        ? "bg-wink-pink/[0.04]"
+                        : ""
                   )}
                 >
                   <div className="flex-1">
@@ -276,25 +263,25 @@ export function DuelsList({
                       {h.status === DuelStatus.Cancelled ? "Cancelled" : `${myScore} - ${theirScore}`}
                     </div>
                   </div>
-                  <div className="font-mono text-[11px] font-bold text-wink-pink">
+                  <div className="font-mono text-[11px] font-bold text-wink-text">
                     ${h.stake}
                   </div>
                   {h.status === DuelStatus.Settled && (
                     <div
                       className={cn(
-                        "rounded px-1.5 py-0.5 text-[9px] font-bold",
+                        "rounded-md px-1.5 py-0.5 text-[9px] font-bold",
                         h.won === true
-                          ? "bg-wink-cyan/10 text-wink-cyan"
+                          ? "bg-wink-pink/10 text-wink-pink"
                           : h.won === false
-                            ? "bg-red-500/10 text-red-400"
-                            : "bg-wink-border text-wink-text-dim"
+                            ? "bg-white/[0.04] text-wink-text-dim"
+                            : "bg-white/[0.04] text-wink-text-dim"
                       )}
                     >
                       {h.won === true ? "WON" : h.won === false ? "LOST" : "DRAW"}
                     </div>
                   )}
                   {h.status === DuelStatus.Cancelled && (
-                    <div className="rounded px-1.5 py-0.5 text-[9px] font-bold bg-wink-border text-wink-text-dim">
+                    <div className="rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-white/[0.04] text-wink-text-dim">
                       CANCELLED
                     </div>
                   )}

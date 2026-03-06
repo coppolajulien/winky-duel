@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useTheme } from "next-themes";
-import { Sun, Moon, Copy, Check, ArrowUpRight } from "lucide-react";
+import { useState, useCallback } from "react";
+import { Copy, Check, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { Duel, HistoryDuel } from "@/lib/types";
 import { DuelsList } from "./DuelsList";
-import { Leaderboard } from "./Leaderboard";
 
 interface SidebarProps {
   stake: number;
@@ -30,11 +28,6 @@ interface SidebarProps {
   onOpenSend?: () => void;
 }
 
-const TABS = [
-  { id: "duels" as const, icon: "", label: "Duels", svg: "/duel.svg" },
-  // { id: "leaderboard" as const, icon: "🏆", label: "Leaderboard" },
-];
-
 export function Sidebar({
   stake,
   setStake,
@@ -55,12 +48,7 @@ export function Sidebar({
   currentAddress,
   onOpenSend,
 }: SidebarProps) {
-  const [tab, setTab] = useState<"duels" | "leaderboard">("duels");
-  const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   const copyAddress = useCallback(() => {
     if (!address) return;
@@ -75,13 +63,13 @@ export function Sidebar({
     : duels;
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden border-r border-wink-border bg-sidebar backdrop-blur-[20px] md:w-[300px] md:min-w-[300px]">
+    <div className="flex h-full w-full flex-col overflow-hidden border-r border-wink-border bg-sidebar md:w-[300px] md:min-w-[300px]">
       {/* Header */}
-      <div className="border-b border-wink-border px-4 py-3.5">
+      <div className="border-b border-wink-border px-5 py-4">
         <div className="flex items-center justify-between">
           <a href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <span
-              className="inline-block h-9 w-9 md:h-7 md:w-7"
+              className="inline-block h-7 w-7"
               style={{
                 WebkitMaskImage: "url(/logo-blinkit.svg)",
                 WebkitMaskSize: "contain",
@@ -92,7 +80,7 @@ export function Sidebar({
                 backgroundColor: "var(--wink-text)",
               }}
             />
-            <span className="text-xl font-bold tracking-wide text-wink-text md:text-lg">BLINKIT</span>
+            <span className="text-lg font-bold tracking-wide text-wink-text">BLINKIT</span>
           </a>
           <Button
             variant="outline"
@@ -100,15 +88,15 @@ export function Sidebar({
             onClick={() => (authenticated ? logout() : login())}
             disabled={!ready}
             className={cn(
-              "h-7 rounded-2xl px-3 text-[10px] font-semibold",
+              "h-7 rounded-full px-3 text-[10px] font-semibold",
               authenticated
-                ? "border-wink-cyan/20 bg-wink-cyan/[0.06] text-wink-cyan"
+                ? "border-wink-pink/20 bg-wink-pink/[0.06] text-wink-pink"
                 : "border-wink-border bg-card text-wink-text"
             )}
           >
             {authenticated ? (
               <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-wink-cyan" />
+                <span className="h-1.5 w-1.5 rounded-full bg-wink-pink" />
                 {balanceLoading
                   ? "..."
                   : usdmBalance !== null
@@ -123,7 +111,7 @@ export function Sidebar({
 
         {/* Wallet row */}
         {authenticated && shortAddress && (
-          <div className="mt-2 flex items-center justify-between">
+          <div className="mt-2.5 flex items-center justify-between">
             <button
               onClick={copyAddress}
               className="flex items-center gap-1 text-[10px] text-wink-text-dim transition-colors hover:text-wink-text"
@@ -131,7 +119,7 @@ export function Sidebar({
               <span>My wallet</span>
               <span className="font-mono text-[9px]">{shortAddress}</span>
               {copied ? (
-                <Check className="h-3 w-3 text-wink-cyan" />
+                <Check className="h-3 w-3 text-wink-pink" />
               ) : (
                 <Copy className="h-3 w-3" />
               )}
@@ -148,70 +136,20 @@ export function Sidebar({
         )}
       </div>
 
-      {/* Tab navigation */}
-      <div className="px-2 pt-2 pb-1">
-        {TABS.map((n) => (
-          <button
-            key={n.id}
-            onClick={() => setTab(n.id)}
-            className={cn(
-              "mb-0.5 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all",
-              tab === n.id
-                ? "bg-wink-pink/[0.08] text-wink-pink"
-                : "text-wink-text-dim hover:text-wink-text"
-            )}
-          >
-            {n.svg ? (
-              <img src={n.svg} alt="" className="h-4 w-4 dark:invert" />
-            ) : (
-              <span className="text-sm">{n.icon}</span>
-            )}
-            {n.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      <div className="flex-1 overflow-y-auto px-2 pb-2">
-        {tab === "duels" ? (
-          <DuelsList
-            stake={stake}
-            setStake={setStake}
-            stakeFilter={stakeFilter}
-            setStakeFilter={setStakeFilter}
-            duels={filtered}
-            history={history}
-            onLaunch={onLaunch}
-            authenticated={authenticated}
-            duelsLoading={duelsLoading}
-            currentAddress={currentAddress}
-          />
-        ) : (
-          <Leaderboard />
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="flex justify-between border-t border-wink-border px-3 py-2 text-[9px] text-wink-text-dim">
-        {mounted ? (
-          <button
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-            className="rounded-md p-1 text-wink-text-dim transition-colors hover:text-wink-text"
-            aria-label="Toggle theme"
-          >
-            {resolvedTheme === "dark" ? (
-              <Sun className="h-3.5 w-3.5" />
-            ) : (
-              <Moon className="h-3.5 w-3.5" />
-            )}
-          </button>
-        ) : (
-          <span className="h-3.5 w-3.5" />
-        )}
-        <span className="flex items-center gap-1">
-          <img src="/megaeth-icon.svg" alt="MegaETH" className="h-3 w-3 dark:invert" />
-          MegaETH Testnet
-        </span>
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto px-3 py-3">
+        <DuelsList
+          stake={stake}
+          setStake={setStake}
+          stakeFilter={stakeFilter}
+          setStakeFilter={setStakeFilter}
+          duels={filtered}
+          history={history}
+          onLaunch={onLaunch}
+          authenticated={authenticated}
+          duelsLoading={duelsLoading}
+          currentAddress={currentAddress}
+        />
       </div>
     </div>
   );
