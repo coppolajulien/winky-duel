@@ -102,26 +102,30 @@ export default function LandingPage() {
             />
           )}
 
+          <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-white/40">
+            The first PvP blink-to-earn game
+          </p>
+
           <h1 className="max-w-3xl text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-            Blink the fastest.
+            Stake. Blink.
             <br />
-            Win the pot.
+            Take their money.
           </h1>
 
           {isMobile ? (
             <p className="max-w-md text-sm text-white/60">
-              Blink is desktop only... for now!
+              Desktop only... for now!
             </p>
           ) : (
             <>
               <p className="max-w-md text-base text-white/60 md:text-lg">
-                Every blink counts. Outblink your opponent.
+                Stake USDM, challenge a player, outblink them. Winner takes all.
               </p>
               <Link
                 href="/play"
                 className="mt-4 rounded-full border-2 border-white px-10 py-3.5 text-base font-bold text-white transition-all hover:bg-white hover:text-black"
               >
-                Play Now →
+                Challenge Now →
               </Link>
             </>
           )}

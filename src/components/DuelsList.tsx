@@ -42,6 +42,7 @@ export function DuelsList({
   const [historyFilter, setHistoryFilter] = useState<"all" | "won" | "lost">("all");
   const [duelsPage, setDuelsPage] = useState(0);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [showMine, setShowMine] = useState(false);
 
   const filteredHistory = historyFilter === "all"
     ? history
@@ -55,8 +56,16 @@ export function DuelsList({
     (historyPage + 1) * HISTORY_PAGE_SIZE
   );
 
-  const duelsTotalPages = Math.ceil(duels.length / DUELS_PAGE_SIZE);
-  const paginatedDuels = duels.slice(
+  const myDuelsCount = currentAddress
+    ? duels.filter((d) => d.creatorFull.toLowerCase() === currentAddress.toLowerCase()).length
+    : 0;
+
+  const displayedDuels = showMine
+    ? duels.filter((d) => currentAddress && d.creatorFull.toLowerCase() === currentAddress.toLowerCase())
+    : duels.filter((d) => !currentAddress || d.creatorFull.toLowerCase() !== currentAddress.toLowerCase());
+
+  const duelsTotalPages = Math.ceil(displayedDuels.length / DUELS_PAGE_SIZE);
+  const paginatedDuels = displayedDuels.slice(
     duelsPage * DUELS_PAGE_SIZE,
     (duelsPage + 1) * DUELS_PAGE_SIZE
   );
@@ -111,9 +120,24 @@ export function DuelsList({
 
       {/* Box 2: Engage in a battle */}
       <div className="rounded-xl bg-card p-3.5">
-        <h2 className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-wink-text-dim">
-          Engage in a battle
-        </h2>
+        <div className="mb-2.5 flex items-center justify-between">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.08em] text-wink-text-dim">
+            {showMine ? "My open duels" : "Engage in a battle"}
+          </h2>
+          {authenticated && myDuelsCount > 0 && (
+            <button
+              onClick={() => { setShowMine((v) => !v); setDuelsPage(0); }}
+              className={cn(
+                "text-[9px] font-semibold transition-colors",
+                showMine
+                  ? "text-wink-pink"
+                  : "text-wink-text-dim hover:text-wink-text"
+              )}
+            >
+              {showMine ? "← Back" : `Mine (${myDuelsCount})`}
+            </button>
+          )}
+        </div>
 
         <div className="mb-2 flex gap-1">
           {([null, ...STAKES] as (number | null)[]).map((s) => (
