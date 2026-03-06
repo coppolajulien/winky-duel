@@ -49,12 +49,21 @@ export const metadata: Metadata = {
     title: "Blinkit — Bet. Blink. Win the Pool.",
     description:
       "The first PvP blink-to-earn game. Stake USDM, face your opponent, most blinks takes it all. Built on MegaETH.",
+    images: [
+      {
+        url: "/card.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Blinkit — Bet. Blink. Win the Pool.",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Blinkit — Bet. Blink. Win the Pool.",
     description:
       "The first PvP blink-to-earn game. Stake USDM, face your opponent, most blinks takes it all.",
+    images: ["/card.jpg"],
   },
   robots: {
     index: true,
