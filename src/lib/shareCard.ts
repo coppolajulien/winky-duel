@@ -2,16 +2,33 @@ import type { ChartPoint, GameResult } from "@/lib/types";
 
 const W = 1200;
 const H = 630;
-const PINK = "#ff2d78";
-const CYAN = "#00e5ff";
-const ORANGE = "#ff9500";
-const BG = "#0d0d12";
-const GRID = "rgba(255,255,255,0.04)";
-const TEXT_DIM = "rgba(255,255,255,0.4)";
+const PINK = "#e8457a";
+const TEXT = "#ECE8E8";
+const TEXT_DIM = "rgba(236, 232, 232, 0.4)";
+
+const DESKTOP_SLIDES = [
+  "/desktop-bg.jpg",
+  "/desktop-bg-1.jpg",
+  "/desktop-bg-2.jpg",
+  "/desktop-bg-3.jpg",
+  "/desktop-bg-4.jpg",
+  "/desktop-bg-5.jpg",
+];
+
+/** Load an image from a URL */
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
 
 /**
  * Generate a share card image as a Blob.
- * Draws: dark background, grid, chart curve, logo, scores, winnings.
+ * Draws: background image, logo, chart curve, scores, winnings.
  */
 export async function generateShareCard(
   chartData: ChartPoint[],
@@ -23,32 +40,34 @@ export async function generateShareCard(
   canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
-  // ─── Background ───
-  ctx.fillStyle = BG;
-  ctx.fillRect(0, 0, W, H);
-
-  // Subtle gradient overlay
-  const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-  bgGrad.addColorStop(0, "rgba(255, 45, 120, 0.06)");
-  bgGrad.addColorStop(1, "rgba(0, 229, 255, 0.03)");
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, W, H);
-
-  // ─── Grid lines ───
-  ctx.strokeStyle = GRID;
-  ctx.lineWidth = 1;
-  for (let y = 80; y < H - 60; y += 45) {
-    ctx.beginPath();
-    ctx.moveTo(60, y);
-    ctx.lineTo(W - 60, y);
-    ctx.stroke();
+  // ─── Background image ───
+  const bgSrc = DESKTOP_SLIDES[Math.floor(Math.random() * DESKTOP_SLIDES.length)];
+  try {
+    const bgImg = await loadImage(bgSrc);
+    // Cover the canvas
+    const scale = Math.max(W / bgImg.width, H / bgImg.height);
+    const sw = bgImg.width * scale;
+    const sh = bgImg.height * scale;
+    ctx.drawImage(bgImg, (W - sw) / 2, (H - sh) / 2, sw, sh);
+  } catch {
+    // Fallback solid color
+    ctx.fillStyle = "#19191A";
+    ctx.fillRect(0, 0, W, H);
   }
+
+  // Dark overlay for readability
+  const overlay = ctx.createLinearGradient(0, 0, 0, H);
+  overlay.addColorStop(0, "rgba(25, 25, 26, 0.5)");
+  overlay.addColorStop(0.5, "rgba(25, 25, 26, 0.65)");
+  overlay.addColorStop(1, "rgba(25, 25, 26, 0.9)");
+  ctx.fillStyle = overlay;
+  ctx.fillRect(0, 0, W, H);
 
   // ─── Chart area ───
   const chartLeft = 80;
   const chartRight = W - 80;
   const chartTop = 120;
-  const chartBottom = H - 140;
+  const chartBottom = H - 160;
   const chartWidth = chartRight - chartLeft;
   const chartHeight = chartBottom - chartTop;
 
@@ -65,8 +84,8 @@ export async function generateShareCard(
 
     // ─── Target line (dashed, behind) ───
     if (chartData.some((p) => p.target !== undefined)) {
-      ctx.strokeStyle = ORANGE;
-      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = TEXT;
+      ctx.globalAlpha = 0.2;
       ctx.lineWidth = 2;
       ctx.setLineDash([10, 6]);
       ctx.beginPath();
@@ -83,9 +102,9 @@ export async function generateShareCard(
 
     // ─── Player curve (gradient fill) ───
     const grad = ctx.createLinearGradient(0, chartTop, 0, chartBottom);
-    grad.addColorStop(0, "rgba(255, 45, 120, 0.3)");
-    grad.addColorStop(0.6, "rgba(255, 45, 120, 0.06)");
-    grad.addColorStop(1, "rgba(255, 45, 120, 0)");
+    grad.addColorStop(0, "rgba(232, 69, 122, 0.35)");
+    grad.addColorStop(0.6, "rgba(232, 69, 122, 0.08)");
+    grad.addColorStop(1, "rgba(232, 69, 122, 0)");
 
     // Fill
     ctx.beginPath();
@@ -116,31 +135,42 @@ export async function generateShareCard(
     ctx.arc(toX(lastPt.t), toY(lastPt.you), 5, 0, Math.PI * 2);
     ctx.fillStyle = PINK;
     ctx.fill();
-    ctx.strokeStyle = BG;
+    ctx.strokeStyle = "rgba(25, 25, 26, 0.8)";
     ctx.lineWidth = 2;
     ctx.stroke();
   }
 
-  // ─── Logo top-left ───
-  ctx.font = "bold 28px system-ui, sans-serif";
-  ctx.fillStyle = "white";
-  ctx.fillText("👁️", 50, 56);
-  ctx.font = "900 italic 24px system-ui, sans-serif";
-  ctx.fillStyle = PINK;
-  ctx.fillText("winky", 88, 56);
+  // ─── Logo top-left (SVG loaded as image) ───
+  const logoSize = 47; // 36 * 1.3
+  try {
+    const logoImg = await loadImage("/logo-blinkit.svg");
+    // Draw white version: use a temporary canvas to recolor
+    const tmpCanvas = document.createElement("canvas");
+    tmpCanvas.width = logoSize;
+    tmpCanvas.height = logoSize;
+    const tmpCtx = tmpCanvas.getContext("2d")!;
+    tmpCtx.drawImage(logoImg, 0, 0, logoSize, logoSize);
+    // Recolor to white
+    tmpCtx.globalCompositeOperation = "source-in";
+    tmpCtx.fillStyle = TEXT;
+    tmpCtx.fillRect(0, 0, logoSize, logoSize);
+    ctx.drawImage(tmpCanvas, 50, 22);
+  } catch {
+    // fallback: no logo
+  }
 
-  // "DUEL" text
-  ctx.font = "600 14px system-ui, sans-serif";
-  ctx.fillStyle = TEXT_DIM;
-  ctx.fillText("DUEL", 175, 56);
+  // "BLINKIT" text next to logo (+30%)
+  ctx.font = "900 31px system-ui, sans-serif";
+  ctx.fillStyle = TEXT;
+  ctx.textAlign = "left";
+  ctx.fillText("BLINKIT", 105, 56);
 
   // ─── Result overlay (bottom section) ───
-  // Dark overlay at bottom for text readability
-  const overlayGrad = ctx.createLinearGradient(0, H - 200, 0, H);
-  overlayGrad.addColorStop(0, "rgba(13, 13, 18, 0)");
-  overlayGrad.addColorStop(0.4, "rgba(13, 13, 18, 0.85)");
-  overlayGrad.addColorStop(1, "rgba(13, 13, 18, 0.95)");
-  ctx.fillStyle = overlayGrad;
+  const overlayBottom = ctx.createLinearGradient(0, H - 200, 0, H);
+  overlayBottom.addColorStop(0, "rgba(25, 25, 26, 0)");
+  overlayBottom.addColorStop(0.4, "rgba(25, 25, 26, 0.8)");
+  overlayBottom.addColorStop(1, "rgba(25, 25, 26, 0.95)");
+  ctx.fillStyle = overlayBottom;
   ctx.fillRect(0, H - 200, W, 200);
 
   // ─── Scores ───
@@ -159,59 +189,63 @@ export async function generateShareCard(
   // VS and target score (if challenge)
   if (result.target !== null) {
     ctx.font = "700 24px system-ui, sans-serif";
-    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    ctx.fillStyle = "rgba(236, 232, 232, 0.2)";
     ctx.textAlign = "center";
     ctx.fillText("VS", W / 2, scoreY - 10);
 
     ctx.font = "900 64px system-ui, sans-serif";
-    ctx.fillStyle = ORANGE;
+    ctx.fillStyle = TEXT;
+    ctx.globalAlpha = 0.5;
     ctx.textAlign = "right";
     ctx.fillText(String(result.target), W - 80, scoreY);
+    ctx.globalAlpha = 1;
 
     ctx.font = "500 13px system-ui, sans-serif";
     ctx.fillStyle = TEXT_DIM;
     ctx.fillText("TARGET", W - 80, scoreY + 22);
   }
 
-  // ─── Result badge (top-right) ───
-  const badgeX = W - 60;
-  const badgeY = 44;
-
+  // ─── Result badge (centered, large) ───
   if (result.isChallenge) {
-    if (result.won) {
-      // WIN badge
-      ctx.font = "900 18px system-ui, sans-serif";
-      ctx.textAlign = "right";
-      ctx.fillStyle = CYAN;
-      ctx.fillText("🏆 YOU WIN!", badgeX, badgeY);
+    if (result.won === true) {
+      const earnings = `$${(stake * 2 * 0.95 - stake).toFixed(0)}`;
+      ctx.font = "900 83px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillStyle = TEXT;
+      ctx.fillText(earnings, W / 2, H / 2 - 10);
 
-      // Winnings
-      const earnings = (stake * 2 * 0.95 - stake).toFixed(2);
-      ctx.font = "bold 16px system-ui, sans-serif";
-      ctx.fillStyle = CYAN;
-      ctx.fillText(`+$${earnings} USDM`, badgeX, badgeY + 26);
+      ctx.font = "700 20px system-ui, sans-serif";
+      ctx.fillStyle = TEXT;
+      ctx.globalAlpha = 0.6;
+      ctx.fillText("YOU WIN", W / 2, H / 2 + 24);
+      ctx.globalAlpha = 1;
+    } else if (result.won === false) {
+      ctx.font = "900 48px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillStyle = TEXT;
+      ctx.globalAlpha = 0.4;
+      ctx.fillText("DEFEATED", W / 2, H / 2 + 10);
+      ctx.globalAlpha = 1;
     } else {
-      ctx.font = "900 18px system-ui, sans-serif";
-      ctx.textAlign = "right";
-      ctx.fillStyle = "#ff4444";
-      ctx.fillText("💀 DEFEATED", badgeX, badgeY);
+      ctx.font = "900 48px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillStyle = TEXT;
+      ctx.globalAlpha = 0.4;
+      ctx.fillText("DRAW", W / 2, H / 2 + 10);
+      ctx.globalAlpha = 1;
     }
   } else {
-    ctx.font = "900 18px system-ui, sans-serif";
-    ctx.textAlign = "right";
+    ctx.font = "900 48px system-ui, sans-serif";
+    ctx.textAlign = "center";
     ctx.fillStyle = PINK;
-    ctx.fillText("⚔️ OPEN DUEL", badgeX, badgeY);
+    ctx.fillText(`$${stake} STAKED`, W / 2, H / 2 - 5);
 
-    ctx.font = "bold 16px system-ui, sans-serif";
-    ctx.fillStyle = TEXT_DIM;
-    ctx.fillText(`$${stake} USDM staked`, badgeX, badgeY + 26);
+    ctx.font = "700 20px system-ui, sans-serif";
+    ctx.fillStyle = TEXT;
+    ctx.globalAlpha = 0.5;
+    ctx.fillText("OPEN DUEL", W / 2, H / 2 + 24);
+    ctx.globalAlpha = 1;
   }
-
-  // ─── URL bottom-right ───
-  ctx.font = "500 12px system-ui, sans-serif";
-  ctx.fillStyle = TEXT_DIM;
-  ctx.textAlign = "right";
-  ctx.fillText("winky-duel.vercel.app", W - 50, H - 20);
 
   // ─── Legend ───
   ctx.textAlign = "left";
@@ -219,8 +253,8 @@ export async function generateShareCard(
   ctx.fillStyle = PINK;
   ctx.fillText("━ You", chartLeft, chartTop - 12);
   if (result.target !== null) {
-    ctx.fillStyle = ORANGE;
-    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = TEXT;
+    ctx.globalAlpha = 0.35;
     ctx.fillText("┅ Target", chartLeft + 60, chartTop - 12);
     ctx.globalAlpha = 1;
   }
@@ -264,7 +298,7 @@ export async function copyShareCard(
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "winky-duel-result.png";
+  a.download = "blinkit-result.png";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

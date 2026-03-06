@@ -231,6 +231,42 @@
   }
 }
 
+/* Rotating gradient border for high-stake duels ($50+) */
+@property --fuse-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes fuse-spin {
+  to { --fuse-angle: 360deg; }
+}
+
+.duel-high-stake {
+  position: relative;
+  border: none !important;
+}
+
+.duel-high-stake::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--fuse-angle),
+    #e8457a,
+    rgba(255, 255, 255, 0.5),
+    #e8457a
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: fuse-spin 3s linear infinite;
+  pointer-events: none;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 3px;

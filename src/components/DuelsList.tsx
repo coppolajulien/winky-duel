@@ -150,6 +150,7 @@ export function DuelsList({
             const isOwn =
               currentAddress &&
               d.creatorFull.toLowerCase() === currentAddress.toLowerCase();
+            const isHighStake = d.stake >= 50;
 
             return (
               <div
@@ -157,6 +158,7 @@ export function DuelsList({
                 onClick={() => !isOwn && authenticated && !isMobile && onLaunch(d)}
                 className={cn(
                   "group flex items-center gap-1.5 rounded-xl px-3 py-2.5 transition-all",
+                  isHighStake && "border border-wink-pink/25 duel-high-stake",
                   isOwn
                     ? "bg-wink-pink/[0.04] opacity-60"
                     : isMobile

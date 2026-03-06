@@ -45,7 +45,7 @@ export function PhaseIdle({ duels, authenticated, onLaunch }: PhaseIdleProps) {
     <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center overflow-y-auto px-8 pt-10">
       {/* Title */}
       <div className="text-center">
-        <h2 className="text-4xl font-extrabold text-wink-text">
+        <h2 className="text-4xl font-extrabold uppercase text-wink-text">
           Blink the fastest. Win the pot.
         </h2>
         <p className="mx-auto mt-3 max-w-md text-sm text-wink-text-dim">
@@ -56,7 +56,7 @@ export function PhaseIdle({ duels, authenticated, onLaunch }: PhaseIdleProps) {
       {/* Featured battle cards */}
       {featuredDuels.length > 0 && (
         <div className="mt-10 w-full max-w-3xl">
-          <h3 className="mb-4 text-lg font-bold text-wink-text">
+          <h3 className="mb-4 text-center text-lg font-bold text-wink-text">
             Engage in a battle
           </h3>
           <div className="grid grid-cols-3 gap-4">
