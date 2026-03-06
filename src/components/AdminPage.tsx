@@ -306,7 +306,8 @@ export default function AdminPage() {
                   address: WINKY_DUEL_ADDRESS,
                   abi: WINKY_DUEL_ABI,
                   functionName: "withdrawRake",
-                  gas: 150_000n,
+                  args: [],
+                  gas: 250_000n,
                 });
                 await publicClient.waitForTransactionReceipt({ hash });
                 fetchAllDuels(); // refresh stats
