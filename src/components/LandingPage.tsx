@@ -86,6 +86,25 @@ export default function LandingPage() {
         </nav>
       )}
 
+      {/* Powered by MegaETH — bottom */}
+      <div className="absolute bottom-5 left-0 right-0 z-10 flex items-center justify-center gap-2">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-white/30">
+          Powered by
+        </span>
+        <span
+          className="inline-block h-[14px] w-[80px]"
+          style={{
+            WebkitMaskImage: "url(/megaeth-logo.svg)",
+            WebkitMaskSize: "contain",
+            WebkitMaskRepeat: "no-repeat",
+            maskImage: "url(/megaeth-logo.svg)",
+            maskSize: "contain",
+            maskRepeat: "no-repeat",
+            backgroundColor: "rgba(255,255,255,0.35)",
+          }}
+        />
+      </div>
+
       {/* Center content */}
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6">
         {/* Content */}
