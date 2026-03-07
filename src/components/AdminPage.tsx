@@ -13,7 +13,7 @@ import {
 import { DuelStatus } from "@/lib/types";
 
 // Only this address can access the admin page
-const ADMIN_ADDRESS = "0x2C150bd7D7be97723B3945d99ac70D7E2148227B".toLowerCase();
+const ADMIN_ADDRESS = "0x55772979783e58BE37109eEa2C4AC83F755aA243".toLowerCase();
 
 const PAGE_SIZE = 25;
 
