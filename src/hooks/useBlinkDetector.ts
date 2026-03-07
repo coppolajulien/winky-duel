@@ -5,8 +5,8 @@ import { drawMesh } from "@/lib/drawMesh";
 import { useThemeColors, type ThemeColors } from "@/lib/theme";
 
 // ── Blendshape blink detection constants ──
-const BLINK_THRESHOLD = 0.35; // blendshape score 0→1 (eyes closed > threshold = blink)
-const BLINK_COOLDOWN = 180;   // ms between registered blinks
+const BLINK_THRESHOLD = 0.24; // blendshape score 0→1 (eyes closed > threshold = blink)
+const BLINK_COOLDOWN = 120;   // ms between registered blinks
 
 interface UseBlinkDetectorOptions {
   onBlinkRef: MutableRefObject<(() => void) | null>;
