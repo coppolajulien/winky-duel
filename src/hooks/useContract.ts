@@ -32,6 +32,7 @@ const GAS_LIMITS = {
   cancelDuel: 250_000n,
   recordBlink: 150_000n,
   transfer: 150_000n,
+  withdrawRake: 250_000n,
 } as const;
 
 export function useContract() {

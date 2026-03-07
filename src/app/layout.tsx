@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import { PrivyClientProvider } from "@/components/PrivyClientProvider";
+import { Web3Provider } from "@/components/Web3Provider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
@@ -83,7 +83,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
-        <PrivyClientProvider>
+        <Web3Provider>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
@@ -92,7 +92,7 @@ export default function RootLayout({
           >
             {children}
           </ThemeProvider>
-        </PrivyClientProvider>
+        </Web3Provider>
       </body>
     </html>
   );
