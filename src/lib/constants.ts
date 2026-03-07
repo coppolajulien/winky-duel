@@ -1,5 +1,5 @@
 export const DURATION = 30;
-export const STAKES = [100, 50, 25, 10, 5, 1] as const;
+export const STAKES = [1, 5, 10, 25, 50, 100] as const;
 
 // ─── Chain & Contract Config ────────────────────────────────────
 export const WINKY_DUEL_ADDRESS = "0x136836878b4aD0C35ED62a0F3B8e83fEdB5ce17a" as const;
