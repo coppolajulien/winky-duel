@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useRef } from "react";
 import type { Duel } from "@/lib/types";
 
 const DESKTOP_SLIDES = [
@@ -10,6 +10,12 @@ const DESKTOP_SLIDES = [
   "/desktop-bg-3.jpg",
   "/desktop-bg-4.jpg",
   "/desktop-bg-5.jpg",
+];
+
+// Drop mp4 files in /public/ and add paths here
+const HERO_VIDEOS: string[] = [
+  // "/hero-video-1.mp4",
+  // "/hero-video-2.mp4",
 ];
 
 /** Deterministic shuffle based on a simple seed */
@@ -31,6 +37,18 @@ interface PhaseIdleProps {
 }
 
 export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdleProps) {
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const heroVideo = useMemo(
+    () => HERO_VIDEOS.length > 0 ? HERO_VIDEOS[Math.floor(Math.random() * HERO_VIDEOS.length)] : null,
+    []
+  );
+  const heroBgImage = useMemo(
+    () => DESKTOP_SLIDES[Math.floor(Math.random() * DESKTOP_SLIDES.length)],
+    []
+  );
+
   // Pick up to 3 duels: prioritize $25+, fill remaining slots with cheaper ones
   const featuredDuels = useMemo(() => {
     const big = shuffle(duels.filter((d) => d.stake >= 25), Date.now());
@@ -47,22 +65,67 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
   }, [duels]);
 
   return (
-    <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center overflow-y-auto px-8 pt-10">
-      {/* Title */}
-      <div className="text-center">
-        <h2 className="text-4xl font-extrabold uppercase text-wink-text">
-          Bet. Blink.
-          <br />
-          Win the pool.
-        </h2>
-        <p className="mx-auto mt-3 max-w-md text-sm text-wink-text-dim">
-          Stake USDM. Face your opp. Most blinks takes it all.
-        </p>
+    <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center overflow-y-auto">
+      {/* Hero section with video/image background */}
+      <div className="relative flex w-full flex-col items-center justify-center px-8 py-16">
+        {/* Background: video (if available) or image fallback */}
+        {heroVideo ? (
+          <>
+            <video
+              ref={videoRef}
+              src={heroVideo}
+              autoPlay
+              loop
+              muted
+              playsInline
+              onCanPlay={() => setVideoLoaded(true)}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            {/* Image fallback while video loads */}
+            {!videoLoaded && (
+              <img
+                src={heroBgImage}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            )}
+          </>
+        ) : (
+          <img
+            src={heroBgImage}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
+
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-wink-bg" />
+
+        {/* Hero content */}
+        <div className="relative z-10 flex flex-col items-center gap-5 text-center">
+          {authenticated && (
+            <button
+              onClick={onCreate}
+              className="rounded-full border-2 border-white bg-white/10 px-10 py-4 text-lg font-black uppercase tracking-wider text-white backdrop-blur-sm transition-all hover:bg-white hover:text-black active:scale-95"
+            >
+              Create a Duel →
+            </button>
+          )}
+
+          <h2 className="mt-2 text-3xl font-extrabold uppercase text-white md:text-4xl">
+            Bet. Blink.
+            <br />
+            Win the pool.
+          </h2>
+          <p className="max-w-md text-sm text-white/60">
+            Stake USDM. Face your opp. Most blinks takes it all.
+          </p>
+        </div>
       </div>
 
       {/* Featured battle cards */}
       {featuredDuels.length > 0 && (
-        <div className="mt-10 w-full max-w-3xl">
+        <div className="w-full max-w-3xl px-8 py-8">
           <div className={`grid gap-4 ${featuredDuels.length >= 3 ? "grid-cols-3" : featuredDuels.length === 2 ? "grid-cols-2 max-w-xl mx-auto" : "grid-cols-1 max-w-xs mx-auto"}`}>
             {featuredDuels.map((d) => (
               <div
@@ -101,16 +164,6 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
             ))}
           </div>
         </div>
-      )}
-
-      {/* CTA */}
-      {authenticated && (
-        <button
-          onClick={onCreate}
-          className="mt-10 rounded-full border border-wink-pink/40 px-6 py-2.5 text-sm font-semibold uppercase text-wink-pink transition-all hover:bg-wink-pink/10"
-        >
-          CREATE A DUEL →
-        </button>
       )}
     </div>
   );
