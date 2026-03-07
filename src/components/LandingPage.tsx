@@ -89,7 +89,7 @@ export default function LandingPage() {
       {/* Powered by MegaETH — bottom */}
       <div className="absolute bottom-5 left-0 right-0 z-10 flex items-center justify-center gap-2">
         <span className="text-[10px] font-medium uppercase tracking-wider text-white/30">
-          Powered by
+          Powered on
         </span>
         <span
           className="inline-block h-[14px] w-[80px]"
