@@ -18,6 +18,7 @@ import { PhasePlaying } from "./PhasePlaying";
 import { PhaseSubmitting } from "./PhaseSubmitting";
 import { PhaseResult } from "./PhaseResult";
 import { SendModal } from "./SendModal";
+import { ErrorBanner } from "./ErrorBanner";
 
 export default function GamePage() {
   // Ref-based callback to resolve circular dependency between hooks
@@ -48,6 +49,8 @@ export default function GamePage() {
     myBlinking,
     overtook,
     result,
+    errorBanner,
+    dismissError,
     launch,
     reset,
     doBlink,
@@ -203,6 +206,10 @@ export default function GamePage() {
           />
         )}
         <div className="relative flex-1 overflow-hidden bg-wink-bg">
+        {/* Error banner overlay */}
+        {errorBanner && (
+          <ErrorBanner error={errorBanner} onDismiss={dismissError} />
+        )}
         <div className="flex h-full flex-col">
           {phase === "idle" && cameraStatus === "denied" && (
             <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center justify-center">

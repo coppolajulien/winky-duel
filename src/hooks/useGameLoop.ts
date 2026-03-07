@@ -25,6 +25,27 @@ interface UseGameLoopOptions {
   walletAddress: `0x${string}` | null;
 }
 
+export interface ErrorBanner {
+  message: string;
+  type: "error" | "warning";
+}
+
+/** Check if a duel is still open on-chain. Returns true if open, false otherwise. */
+async function isDuelStillOpen(duelId: bigint): Promise<boolean> {
+  try {
+    const duel = await publicClient.readContract({
+      address: WINKY_DUEL_ADDRESS,
+      abi: WINKY_DUEL_ABI,
+      functionName: "getDuel",
+      args: [duelId],
+    }) as { status: number };
+    return duel.status === DuelStatus.Open;
+  } catch {
+    // If the read fails, assume it's still open — let the TX decide
+    return true;
+  }
+}
+
 export function useGameLoop({
   addTx,
   initCamera,
@@ -46,6 +67,7 @@ export function useGameLoop({
   const [myBlinking, setMyBlinking] = useState(false);
   const [overtook, setOvertook] = useState(false);
   const [result, setResult] = useState<GameResult | null>(null);
+  const [errorBanner, setErrorBanner] = useState<ErrorBanner | null>(null);
 
   // Ref to hold resolve function for camera "Start" button
   const cameraConfirmRef = useRef<(() => void) | null>(null);
@@ -58,12 +80,25 @@ export function useGameLoop({
   const timeLeftRef = useRef(DURATION);
   const challengeRef = useRef<Duel | null>(null);
   const stakeRef = useRef(5);
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   // Keep refs in sync
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   useEffect(() => { timeLeftRef.current = timeLeft; }, [timeLeft]);
   useEffect(() => { challengeRef.current = challenge; }, [challenge]);
   useEffect(() => { stakeRef.current = stake; }, [stake]);
+
+  /** Show an error banner that auto-dismisses */
+  const showError = useCallback((message: string, type: "error" | "warning" = "error") => {
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    setErrorBanner({ message, type });
+    errorTimerRef.current = setTimeout(() => setErrorBanner(null), 5000);
+  }, []);
+
+  const dismissError = useCallback(() => {
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    setErrorBanner(null);
+  }, []);
 
   // Chart data accumulation
   useEffect(() => {
@@ -112,19 +147,9 @@ export function useGameLoop({
 
       if (isChallenge) {
         // Pre-check: verify duel is still open before spending gas
-        try {
-          const duel = await publicClient.readContract({
-            address: WINKY_DUEL_ADDRESS,
-            abi: WINKY_DUEL_ABI,
-            functionName: "getDuel",
-            args: [currentChallenge!.id],
-          }) as { status: number };
-          if (duel.status !== DuelStatus.Open) {
-            throw new Error("DUEL_TAKEN");
-          }
-        } catch (e) {
-          if (e instanceof Error && e.message === "DUEL_TAKEN") throw e;
-          // If the read fails, proceed anyway — let the TX decide
+        const stillOpen = await isDuelStillOpen(currentChallenge!.id);
+        if (!stillOpen) {
+          throw new Error("DUEL_TAKEN");
         }
 
         hash = await contractActions.challengeDuel(
@@ -182,7 +207,7 @@ export function useGameLoop({
         errorMsg = "Transaction cancelled.";
       } else {
         const match = raw.match(/reason:\s*(.+?)(?:\n|$)/);
-        errorMsg = match?.[1] ?? (raw.length > 120 ? raw.slice(0, 120) + "…" : raw);
+        errorMsg = match?.[1] ?? (raw.length > 120 ? raw.slice(0, 120) + "..." : raw);
       }
 
       setResult({
@@ -219,6 +244,8 @@ export function useGameLoop({
 
   const launch = useCallback(
     async (duel: Duel | null = null) => {
+      // Clear any previous error
+      dismissError();
       setChallenge(duel);
       if (duel) setStake(duel.stake);
 
@@ -226,7 +253,7 @@ export function useGameLoop({
         ? duel.stakeRaw
         : parseUnits(String(stakeRef.current), 18);
 
-      // ── Pre-check: verify USDM balance before starting ──
+      // ── Pre-check 1: verify USDM balance ──
       if (walletAddress) {
         try {
           const balance = await publicClient.readContract({
@@ -238,12 +265,23 @@ export function useGameLoop({
           if (balance < stakeAmount) {
             const have = parseFloat(formatUnits(balance, 18)).toFixed(2);
             const need = parseFloat(formatUnits(stakeAmount, 18)).toFixed(2);
-            alert(`Insufficient USDM balance. You have $${have} but need $${need}.`);
+            showError(`Insufficient USDM balance. You have $${have} but need $${need}.`);
             setPhase("idle");
             return;
           }
         } catch (err) {
           console.warn("Balance check failed, proceeding anyway:", err);
+        }
+      }
+
+      // ── Pre-check 2: verify duel is still open (for challenges) ──
+      if (duel) {
+        const stillOpen = await isDuelStillOpen(duel.id);
+        if (!stillOpen) {
+          showError("This duel is no longer available. It was taken or cancelled.");
+          refetchDuels();
+          setPhase("idle");
+          return;
         }
       }
 
@@ -275,6 +313,17 @@ export function useGameLoop({
         });
       }
 
+      // ── Pre-check 3: re-verify duel right before countdown ──
+      if (duel) {
+        const stillOpen = await isDuelStillOpen(duel.id);
+        if (!stillOpen) {
+          showError("This duel was just taken or cancelled. Try another one.");
+          refetchDuels();
+          setPhase("idle");
+          return;
+        }
+      }
+
       // ── Step 3: Countdown 3-2-1 ──
       setPhase("countdown");
       let c = 3;
@@ -289,7 +338,7 @@ export function useGameLoop({
         }
       }, 1000);
     },
-    [initCamera, isCameraReady, go, contractActions, addTx, walletAddress]
+    [initCamera, isCameraReady, go, contractActions, addTx, walletAddress, showError, dismissError, refetchDuels]
   );
 
   /** Called by the "Start" button on the camera screen */
@@ -316,6 +365,7 @@ export function useGameLoop({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (chartIvRef.current) clearInterval(chartIvRef.current);
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     };
   }, []);
 
@@ -333,6 +383,8 @@ export function useGameLoop({
     myBlinking,
     overtook,
     result,
+    errorBanner,
+    dismissError,
     launch,
     reset,
     doBlink,
