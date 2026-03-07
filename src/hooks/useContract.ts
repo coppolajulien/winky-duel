@@ -28,7 +28,9 @@ const ERC20_TRANSFER_ABI = [
 const GAS_LIMITS = {
   approve: 150_000n,
   createDuel: 500_000n,
-  challengeDuel: 800_000n,
+  joinDuel: 500_000n,
+  submitScore: 800_000n,
+  claimAbandoned: 300_000n,
   cancelDuel: 250_000n,
   recordBlink: 150_000n,
   transfer: 150_000n,
@@ -96,21 +98,51 @@ export function useContract() {
     [getWalletClient, ensureAllowance]
   );
 
-  /** Challenge an existing duel. Returns TX hash. */
-  const challengeDuel = useCallback(
-    async (duelId: bigint, score: number, stakeRaw: bigint): Promise<`0x${string}`> => {
+  /** Join an open duel (deposits USDM, locks the duel). Returns TX hash. */
+  const joinDuel = useCallback(
+    async (duelId: bigint, stakeRaw: bigint): Promise<`0x${string}`> => {
       await ensureAllowance(stakeRaw);
 
       const wc = await getWalletClient();
       return wc.writeContract({
         address: WINKY_DUEL_ADDRESS,
         abi: WINKY_DUEL_ABI,
-        functionName: "challengeDuel",
-        args: [duelId, score],
-        gas: GAS_LIMITS.challengeDuel,
+        functionName: "joinDuel",
+        args: [duelId],
+        gas: GAS_LIMITS.joinDuel,
       });
     },
     [getWalletClient, ensureAllowance]
+  );
+
+  /** Submit the challenger's score after playing. Returns TX hash. */
+  const submitScore = useCallback(
+    async (duelId: bigint, score: number): Promise<`0x${string}`> => {
+      const wc = await getWalletClient();
+      return wc.writeContract({
+        address: WINKY_DUEL_ADDRESS,
+        abi: WINKY_DUEL_ABI,
+        functionName: "submitScore",
+        args: [duelId, score],
+        gas: GAS_LIMITS.submitScore,
+      });
+    },
+    [getWalletClient]
+  );
+
+  /** Claim an abandoned duel (after timeout). Returns TX hash. */
+  const claimAbandoned = useCallback(
+    async (duelId: bigint): Promise<`0x${string}`> => {
+      const wc = await getWalletClient();
+      return wc.writeContract({
+        address: WINKY_DUEL_ADDRESS,
+        abi: WINKY_DUEL_ABI,
+        functionName: "claimAbandoned",
+        args: [duelId],
+        gas: GAS_LIMITS.claimAbandoned,
+      });
+    },
+    [getWalletClient]
   );
 
   /** Cancel an open duel (creator only). Returns TX hash. */
@@ -172,7 +204,9 @@ export function useContract() {
     approveUSDM,
     ensureAllowance,
     createDuel,
-    challengeDuel,
+    joinDuel,
+    submitScore,
+    claimAbandoned,
     cancelDuel,
     recordBlink,
     getNextDuelId,

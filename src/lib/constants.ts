@@ -2,7 +2,7 @@ export const DURATION = 30;
 export const STAKES = [100, 50, 25, 10, 5, 1] as const;
 
 // ─── Chain & Contract Config ────────────────────────────────────
-export const WINKY_DUEL_ADDRESS = "0x558aB486A0FfA1f4Aa52DeFb9e0d9E03e3CD6F3a" as const;
+export const WINKY_DUEL_ADDRESS = "0x136836878b4aD0C35ED62a0F3B8e83fEdB5ce17a" as const;
 export const MOCK_USDM_ADDRESS = "0x8A017435e8dD3aeCA65a1eA4411eD81b9302Ae9C" as const;
 export const BLOCK_EXPLORER_URL = "https://megaeth-testnet-v2.blockscout.com" as const;
 
@@ -46,12 +46,15 @@ export const WINKY_DUEL_ABI = [
   { inputs: [], name: "CannotChallengeSelf", type: "error" },
   { inputs: [], name: "DuelNotFound", type: "error" },
   { inputs: [], name: "DuelNotOpen", type: "error" },
+  { inputs: [], name: "DuelNotLocked", type: "error" },
   { inputs: [], name: "InsufficientStake", type: "error" },
   { inputs: [], name: "InvalidToken", type: "error" },
   { inputs: [], name: "NoRake", type: "error" },
   { inputs: [], name: "NotCreator", type: "error" },
+  { inputs: [], name: "NotChallenger", type: "error" },
   { inputs: [], name: "NotOwner", type: "error" },
   { inputs: [], name: "StakeMismatch", type: "error" },
+  { inputs: [], name: "TooEarly", type: "error" },
   { inputs: [], name: "TransferFailed", type: "error" },
   // Events
   {
@@ -61,6 +64,12 @@ export const WINKY_DUEL_ABI = [
       { indexed: true, name: "player", type: "address" },
     ],
     name: "BlinkRecorded",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [{ indexed: true, name: "duelId", type: "uint256" }],
+    name: "DuelAbandoned",
     type: "event",
   },
   {
@@ -84,6 +93,15 @@ export const WINKY_DUEL_ABI = [
     anonymous: false,
     inputs: [
       { indexed: true, name: "duelId", type: "uint256" },
+      { indexed: true, name: "challenger", type: "address" },
+    ],
+    name: "DuelJoined",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: "duelId", type: "uint256" },
       { indexed: true, name: "winner", type: "address" },
       { indexed: false, name: "payout", type: "uint256" },
     ],
@@ -100,6 +118,13 @@ export const WINKY_DUEL_ABI = [
     type: "event",
   },
   // Read functions
+  {
+    inputs: [],
+    name: "ABANDON_TIMEOUT",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
   {
     inputs: [],
     name: "MIN_STAKE",
@@ -126,6 +151,7 @@ export const WINKY_DUEL_ABI = [
           { name: "creatorScore", type: "uint32" },
           { name: "challengerScore", type: "uint32" },
           { name: "status", type: "uint8" },
+          { name: "joinedAt", type: "uint40" },
         ],
         name: "",
         type: "tuple",
@@ -188,11 +214,25 @@ export const WINKY_DUEL_ABI = [
     type: "function",
   },
   {
+    inputs: [{ name: "duelId", type: "uint256" }],
+    name: "joinDuel",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       { name: "duelId", type: "uint256" },
       { name: "score", type: "uint32" },
     ],
-    name: "challengeDuel",
+    name: "submitScore",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "duelId", type: "uint256" }],
+    name: "claimAbandoned",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

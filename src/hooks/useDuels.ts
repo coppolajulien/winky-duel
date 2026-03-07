@@ -127,9 +127,10 @@ export function useDuels(currentAddress?: string | null) {
         };
 
         if (onChain.status === 0) {
+          // Status.Open — available for challenge
           openDuels.push(formatDuel(onChain));
         } else {
-          // Only show duels involving current user in history
+          // Status.Locked (3), Settled (1), Cancelled (2) — show in history
           const addr = currentAddress?.toLowerCase();
           if (addr && (onChain.creator.toLowerCase() === addr || onChain.challenger.toLowerCase() === addr)) {
             historyDuels.push(formatHistory(onChain, currentAddress ?? null));

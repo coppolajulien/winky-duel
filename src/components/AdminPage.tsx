@@ -33,10 +33,11 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
   const [page, setPage] = useState(0);
-  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "settled" | "cancelled">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "locked" | "settled" | "cancelled">("all");
   const [stats, setStats] = useState({
     totalDuels: 0,
     openDuels: 0,
+    lockedDuels: 0,
     settledDuels: 0,
     cancelledDuels: 0,
     rakeBalance: "0",
@@ -74,6 +75,7 @@ export default function AdminPage() {
 
       const rows: DuelRow[] = [];
       let open = 0;
+      let locked = 0;
       let settled = 0;
       let cancelled = 0;
 
@@ -92,6 +94,7 @@ export default function AdminPage() {
 
         const status = d.status as DuelStatus;
         if (status === DuelStatus.Open) open++;
+        else if (status === DuelStatus.Locked) locked++;
         else if (status === DuelStatus.Settled) settled++;
         else if (status === DuelStatus.Cancelled) cancelled++;
 
@@ -111,6 +114,7 @@ export default function AdminPage() {
         ...prev,
         totalDuels: total,
         openDuels: open,
+        lockedDuels: locked,
         settledDuels: settled,
         cancelledDuels: cancelled,
       }));
@@ -153,12 +157,14 @@ export default function AdminPage() {
 
   const statusLabel = (s: DuelStatus) => {
     if (s === DuelStatus.Open) return "Open";
+    if (s === DuelStatus.Locked) return "Locked";
     if (s === DuelStatus.Settled) return "Settled";
     return "Cancelled";
   };
 
   const statusColor = (s: DuelStatus) => {
     if (s === DuelStatus.Open) return "text-yellow-400";
+    if (s === DuelStatus.Locked) return "text-orange-400";
     if (s === DuelStatus.Settled) return "text-green-400";
     return "text-red-400";
   };
@@ -168,8 +174,9 @@ export default function AdminPage() {
     ? duels
     : duels.filter((d) =>
         statusFilter === "open" ? d.status === DuelStatus.Open
-          : statusFilter === "settled" ? d.status === DuelStatus.Settled
-            : d.status === DuelStatus.Cancelled
+          : statusFilter === "locked" ? d.status === DuelStatus.Locked
+            : statusFilter === "settled" ? d.status === DuelStatus.Settled
+              : d.status === DuelStatus.Cancelled
       );
   const totalPages = Math.ceil(filteredDuels.length / PAGE_SIZE);
   const paginatedDuels = filteredDuels.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -265,10 +272,11 @@ export default function AdminPage() {
       </div>
 
       {/* Stats cards */}
-      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-7">
         {[
           { label: "Total Duels", value: stats.totalDuels, color: "text-wink-pink" },
           { label: "Open", value: stats.openDuels, color: "text-yellow-400" },
+          { label: "Locked", value: stats.lockedDuels, color: "text-orange-400" },
           { label: "Settled", value: stats.settledDuels, color: "text-green-400" },
           { label: "Cancelled", value: stats.cancelledDuels, color: "text-red-400" },
           { label: "Rake", value: `$${stats.rakeBalance}`, color: "text-wink-pink" },
@@ -327,7 +335,7 @@ export default function AdminPage() {
 
       {/* Filter tabs */}
       <div className="mb-3 flex gap-1">
-        {(["all", "open", "settled", "cancelled"] as const).map((f) => (
+        {(["all", "open", "locked", "settled", "cancelled"] as const).map((f) => (
           <button
             key={f}
             onClick={() => { setStatusFilter(f); setPage(0); }}
@@ -337,7 +345,7 @@ export default function AdminPage() {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {f === "all" ? `All (${duels.length})` : f === "open" ? `Open (${stats.openDuels})` : f === "settled" ? `Settled (${stats.settledDuels})` : `Cancelled (${stats.cancelledDuels})`}
+            {f === "all" ? `All (${duels.length})` : f === "open" ? `Open (${stats.openDuels})` : f === "locked" ? `Locked (${stats.lockedDuels})` : f === "settled" ? `Settled (${stats.settledDuels})` : `Cancelled (${stats.cancelledDuels})`}
           </button>
         ))}
       </div>

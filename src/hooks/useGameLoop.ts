@@ -10,7 +10,8 @@ import type { GamePhase, Duel, ChartPoint, GameResult } from "@/lib/types";
 
 interface ContractActions {
   createDuel: (score: number, stakeUsdm: number) => Promise<`0x${string}`>;
-  challengeDuel: (duelId: bigint, score: number, stakeRaw: bigint) => Promise<`0x${string}`>;
+  joinDuel: (duelId: bigint, stakeRaw: bigint) => Promise<`0x${string}`>;
+  submitScore: (duelId: bigint, score: number) => Promise<`0x${string}`>;
   ensureAllowance: (amount: bigint) => Promise<`0x${string}` | null>;
 }
 
@@ -30,7 +31,7 @@ export interface ErrorBanner {
   type: "error" | "warning";
 }
 
-/** Check if a duel is still open on-chain. Returns true if open, false otherwise. */
+/** Check if a duel is still open on-chain. */
 async function isDuelStillOpen(duelId: bigint): Promise<boolean> {
   try {
     const duel = await publicClient.readContract({
@@ -41,7 +42,6 @@ async function isDuelStillOpen(duelId: bigint): Promise<boolean> {
     }) as { status: number };
     return duel.status === DuelStatus.Open;
   } catch {
-    // If the read fails, assume it's still open — let the TX decide
     return true;
   }
 }
@@ -69,9 +69,7 @@ export function useGameLoop({
   const [result, setResult] = useState<GameResult | null>(null);
   const [errorBanner, setErrorBanner] = useState<ErrorBanner | null>(null);
 
-  // Ref to hold resolve function for camera "Start" button
   const cameraConfirmRef = useRef<(() => void) | null>(null);
-
   const myScoreRef = useRef(0);
   const chartRef = useRef<ChartPoint[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval>>(null);
@@ -82,13 +80,11 @@ export function useGameLoop({
   const stakeRef = useRef(5);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-  // Keep refs in sync
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   useEffect(() => { timeLeftRef.current = timeLeft; }, [timeLeft]);
   useEffect(() => { challengeRef.current = challenge; }, [challenge]);
   useEffect(() => { stakeRef.current = stake; }, [stake]);
 
-  /** Show an error banner that auto-dismisses */
   const showError = useCallback((message: string, type: "error" | "warning" = "error") => {
     if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     setErrorBanner({ message, type });
@@ -127,7 +123,6 @@ export function useGameLoop({
     triggerFlash();
     setTimeout(() => setMyBlinking(false), 150);
 
-    // Detect overtake: score goes from <= target to > target
     const target = challengeRef.current?.score;
     if (target !== undefined && prevScore <= target && myScoreRef.current > target) {
       setOvertook(true);
@@ -146,31 +141,21 @@ export function useGameLoop({
       let hash: `0x${string}`;
 
       if (isChallenge) {
-        // Pre-check: verify duel is still open before spending gas
-        const stillOpen = await isDuelStillOpen(currentChallenge!.id);
-        if (!stillOpen) {
-          throw new Error("DUEL_TAKEN");
-        }
-
-        hash = await contractActions.challengeDuel(
-          currentChallenge!.id,
-          score,
-          currentChallenge!.stakeRaw
-        );
-        addTx(hash, "Challenge Duel");
+        // Challenger already deposited via joinDuel — just submit score
+        hash = await contractActions.submitScore(currentChallenge!.id, score);
+        addTx(hash, "Submit Score");
       } else {
+        // Creator: create duel with score + deposit in one TX
         hash = await contractActions.createDuel(score, stakeRef.current);
         addTx(hash, "Create Duel");
       }
 
-      // Wait for confirmation
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
       if (receipt.status === "reverted") {
         throw new Error("Transaction reverted");
       }
 
-      // Determine result
       if (isChallenge) {
         const targetScore = currentChallenge!.score;
         setResult({
@@ -189,18 +174,17 @@ export function useGameLoop({
       }
 
       setPhase("result");
-
-      // Refresh duels list and balance
       refetchDuels();
       refreshBalance();
     } catch (err: unknown) {
       console.error("Submit failed:", err);
       const raw = err instanceof Error ? err.message : String(err);
 
-      // User-friendly error messages
       let errorMsg: string;
-      if (raw === "DUEL_TAKEN" || raw.includes("DuelNotOpen")) {
-        errorMsg = "This duel was already taken by another player.";
+      if (raw === "DUEL_TAKEN" || raw.includes("DuelNotOpen") || raw.includes("DuelNotLocked")) {
+        errorMsg = "This duel is no longer available.";
+      } else if (raw.includes("NotChallenger")) {
+        errorMsg = "You are not the challenger for this duel.";
       } else if (raw.includes("InsufficientBalance") || raw.includes("transfer amount exceeds balance")) {
         errorMsg = "Insufficient USDM balance.";
       } else if (raw.includes("User rejected") || raw.includes("User denied") || raw.includes("rejected the request")) {
@@ -244,7 +228,6 @@ export function useGameLoop({
 
   const launch = useCallback(
     async (duel: Duel | null = null) => {
-      // Clear any previous error
       dismissError();
       setChallenge(duel);
       if (duel) setStake(duel.stake);
@@ -297,7 +280,32 @@ export function useGameLoop({
         return;
       }
 
-      // ── Step 2: Camera (first time only — show canvas + Start button) ──
+      // ── Step 2 (challenger only): joinDuel — deposit USDM BEFORE playing ──
+      if (duel) {
+        try {
+          const joinHash = await contractActions.joinDuel(duel.id, duel.stakeRaw);
+          addTx(joinHash, "Join Duel");
+          const receipt = await publicClient.waitForTransactionReceipt({ hash: joinHash });
+          if (receipt.status === "reverted") {
+            throw new Error("joinDuel reverted");
+          }
+          // Refresh balance after deposit
+          refreshBalance();
+        } catch (err) {
+          console.warn("Join duel failed:", err);
+          const raw = err instanceof Error ? err.message : String(err);
+          if (raw.includes("User rejected") || raw.includes("User denied") || raw.includes("rejected the request")) {
+            setPhase("idle");
+          } else {
+            showError("Failed to join duel. It may have been taken or cancelled.");
+            refetchDuels();
+            setPhase("idle");
+          }
+          return;
+        }
+      }
+
+      // ── Step 3: Camera (first time only) ──
       if (!isCameraReady()) {
         setPhase("camera");
 
@@ -307,24 +315,12 @@ export function useGameLoop({
           return;
         }
 
-        // Camera ready — wait for user to click "Start"
         await new Promise<void>((resolve) => {
           cameraConfirmRef.current = resolve;
         });
       }
 
-      // ── Pre-check 3: re-verify duel right before countdown ──
-      if (duel) {
-        const stillOpen = await isDuelStillOpen(duel.id);
-        if (!stillOpen) {
-          showError("This duel was just taken or cancelled. Try another one.");
-          refetchDuels();
-          setPhase("idle");
-          return;
-        }
-      }
-
-      // ── Step 3: Countdown 3-2-1 ──
+      // ── Step 4: Countdown 3-2-1 ──
       setPhase("countdown");
       let c = 3;
       setCountdownNum(3);
@@ -338,10 +334,9 @@ export function useGameLoop({
         }
       }, 1000);
     },
-    [initCamera, isCameraReady, go, contractActions, addTx, walletAddress, showError, dismissError, refetchDuels]
+    [initCamera, isCameraReady, go, contractActions, addTx, walletAddress, showError, dismissError, refetchDuels, refreshBalance]
   );
 
-  /** Called by the "Start" button on the camera screen */
   const confirmCamera = useCallback(() => {
     cameraConfirmRef.current?.();
     cameraConfirmRef.current = null;
@@ -360,7 +355,6 @@ export function useGameLoop({
     chartRef.current = [];
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);

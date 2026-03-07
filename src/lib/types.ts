@@ -7,6 +7,7 @@ export enum DuelStatus {
   Open = 0,
   Settled = 1,
   Cancelled = 2,
+  Locked = 3,
 }
 
 /** Raw duel data from the contract */

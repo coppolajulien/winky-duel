@@ -8,10 +8,11 @@ pragma solidity ^0.8.24;
  *         Every blink is detected on-chain. The highest score wins the pot.
  *
  * Flow:
- *   1. Player approves USDM spending → creates duel with createDuel(score, amount)
- *   2. Challenger approves USDM → challenges via challengeDuel(duelId, score)
- *   3. challengeDuel auto-settles: winner gets 95%, 5% rake to contract
- *   4. recordBlink() emits events for the live feed (no storage writes)
+ *   1. Creator approves USDM → creates duel with createDuel(score, amount)
+ *   2. Challenger approves USDM → joins via joinDuel(duelId) — deposits stake
+ *   3. Challenger plays the game (blink detection)
+ *   4. Challenger calls submitScore(duelId, score) — auto-settles winner
+ *   5. If challenger abandons, creator calls claimAbandoned(duelId) after timeout
  */
 
 interface IERC20 {
@@ -23,18 +24,20 @@ interface IERC20 {
 contract WinkyDuel {
     // ─── Types ──────────────────────────────────────────────────────
     enum Status {
-        Open,
-        Settled,
-        Cancelled
+        Open,       // 0 — waiting for challenger
+        Settled,    // 1 — game finished
+        Cancelled,  // 2 — creator cancelled
+        Locked      // 3 — challenger joined, game in progress
     }
 
     struct Duel {
         address creator;
         address challenger;
-        uint96 stake; // in USDM smallest unit (18 decimals)
+        uint96 stake;          // in USDM smallest unit (18 decimals)
         uint32 creatorScore;
         uint32 challengerScore;
         Status status;
+        uint40 joinedAt;       // timestamp when challenger joined (for abandon timeout)
     }
 
     // ─── State ──────────────────────────────────────────────────────
@@ -43,8 +46,9 @@ contract WinkyDuel {
     uint256 public rakeBalance;
     address public owner;
 
-    uint256 public constant RAKE_BPS = 500; // 5% (500 basis points)
-    uint256 public constant MIN_STAKE = 1e18; // 1 USDM minimum
+    uint256 public constant RAKE_BPS = 500;          // 5% (500 basis points)
+    uint256 public constant MIN_STAKE = 1e18;         // 1 USDM minimum
+    uint256 public constant ABANDON_TIMEOUT = 300;    // 5 minutes
 
     mapping(uint256 => Duel) public duels;
 
@@ -59,12 +63,17 @@ contract WinkyDuel {
         uint96 stake,
         uint32 score
     );
+    event DuelJoined(
+        uint256 indexed duelId,
+        address indexed challenger
+    );
     event DuelSettled(
         uint256 indexed duelId,
         address indexed winner,
         uint256 payout
     );
     event DuelCancelled(uint256 indexed duelId);
+    event DuelAbandoned(uint256 indexed duelId);
     event BlinkRecorded(uint256 indexed duelId, address indexed player);
     event RakeWithdrawn(address indexed to, uint256 amount);
 
@@ -72,13 +81,16 @@ contract WinkyDuel {
     error InsufficientStake();
     error DuelNotFound();
     error DuelNotOpen();
+    error DuelNotLocked();
     error StakeMismatch();
     error NotCreator();
+    error NotChallenger();
     error CannotChallengeSelf();
     error NotOwner();
     error NoRake();
     error TransferFailed();
     error InvalidToken();
+    error TooEarly();
 
     // ─── Modifiers ──────────────────────────────────────────────────
     modifier onlyOwner() {
@@ -117,7 +129,8 @@ contract WinkyDuel {
             stake: uint96(amount),
             creatorScore: score,
             challengerScore: 0,
-            status: Status.Open
+            status: Status.Open,
+            joinedAt: 0
         });
 
         // Track in open duels array
@@ -128,12 +141,11 @@ contract WinkyDuel {
     }
 
     /**
-     * @notice Challenge an open duel. Must approve the exact same stake in USDM.
-     *         Auto-settles: compares scores and transfers winnings.
-     * @param duelId The ID of the duel to challenge.
-     * @param score The challenger's blink score.
+     * @notice Join an open duel by depositing USDM (same stake as creator).
+     *         This locks the duel — the challenger must then play and call submitScore().
+     * @param duelId The ID of the duel to join.
      */
-    function challengeDuel(uint256 duelId, uint32 score) external {
+    function joinDuel(uint256 duelId) external {
         Duel storage d = duels[duelId];
 
         if (d.creator == address(0)) revert DuelNotFound();
@@ -145,11 +157,29 @@ contract WinkyDuel {
         if (!ok) revert TransferFailed();
 
         d.challenger = msg.sender;
+        d.status = Status.Locked;
+        d.joinedAt = uint40(block.timestamp);
+
+        // Remove from open duels (no longer available)
+        _removeOpen(duelId);
+
+        emit DuelJoined(duelId, msg.sender);
+    }
+
+    /**
+     * @notice Submit the challenger's score and settle the duel.
+     *         Only the locked-in challenger can call this.
+     * @param duelId The ID of the locked duel.
+     * @param score The challenger's blink score.
+     */
+    function submitScore(uint256 duelId, uint32 score) external {
+        Duel storage d = duels[duelId];
+
+        if (d.status != Status.Locked) revert DuelNotLocked();
+        if (msg.sender != d.challenger) revert NotChallenger();
+
         d.challengerScore = score;
         d.status = Status.Settled;
-
-        // Remove from open duels
-        _removeOpen(duelId);
 
         // ── Settlement logic ──
         uint256 totalPot = uint256(d.stake) * 2;
@@ -157,7 +187,7 @@ contract WinkyDuel {
         if (d.creatorScore == score) {
             // Draw → both get their stake back, no rake
             _safeTransfer(d.creator, d.stake);
-            _safeTransfer(msg.sender, d.stake);
+            _safeTransfer(d.challenger, d.stake);
             emit DuelSettled(duelId, address(0), d.stake);
         } else {
             // Winner takes 95%, 5% rake
@@ -165,10 +195,31 @@ contract WinkyDuel {
             uint256 payout = totalPot - rake;
             rakeBalance += rake;
 
-            address winner = d.creatorScore > score ? d.creator : msg.sender;
+            address winner = d.creatorScore > score ? d.creator : d.challenger;
             _safeTransfer(winner, payout);
             emit DuelSettled(duelId, winner, payout);
         }
+    }
+
+    /**
+     * @notice Claim a duel where the challenger abandoned (didn't submit score).
+     *         Can only be called after ABANDON_TIMEOUT has passed since joinDuel().
+     *         Creator gets both stakes back (no rake — it's a forfeit, not a win).
+     * @param duelId The ID of the abandoned duel.
+     */
+    function claimAbandoned(uint256 duelId) external {
+        Duel storage d = duels[duelId];
+
+        if (d.status != Status.Locked) revert DuelNotLocked();
+        if (block.timestamp < d.joinedAt + ABANDON_TIMEOUT) revert TooEarly();
+
+        d.status = Status.Settled;
+
+        // Return both stakes to creator (forfeit — no rake)
+        uint256 totalPot = uint256(d.stake) * 2;
+        _safeTransfer(d.creator, totalPot);
+
+        emit DuelAbandoned(duelId);
     }
 
     /**
@@ -190,7 +241,7 @@ contract WinkyDuel {
 
     /**
      * @notice Record a blink during gameplay (event-only, no storage write).
-     *         Used for the live feed in Phase 5.
+     *         Used for the live feed.
      * @param duelId The duel the blink belongs to.
      */
     function recordBlink(uint256 duelId) external {

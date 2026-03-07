@@ -62,7 +62,8 @@ export default function GamePage() {
     triggerFlash,
     contractActions: {
       createDuel: contract.createDuel,
-      challengeDuel: contract.challengeDuel,
+      joinDuel: contract.joinDuel,
+      submitScore: contract.submitScore,
       ensureAllowance: contract.ensureAllowance,
     },
     refetchDuels,
