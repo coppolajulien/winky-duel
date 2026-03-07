@@ -63,6 +63,32 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
 
   return (
     <div className="flex flex-1 animate-[fade-in_0.4s_ease] flex-col items-center justify-center p-5">
+      {/* Title — above the card */}
+      <div
+        className={cn(
+          "mb-5 text-5xl font-black md:text-6xl",
+          result.error
+            ? "text-red-400"
+            : result.isChallenge
+              ? result.won === true
+                ? "text-wink-pink"
+                : result.won === false
+                  ? "text-white/40"
+                  : "text-white/60"
+              : "text-wink-pink"
+        )}
+      >
+        {result.error
+          ? "TX FAILED"
+          : result.isChallenge
+            ? result.won === true
+              ? "YOU WIN!"
+              : result.won === false
+                ? "YOU LOSE"
+                : "DRAW"
+            : "DUEL POSTED!"}
+      </div>
+
       {/* Hero card with background visual */}
       <div className="relative mb-8 w-full max-w-lg overflow-hidden rounded-2xl">
         <img
@@ -72,32 +98,6 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
         <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
-          {/* Title */}
-          <div
-            className={cn(
-              "mb-1 text-4xl font-black drop-shadow-lg md:text-5xl",
-              result.error
-                ? "text-red-400"
-                : result.isChallenge
-                  ? result.won === true
-                    ? "text-wink-pink"
-                    : result.won === false
-                      ? "text-white/40"
-                      : "text-white/60"
-                  : "text-wink-pink"
-            )}
-          >
-            {result.error
-              ? "TX FAILED"
-              : result.isChallenge
-                ? result.won === true
-                  ? "YOU WIN!"
-                  : result.won === false
-                    ? "YOU LOSE"
-                    : "DRAW"
-                : "DUEL POSTED!"}
-          </div>
-
           {/* Error message */}
           {result.error && (
             <div className="mb-2 max-w-[260px] text-center text-[11px] text-red-400/80 drop-shadow-lg">
@@ -113,7 +113,7 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
           )}
 
           {/* Subtitle */}
-          <div className="mb-4 text-center text-xs text-white/60 md:text-sm">
+          <div className="mb-3 text-center text-xs text-white/60 md:text-sm">
             {result.error
               ? `You blinked ${result.my} times`
               : result.isChallenge
@@ -121,13 +121,13 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
                 : `Score of ${result.my} posted`}
           </div>
 
-          {/* Score */}
-          <div className="flex gap-4">
+          {/* Score — large */}
+          <div className="flex gap-6">
             <div className="text-center">
-              <div className="font-mono text-[44px] font-extrabold text-white drop-shadow-lg md:text-[56px]">
+              <div className="font-mono text-[72px] font-extrabold leading-none text-white drop-shadow-lg md:text-[96px]">
                 {result.my}
               </div>
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-white/50 md:text-xs">
+              <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-white/50 md:text-sm">
                 You
               </div>
             </div>
@@ -135,10 +135,10 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
               <>
                 <div className="w-px bg-white/20" />
                 <div className="text-center">
-                  <div className="font-mono text-[44px] font-extrabold text-white/40 drop-shadow-lg md:text-[56px]">
+                  <div className="font-mono text-[72px] font-extrabold leading-none text-white/40 drop-shadow-lg md:text-[96px]">
                     {result.target}
                   </div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-white/30 md:text-xs">
+                  <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-white/30 md:text-sm">
                     Target
                   </div>
                 </div>
