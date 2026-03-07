@@ -12,6 +12,7 @@ interface ContractActions {
   createDuel: (score: number, stakeUsdm: number) => Promise<`0x${string}`>;
   joinDuel: (duelId: bigint, stakeRaw: bigint) => Promise<`0x${string}`>;
   submitScore: (duelId: bigint, score: number) => Promise<`0x${string}`>;
+  checkAllowance: () => Promise<bigint>;
   ensureAllowance: (amount: bigint) => Promise<`0x${string}` | null>;
 }
 
@@ -268,12 +269,16 @@ export function useGameLoop({
         }
       }
 
-      // ── Step 1: Approve USDM ──
-      setPhase("approving");
-
+      // ── Step 1: Approve USDM (only show screen if approval is needed) ──
       try {
-        const hash = await contractActions.ensureAllowance(stakeAmount);
-        if (hash) addTx(hash, "Approve USDM");
+        const currentAllowance = await contractActions.checkAllowance();
+        const needsApproval = currentAllowance < stakeAmount;
+
+        if (needsApproval) {
+          setPhase("approving");
+          const hash = await contractActions.ensureAllowance(stakeAmount);
+          if (hash) addTx(hash, "Approve USDM");
+        }
       } catch (err) {
         console.warn("Approval rejected:", err);
         setPhase("idle");
@@ -282,6 +287,7 @@ export function useGameLoop({
 
       // ── Step 2 (challenger only): joinDuel — deposit USDM BEFORE playing ──
       if (duel) {
+        setPhase("approving"); // Show wallet confirmation screen for joinDuel TX
         try {
           const joinHash = await contractActions.joinDuel(duel.id, duel.stakeRaw);
           addTx(joinHash, "Join Duel");

@@ -77,6 +77,7 @@ export default function GamePage() {
       createDuel: contract.createDuel,
       joinDuel: contract.joinDuel,
       submitScore: contract.submitScore,
+      checkAllowance: contract.checkAllowance,
       ensureAllowance: contract.ensureAllowance,
     },
     refetchDuels,
