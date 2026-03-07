@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useTxToasts } from "@/hooks/useTxToasts";
 import { useBlinkDetector } from "@/hooks/useBlinkDetector";
@@ -34,6 +34,19 @@ export default function GamePage() {
   const contract = useContract();
   const { duels, history, loading: duelsLoading, refetchDuels } = useDuels(wallet.address);
   const [sendModalOpen, setSendModalOpen] = useState(false);
+
+  const DESKTOP_SLIDES = [
+    "/desktop-bg.jpg",
+    "/desktop-bg-1.jpg",
+    "/desktop-bg-2.jpg",
+    "/desktop-bg-3.jpg",
+    "/desktop-bg-4.jpg",
+    "/desktop-bg-5.jpg",
+  ];
+  const gameBgImage = useMemo(
+    () => DESKTOP_SLIDES[Math.floor(Math.random() * DESKTOP_SLIDES.length)],
+    []
+  );
 
   const {
     phase,
@@ -275,19 +288,27 @@ export default function GamePage() {
             />
           )}
           {phase === "approving" && (
-            <div className="flex flex-1 animate-[fade-in_0.3s_ease] flex-col items-center justify-center gap-4">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-wink-text-dim">
-                Step 1/3 — Approve stake
-              </div>
-              <div className="rounded-2xl bg-card px-6 py-3">
-                <span className="font-mono text-[32px] font-extrabold text-wink-pink">
-                  ${stake}
-                </span>
-                <span className="ml-2 text-[13px] text-wink-text-dim">USDM</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-wink-pink border-t-transparent" />
-                <span className="text-sm text-wink-text-dim">Confirm in your wallet…</span>
+            <div className="relative flex flex-1 animate-[fade-in_0.3s_ease] flex-col items-center justify-center gap-4">
+              <img
+                src={gameBgImage}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/60" />
+              <div className="relative z-10 flex flex-col items-center gap-4">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60">
+                  Step 1/3 — Approve stake
+                </div>
+                <div className="rounded-2xl bg-black/40 px-6 py-3 backdrop-blur-sm">
+                  <span className="font-mono text-[32px] font-extrabold text-wink-pink">
+                    ${stake}
+                  </span>
+                  <span className="ml-2 text-[13px] text-white/60">USDM</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-wink-pink border-t-transparent" />
+                  <span className="text-sm text-white/60">Confirm in your wallet…</span>
+                </div>
               </div>
             </div>
           )}
