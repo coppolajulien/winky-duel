@@ -102,16 +102,7 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
 
         {/* Hero content */}
         <div className="relative z-10 flex flex-col items-center gap-5 text-center">
-          {authenticated && (
-            <button
-              onClick={onCreate}
-              className="rounded-full border-2 border-white bg-white/10 px-10 py-4 text-lg font-black uppercase tracking-wider text-white backdrop-blur-sm transition-all hover:bg-white hover:text-black active:scale-95"
-            >
-              Create a Duel →
-            </button>
-          )}
-
-          <h2 className="mt-2 text-3xl font-extrabold uppercase text-white md:text-4xl">
+          <h2 className="text-3xl font-extrabold uppercase text-white md:text-4xl">
             Bet. Blink.
             <br />
             Win the pool.
@@ -119,6 +110,15 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
           <p className="max-w-md text-sm text-white/60">
             Stake USDM. Face your opp. Most blinks takes it all.
           </p>
+
+          {authenticated && (
+            <button
+              onClick={onCreate}
+              className="mt-2 rounded-full border-2 border-white bg-white/10 px-10 py-4 text-lg font-black uppercase tracking-wider text-white backdrop-blur-sm transition-all hover:bg-white hover:text-black active:scale-95"
+            >
+              Create a Duel →
+            </button>
+          )}
         </div>
       </div>
 
@@ -164,6 +164,7 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
           </div>
         </div>
       )}
+
     </div>
   );
 }
