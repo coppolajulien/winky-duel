@@ -1,10 +1,3 @@
-/** MediaPipe face landmark indices for Eye Aspect Ratio */
-export const L_EYE = [362, 385, 387, 263, 373, 380];
-export const R_EYE = [33, 160, 158, 133, 153, 144];
-
-/** EAR threshold for blink detection (higher = more sensitive) */
-export const EAR_THRESHOLD = 0.21;
-
 /** Face oval landmark indices for outline rendering */
 export const FACE_OVAL = [
   10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379,

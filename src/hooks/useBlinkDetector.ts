@@ -1,10 +1,12 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect, type MutableRefObject } from "react";
-import { computeEAR } from "@/lib/blinkDetection";
 import { drawMesh } from "@/lib/drawMesh";
-import { L_EYE, R_EYE, EAR_THRESHOLD } from "@/lib/faceMeshData";
 import { useThemeColors, type ThemeColors } from "@/lib/theme";
+
+// ── Blendshape blink detection constants ──
+const BLINK_THRESHOLD = 0.35; // blendshape score 0→1 (eyes closed > threshold = blink)
+const BLINK_COOLDOWN = 180;   // ms between registered blinks
 
 interface UseBlinkDetectorOptions {
   onBlinkRef: MutableRefObject<(() => void) | null>;
@@ -24,9 +26,6 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   const lastTimestampRef = useRef(0);
   const warmedUpRef = useRef(false);
   const drawTickRef = useRef(0);
-  const isMobileRef = useRef(
-    typeof navigator !== "undefined" && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-  );
   const [cameraStatus, setCameraStatus] = useState<"idle" | "loading" | "ready" | "denied">("idle");
   const [cameraError, setCameraError] = useState<string | null>(null);
   const themeColors = useThemeColors();
@@ -44,12 +43,21 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   }, []);
 
   const safeDetect = useCallback(
-    (fl: any, v: HTMLVideoElement, timestamp: number) => {
-      // Returns landmarks or null, never throws
+    (fl: any, v: HTMLVideoElement, timestamp: number): { landmarks: any; blinkScore: number } | null => {
       try {
         const res = fl.detectForVideo(v, timestamp);
         if (res.faceLandmarks?.length > 0) {
-          return res.faceLandmarks[0];
+          // Extract blendshape blink scores
+          let blinkScore = 0;
+          const shapes = res.faceBlendshapes?.[0]?.categories;
+          if (shapes) {
+            const blinkL = shapes.find((c: any) => c.categoryName === "eyeBlinkLeft");
+            const blinkR = shapes.find((c: any) => c.categoryName === "eyeBlinkRight");
+            const left = blinkL?.score ?? 0;
+            const right = blinkR?.score ?? 0;
+            blinkScore = (left + right) / 2;
+          }
+          return { landmarks: res.faceLandmarks[0], blinkScore };
         }
       } catch {
         // Swallow - can fail during warmup
@@ -97,22 +105,19 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
         return;
       }
 
-      const landmarks = safeDetect(fl, v, now);
+      const result = safeDetect(fl, v, now);
 
-      if (landmarks) {
-        const le = computeEAR(L_EYE, landmarks);
-        const re = computeEAR(R_EYE, landmarks);
-        const avg = (le + re) / 2;
+      if (result) {
+        const { landmarks, blinkScore } = result;
 
-        const threshold = isMobileRef.current ? EAR_THRESHOLD + 0.06 : EAR_THRESHOLD;
-        if (avg < threshold) {
-          frameCtRef.current++;
+        // Blendshape-based detection: score rises when eyes close
+        if (blinkScore >= BLINK_THRESHOLD) {
+          frameCtRef.current++; // eyes closing
         } else {
-          const minFrames = isMobileRef.current ? 1 : 2;
-          const cooldown = isMobileRef.current ? 120 : 250;
-          if (frameCtRef.current >= minFrames) {
+          // Eyes opened back up — check if we had a blink
+          if (frameCtRef.current >= 1) {
             const t = Date.now();
-            if (t - lastBlinkRef.current > cooldown) {
+            if (t - lastBlinkRef.current > BLINK_COOLDOWN) {
               lastBlinkRef.current = t;
               flashRef.current = 10;
               onBlinkRef.current?.();
@@ -172,16 +177,18 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
           baseOptions: { modelAssetPath: MODEL_URL, delegate: "GPU" },
           runningMode: "VIDEO",
           numFaces: 1,
+          outputFaceBlendshapes: true,
         });
-        console.log("[Blinkit] FaceLandmarker created (GPU)");
+        console.log("[Blinkit] FaceLandmarker created (GPU + blendshapes)");
       } catch (gpuErr) {
         console.warn("[Blinkit] GPU failed, falling back to CPU:", gpuErr);
         flRef.current = await FaceLandmarker.createFromOptions(fs, {
           baseOptions: { modelAssetPath: MODEL_URL, delegate: "CPU" },
           runningMode: "VIDEO",
           numFaces: 1,
+          outputFaceBlendshapes: true,
         });
-        console.log("[Blinkit] FaceLandmarker created (CPU)");
+        console.log("[Blinkit] FaceLandmarker created (CPU + blendshapes)");
       }
 
       // ── Request camera ──
