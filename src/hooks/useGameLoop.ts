@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { parseUnits } from "viem";
+import { parseUnits, formatUnits } from "viem";
 import { DURATION } from "@/lib/constants";
 import { publicClient } from "@/hooks/useWallet";
-import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI } from "@/lib/constants";
+import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI, MOCK_USDM_ADDRESS, ERC20_ABI } from "@/lib/constants";
 import { DuelStatus } from "@/lib/types";
 import type { GamePhase, Duel, ChartPoint, GameResult } from "@/lib/types";
 
@@ -22,6 +22,7 @@ interface UseGameLoopOptions {
   contractActions: ContractActions;
   refetchDuels: () => Promise<void>;
   refreshBalance: () => Promise<void>;
+  walletAddress: `0x${string}` | null;
 }
 
 export function useGameLoop({
@@ -32,6 +33,7 @@ export function useGameLoop({
   contractActions,
   refetchDuels,
   refreshBalance,
+  walletAddress,
 }: UseGameLoopOptions) {
   const [phase, setPhase] = useState<GamePhase>("idle");
   const [stake, setStake] = useState(5);
@@ -220,12 +222,33 @@ export function useGameLoop({
       setChallenge(duel);
       if (duel) setStake(duel.stake);
 
-      // ── Step 1: Approve USDM via Privy ──
-      setPhase("approving");
-
       const stakeAmount = duel
         ? duel.stakeRaw
         : parseUnits(String(stakeRef.current), 18);
+
+      // ── Pre-check: verify USDM balance before starting ──
+      if (walletAddress) {
+        try {
+          const balance = await publicClient.readContract({
+            address: MOCK_USDM_ADDRESS,
+            abi: ERC20_ABI,
+            functionName: "balanceOf",
+            args: [walletAddress],
+          });
+          if (balance < stakeAmount) {
+            const have = parseFloat(formatUnits(balance, 18)).toFixed(2);
+            const need = parseFloat(formatUnits(stakeAmount, 18)).toFixed(2);
+            alert(`Insufficient USDM balance. You have $${have} but need $${need}.`);
+            setPhase("idle");
+            return;
+          }
+        } catch (err) {
+          console.warn("Balance check failed, proceeding anyway:", err);
+        }
+      }
+
+      // ── Step 1: Approve USDM ──
+      setPhase("approving");
 
       try {
         const hash = await contractActions.ensureAllowance(stakeAmount);
@@ -266,7 +289,7 @@ export function useGameLoop({
         }
       }, 1000);
     },
-    [initCamera, isCameraReady, go, contractActions, addTx]
+    [initCamera, isCameraReady, go, contractActions, addTx, walletAddress]
   );
 
   /** Called by the "Start" button on the camera screen */

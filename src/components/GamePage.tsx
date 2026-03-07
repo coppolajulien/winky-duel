@@ -64,6 +64,7 @@ export default function GamePage() {
     },
     refetchDuels,
     refreshBalance: wallet.refreshBalance,
+    walletAddress: (wallet.address as `0x${string}`) ?? null,
   });
 
   // Wire the blink ref after both hooks are initialized
