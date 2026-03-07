@@ -25,12 +25,12 @@ export function ErrorBanner({ error, onDismiss }: ErrorBannerProps) {
 
   return (
     <div
-      className="pointer-events-auto absolute left-1/2 top-6 z-50 w-full max-w-md -translate-x-1/2 transition-all duration-300"
+      className="pointer-events-auto absolute right-6 top-6 z-50 w-full max-w-sm transition-all duration-300"
       style={{
         opacity: visible ? 1 : 0,
         transform: visible
-          ? "translateX(-50%) translateY(0)"
-          : "translateX(-50%) translateY(-12px)",
+          ? "translateY(0)"
+          : "translateY(-12px)",
       }}
     >
       <div
