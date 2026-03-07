@@ -313,8 +313,15 @@ export default function GamePage() {
             </div>
           )}
           {phase === "camera" && (
-            <div className="flex flex-1 animate-[fade-in_0.3s_ease] flex-col items-center justify-center gap-5">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-wink-text-dim">
+            <div className="relative flex flex-1 animate-[fade-in_0.3s_ease] flex-col items-center justify-center gap-5">
+              <img
+                src={gameBgImage}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/60" />
+              <div className="relative z-10 flex flex-col items-center gap-5">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60">
                 Step 2/3 — Camera setup
               </div>
               <div className="relative overflow-hidden rounded-2xl">
@@ -331,9 +338,9 @@ export default function GamePage() {
                   <>
                     <div className="flex items-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-wink-pink border-t-transparent" />
-                      <span className="text-sm text-wink-text-dim">Loading camera…</span>
+                      <span className="text-sm text-white/60">Loading camera…</span>
                     </div>
-                    <p className="max-w-xs text-center text-[11px] text-wink-text-dim">
+                    <p className="max-w-xs text-center text-[11px] text-white/50">
                       We need your camera to detect blinks. Nothing is recorded or shared.
                     </p>
                   </>
@@ -356,7 +363,7 @@ export default function GamePage() {
                   <div className="flex flex-col items-center gap-3 max-w-xs text-center">
                     <span className="text-3xl mb-1">🚫</span>
                     <span className="text-sm font-semibold text-red-400">Camera access required</span>
-                    <p className="text-[11px] text-wink-text-dim">
+                    <p className="text-[11px] text-white/50">
                       {cameraError || "Blinkit uses your webcam to detect blinks. Allow camera access in your browser settings and reload the page."}
                     </p>
                     <div className="rounded-lg border border-wink-border bg-card/50 p-2.5 text-[10px] text-wink-text-dim">
@@ -376,6 +383,7 @@ export default function GamePage() {
                     </button>
                   </div>
                 )}
+              </div>
               </div>
             </div>
           )}
