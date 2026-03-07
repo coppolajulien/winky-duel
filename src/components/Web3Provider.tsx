@@ -2,7 +2,6 @@
 
 import "@rainbow-me/rainbowkit/styles.css";
 
-import { useState, useEffect } from "react";
 import { getDefaultConfig, RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -12,17 +11,12 @@ const config = getDefaultConfig({
   appName: "Blinkit",
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
   chains: [megaethTestnet],
-  ssr: true,
+  ssr: false,
 });
 
 const queryClient = new QueryClient();
 
 export function Web3Provider({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) return <>{children}</>;
-
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
