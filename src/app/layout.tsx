@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s | Blinkit",
   },
   description:
-    "Bet USDM. Blink against your opponent. Most blinks wins the pool. The first real-time PvP blink-to-earn game on MegaETH.",
+    "Open a duel. Deposit USDM. Most blinks wins the pool. The first real-time PvP blink-to-earn game on MegaETH.",
   keywords: [
     "blinkit",
     "blink to earn",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     siteName: "Blinkit",
     title: "Blinkit — Bet. Blink. Win the Pool.",
     description:
-      "The first PvP blink-to-earn game. Stake USDM, face your opponent, most blinks takes it all. Built on MegaETH.",
+      "The first PvP blink-to-earn game. Open a duel, deposit USDM, most blinks takes it all. Built on MegaETH.",
     images: [
       {
         url: "/card.jpg",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Blinkit — Bet. Blink. Win the Pool.",
     description:
-      "The first PvP blink-to-earn game. Stake USDM, face your opponent, most blinks takes it all.",
+      "The first PvP blink-to-earn game. Open a duel, deposit USDM, most blinks takes it all.",
     images: ["/card.jpg"],
   },
   robots: {
