@@ -7,7 +7,7 @@ import { publicClient } from "@/hooks/useWallet";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI, MOCK_USDM_ADDRESS, ERC20_ABI } from "@/lib/constants";
 import { DuelStatus } from "@/lib/types";
 import type { GamePhase, Duel, ChartPoint, GameResult } from "@/lib/types";
-import { playBlink, playCountdown, playGo, playOvertake, playWin, playLose } from "@/hooks/useSounds";
+import { playCountdown, playGo, playOvertake, playWin, playLose } from "@/hooks/useSounds";
 
 interface ContractActions {
   createDuel: (score: number, stakeUsdm: number) => Promise<`0x${string}`>;
@@ -123,7 +123,6 @@ export function useGameLoop({
     setMyScore(myScoreRef.current);
     setMyBlinking(true);
     triggerFlash();
-    playBlink();
     setTimeout(() => setMyBlinking(false), 150);
 
     const target = challengeRef.current?.score;
