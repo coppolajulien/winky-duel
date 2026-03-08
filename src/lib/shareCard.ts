@@ -238,12 +238,12 @@ export async function generateShareCard(
     ctx.font = "900 48px system-ui, sans-serif";
     ctx.textAlign = "center";
     ctx.fillStyle = PINK;
-    ctx.fillText(`$${stake} STAKED`, W / 2, H / 2 - 5);
+    ctx.fillText(`${stake} USDM`, W / 2, H / 2 - 5);
 
     ctx.font = "700 20px system-ui, sans-serif";
     ctx.fillStyle = TEXT;
     ctx.globalAlpha = 0.5;
-    ctx.fillText("OPEN DUEL", W / 2, H / 2 + 24);
+    ctx.fillText("DEPOSITED", W / 2, H / 2 + 24);
     ctx.globalAlpha = 1;
   }
 
