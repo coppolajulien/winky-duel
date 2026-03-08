@@ -252,7 +252,23 @@ export default function GamePage() {
           <ErrorBanner error={errorBanner} onDismiss={dismissError} />
         )}
         <div className="flex h-full flex-col">
-          {phase === "idle" && cameraStatus === "denied" && (
+          {/* Wrong network overlay */}
+          {wallet.wrongNetwork && (
+            <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center justify-center gap-4">
+              <div className="text-4xl">🔗</div>
+              <div className="text-lg font-bold text-wink-text">Wrong Network</div>
+              <p className="max-w-xs text-center text-sm text-wink-text-dim">
+                Blinkit runs on MegaETH Testnet. Switch your wallet to continue.
+              </p>
+              <button
+                onClick={wallet.switchToMegaETH}
+                className="rounded-full bg-wink-pink px-8 py-3 text-sm font-bold text-white transition-opacity hover:opacity-85"
+              >
+                Switch to MegaETH
+              </button>
+            </div>
+          )}
+          {phase === "idle" && cameraStatus === "denied" && !wallet.wrongNetwork && (
             <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center justify-center">
               <img src="/lost.svg" alt="" className="mb-4 h-16 w-16 brightness-0 invert opacity-50" />
               <div className="text-lg font-bold text-wink-text">
@@ -306,7 +322,7 @@ export default function GamePage() {
               </button>
             </div>
           )}
-          {phase === "idle" && cameraStatus !== "denied" && (
+          {phase === "idle" && cameraStatus !== "denied" && !wallet.wrongNetwork && (
             <PhaseIdle
               duels={duels.filter((d) => !wallet.address || d.creatorFull.toLowerCase() !== wallet.address.toLowerCase())}
               authenticated={wallet.authenticated}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAccount, useDisconnect, useWalletClient } from "wagmi";
+import { useAccount, useDisconnect, useWalletClient, useChainId, useSwitchChain } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useState, useEffect, useCallback } from "react";
 import { createPublicClient, http, formatUnits } from "viem";
@@ -18,6 +18,8 @@ export function useWallet() {
   const { openConnectModal } = useConnectModal();
   const { disconnect } = useDisconnect();
   const { data: walletClient } = useWalletClient();
+  const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
 
   const [usdmBalance, setUsdmBalance] = useState<string | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
@@ -25,6 +27,11 @@ export function useWallet() {
   const ready = status !== "connecting" && status !== "reconnecting";
   const authenticated = isConnected;
   const address = rawAddress ?? null;
+  const wrongNetwork = authenticated && chainId !== megaethTestnet.id;
+
+  const switchToMegaETH = useCallback(() => {
+    switchChain({ chainId: megaethTestnet.id });
+  }, [switchChain]);
 
   // Abbreviated: "0x7aB3...c92F"
   const shortAddress = address
@@ -90,5 +97,7 @@ export function useWallet() {
     balanceLoading,
     refreshBalance: fetchBalance,
     getWalletClient,
+    wrongNetwork,
+    switchToMegaETH,
   };
 }
