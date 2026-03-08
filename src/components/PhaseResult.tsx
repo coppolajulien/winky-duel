@@ -48,7 +48,7 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
     if (result.error) {
       text = `👁️ I just scored ${result.my} blinks in a Blinkit Duel!\n\nStaked $${stake} USDM — who dares to challenge me? ⚔️`;
     } else if (result.isChallenge && result.won === true) {
-      text = `👁️ I just won a Blinkit Duel!\n\n${result.my} vs ${result.target} blinks — earned $${(parseFloat(netWin(stake)) - stake).toFixed(0)} USDM 💰\n\nThink you can blink faster? 👀`;
+      text = `👁️ I just won a Blinkit Duel!\n\n${result.my} vs ${result.target} blinks — earned $${netWin(stake)} USDM 💰\n\nThink you can blink faster? 👀`;
     } else if (result.isChallenge && result.won === false) {
       text = `👁️ Lost a Blinkit Duel... ${result.my} vs ${result.target} blinks 💀\n\nI need a rematch! Can you beat ${result.target} blinks?`;
     } else {
@@ -119,7 +119,7 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
           {result.isChallenge && result.won === true && !result.error && (
             <div className="flex flex-col items-center">
               <div className="font-mono text-5xl font-black text-wink-pink drop-shadow-lg md:text-6xl">
-                +${(parseFloat(netWin(stake)) - stake).toFixed(2)}
+                +${netWin(stake)}
               </div>
               <div className="mt-1 text-xs text-white/50">
                 {RAKE_BPS / 100}% fee applied, thank you!
