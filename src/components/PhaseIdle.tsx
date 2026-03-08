@@ -166,6 +166,25 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
         </div>
       )}
 
+      {/* Powered on MegaETH — bottom */}
+      <div className="mt-auto flex items-center justify-center gap-2 pb-6 pt-10">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-wink-text-dim/40">
+          Powered on
+        </span>
+        <span
+          className="inline-block h-[14px] w-[80px]"
+          style={{
+            WebkitMaskImage: "url(/megaeth-logo.svg)",
+            WebkitMaskSize: "contain",
+            WebkitMaskRepeat: "no-repeat",
+            maskImage: "url(/megaeth-logo.svg)",
+            maskSize: "contain",
+            maskRepeat: "no-repeat",
+            backgroundColor: "var(--wink-text-dim)",
+            opacity: 0.3,
+          }}
+        />
+      </div>
     </div>
   );
 }
