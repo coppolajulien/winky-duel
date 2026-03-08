@@ -109,11 +109,11 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
           {/* Winnings */}
           {result.isChallenge && result.won === true && !result.error && (
             <div className="flex flex-col items-center">
-              <div className="font-mono text-xl font-bold text-wink-pink drop-shadow-lg md:text-2xl">
+              <div className="font-mono text-5xl font-black text-wink-pink drop-shadow-lg md:text-6xl">
                 +${(parseFloat(netWin(stake)) - stake).toFixed(2)}
               </div>
-              <div className="text-[9px] text-white/30">
-                {RAKE_BPS / 100}% fee applied
+              <div className="mt-1 text-xs text-white/50">
+                {RAKE_BPS / 100}% fee applied, thank you!
               </div>
             </div>
           )}
@@ -122,18 +122,18 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
           <div className="mb-3 text-center text-xs text-white/60 md:text-sm">
             {result.error
               ? `You blinked ${result.my} times`
-              : result.isChallenge
-                ? `${result.my} vs ${result.target} blinks`
-                : `Score of ${result.my} posted`}
+              : !result.isChallenge
+                ? `Score of ${result.my} posted`
+                : null}
           </div>
 
-          {/* Score — large */}
+          {/* Score */}
           <div className="flex gap-6">
             <div className="text-center">
-              <div className="font-mono text-[72px] font-extrabold leading-none text-white drop-shadow-lg md:text-[96px]">
+              <div className="font-mono text-[40px] font-extrabold leading-none text-white drop-shadow-lg md:text-[52px]">
                 {result.my}
               </div>
-              <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-white/50 md:text-sm">
+              <div className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-white/50 md:text-xs">
                 You
               </div>
             </div>
@@ -141,10 +141,10 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
               <>
                 <div className="w-px bg-white/20" />
                 <div className="text-center">
-                  <div className="font-mono text-[72px] font-extrabold leading-none text-white/40 drop-shadow-lg md:text-[96px]">
+                  <div className="font-mono text-[40px] font-extrabold leading-none text-white/40 drop-shadow-lg md:text-[52px]">
                     {result.target}
                   </div>
-                  <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-white/30 md:text-sm">
+                  <div className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-white/30 md:text-xs">
                     Target
                   </div>
                 </div>

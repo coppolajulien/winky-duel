@@ -46,7 +46,7 @@ contract WinkyDuel {
     uint256 public rakeBalance;
     address public owner;
 
-    uint256 public constant RAKE_BPS = 500;          // 5% (500 basis points)
+    uint256 public constant RAKE_BPS = 250;          // 2.5% (250 basis points)
     uint256 public constant MIN_STAKE = 1e18;         // 1 USDM minimum
     uint256 public constant ABANDON_TIMEOUT = 300;    // 5 minutes
 
