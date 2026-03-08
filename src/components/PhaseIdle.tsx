@@ -92,7 +92,7 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
             Win the pool.
           </h2>
           <p className="max-w-md text-sm text-white/60">
-            Deposit USDM. Open a duel. Most blinks takes it all.
+            Open a duel. Deposit USDM. Most blinks takes it all.
           </p>
 
           {authenticated && (

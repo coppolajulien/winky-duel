@@ -197,7 +197,7 @@ export default function LandingPage() {
           ) : (
             <>
               <h3 className="max-w-md text-base font-normal text-white/60 md:text-lg">
-                Deposit USDM. Open a duel. Most blinks takes it all.
+                Open a duel. Deposit USDM. Most blinks takes it all.
               </h3>
               <Link
                 href="/play"
