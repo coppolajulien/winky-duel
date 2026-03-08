@@ -119,6 +119,25 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
               Create a Duel →
             </button>
           )}
+
+          {/* Powered on MegaETH */}
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-white/30">
+              Powered on
+            </span>
+            <span
+              className="inline-block h-[14px] w-[80px]"
+              style={{
+                WebkitMaskImage: "url(/megaeth-logo.svg)",
+                WebkitMaskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskImage: "url(/megaeth-logo.svg)",
+                maskSize: "contain",
+                maskRepeat: "no-repeat",
+                backgroundColor: "rgba(255,255,255,0.35)",
+              }}
+            />
+          </div>
         </div>
       </div>
 
