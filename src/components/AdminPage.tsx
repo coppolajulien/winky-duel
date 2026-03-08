@@ -11,7 +11,7 @@ import {
   BLOCK_EXPLORER_URL,
 } from "@/lib/constants";
 import { DuelStatus } from "@/lib/types";
-import { getPrivateDuelIds } from "@/lib/privateDuels";
+import { getPrivateDuelIds, fetchPrivateDuelIds } from "@/lib/privateDuels";
 
 // Only this address can access the admin page
 const ADMIN_ADDRESS = "0x55772979783e58BE37109eEa2C4AC83F755aA243".toLowerCase();
@@ -50,6 +50,8 @@ export default function AdminPage() {
   const fetchAllDuels = useCallback(async () => {
     setLoading(true);
     try {
+      // Refresh private duel IDs from server
+      await fetchPrivateDuelIds();
       // Get total number of duels
       const nextId = (await publicClient.readContract({
         address: WINKY_DUEL_ADDRESS,

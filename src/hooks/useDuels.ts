@@ -5,6 +5,7 @@ import { formatUnits } from "viem";
 import { publicClient } from "@/hooks/useWallet";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI } from "@/lib/constants";
 import type { Duel, HistoryDuel, OnChainDuel, DuelStatus } from "@/lib/types";
+import { fetchPrivateDuelIds } from "@/lib/privateDuels";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -98,6 +99,9 @@ export function useDuels(currentAddress?: string | null) {
   const fetchDuels = useCallback(async () => {
     setLoading(true);
     try {
+      // Refresh private duel IDs cache from server
+      await fetchPrivateDuelIds();
+
       // 1. Get nextDuelId to know how many duels exist
       const [openIds, nextId] = await Promise.all([
         publicClient.readContract({

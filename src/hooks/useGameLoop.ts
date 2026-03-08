@@ -190,9 +190,9 @@ export function useGameLoop({
         } catch {
           // Non-critical: share link won't be available
         }
-        // Save to localStorage if created as private
+        // Mark duel as private on server
         if (createdDuelId != null && isPrivateRef.current) {
-          addPrivateDuel(createdDuelId);
+          await addPrivateDuel(createdDuelId);
         }
         setResult({
           my: score,

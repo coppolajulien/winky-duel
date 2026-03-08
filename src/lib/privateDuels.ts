@@ -1,29 +1,39 @@
-const STORAGE_KEY = "blinkit-private-duels";
+// In-memory cache (refreshed periodically by useDuels)
+let cachedIds: Set<string> = new Set();
 
-function getIds(): Set<string> {
-  if (typeof window === "undefined") return new Set();
+/** Fetch private duel IDs from the server */
+export async function fetchPrivateDuelIds(): Promise<Set<string>> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? new Set(JSON.parse(raw) as string[]) : new Set();
+    const res = await fetch("/api/private-duels", { cache: "no-store" });
+    const { ids } = (await res.json()) as { ids: string[] };
+    cachedIds = new Set(ids);
+    return cachedIds;
   } catch {
-    return new Set();
+    return cachedIds; // return last known cache on error
   }
 }
 
-function save(ids: Set<string>) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
-}
-
-export function addPrivateDuel(duelId: bigint) {
-  const ids = getIds();
-  ids.add(String(duelId));
-  save(ids);
-}
-
-export function isPrivateDuel(duelId: bigint): boolean {
-  return getIds().has(String(duelId));
-}
-
+/** Get the last-fetched private IDs (synchronous, for render) */
 export function getPrivateDuelIds(): Set<string> {
-  return getIds();
+  return cachedIds;
+}
+
+/** Mark a duel as private (POST to server + update local cache) */
+export async function addPrivateDuel(duelId: bigint) {
+  const idStr = String(duelId);
+  cachedIds.add(idStr); // optimistic update
+  try {
+    await fetch("/api/private-duels", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ duelId: idStr }),
+    });
+  } catch (err) {
+    console.error("Failed to mark duel as private:", err);
+  }
+}
+
+/** Check if a duel is private (from cache) */
+export function isPrivateDuel(duelId: bigint): boolean {
+  return cachedIds.has(String(duelId));
 }

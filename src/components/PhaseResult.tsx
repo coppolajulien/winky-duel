@@ -127,14 +127,24 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
             </div>
           )}
 
+          {/* Stake amount (duel posted) */}
+          {!result.isChallenge && !result.error && (
+            <div className="flex flex-col items-center">
+              <div className="font-mono text-5xl font-black text-wink-pink drop-shadow-lg md:text-6xl">
+                ${stake}
+              </div>
+              <div className="mt-1 text-xs text-white/50">
+                staked
+              </div>
+            </div>
+          )}
+
           {/* Subtitle */}
-          <div className="mb-3 text-center text-xs text-white/60 md:text-sm">
-            {result.error
-              ? `You blinked ${result.my} times`
-              : !result.isChallenge
-                ? `Score of ${result.my} posted · $${stake} staked`
-                : null}
-          </div>
+          {result.error && (
+            <div className="mb-3 text-center text-xs text-white/60 md:text-sm">
+              You blinked {result.my} times
+            </div>
+          )}
 
           {/* Score */}
           <div className="flex gap-6">
@@ -143,7 +153,7 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
                 {result.my}
               </div>
               <div className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-white/50 md:text-xs">
-                You
+                {!result.isChallenge && !result.error ? "Your score posted" : "You"}
               </div>
             </div>
             {result.target !== null && (
