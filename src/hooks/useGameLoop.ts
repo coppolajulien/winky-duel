@@ -7,6 +7,7 @@ import { publicClient } from "@/hooks/useWallet";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI, MOCK_USDM_ADDRESS, ERC20_ABI } from "@/lib/constants";
 import { DuelStatus } from "@/lib/types";
 import type { GamePhase, Duel, ChartPoint, GameResult } from "@/lib/types";
+import { playBlink, playCountdown, playGo, playOvertake, playWin, playLose } from "@/hooks/useSounds";
 
 interface ContractActions {
   createDuel: (score: number, stakeUsdm: number) => Promise<`0x${string}`>;
@@ -122,11 +123,13 @@ export function useGameLoop({
     setMyScore(myScoreRef.current);
     setMyBlinking(true);
     triggerFlash();
+    playBlink();
     setTimeout(() => setMyBlinking(false), 150);
 
     const target = challengeRef.current?.score;
     if (target !== undefined && prevScore <= target && myScoreRef.current > target) {
       setOvertook(true);
+      playOvertake();
       setTimeout(() => setOvertook(false), 1200);
     }
   }, [triggerFlash]);
@@ -159,12 +162,15 @@ export function useGameLoop({
 
       if (isChallenge) {
         const targetScore = currentChallenge!.score;
+        const won = score > targetScore ? true : score < targetScore ? false : null;
         setResult({
           my: score,
           target: targetScore,
-          won: score > targetScore ? true : score < targetScore ? false : null,
+          won,
           isChallenge: true,
         });
+        if (won === true) playWin();
+        else if (won === false) playLose();
       } else {
         setResult({
           my: score,
@@ -330,13 +336,16 @@ export function useGameLoop({
       setPhase("countdown");
       let c = 3;
       setCountdownNum(3);
+      playCountdown(3);
       const iv = setInterval(() => {
         c--;
         if (c <= 0) {
           clearInterval(iv);
+          playGo();
           go();
         } else {
           setCountdownNum(c);
+          playCountdown(c);
         }
       }, 1000);
     },
