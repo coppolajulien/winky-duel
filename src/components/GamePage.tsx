@@ -342,7 +342,7 @@ export default function GamePage() {
               <div className="absolute inset-0 bg-black/60" />
               <div className="relative z-10 flex flex-col items-center gap-4">
                 <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60">
-                  Step 1/3 — Approve stake
+                  Approve deposit
                 </div>
                 <div className="rounded-2xl bg-black/40 px-6 py-3 backdrop-blur-sm">
                   <span className="font-mono text-[32px] font-extrabold text-wink-pink">
@@ -367,7 +367,7 @@ export default function GamePage() {
               <div className="absolute inset-0 bg-black/60" />
               <div className="relative z-10 flex flex-col items-center gap-5">
               <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60">
-                Step 2/3 — Camera setup
+                Camera setup
               </div>
               <div className="relative overflow-hidden rounded-2xl">
                 <canvas
