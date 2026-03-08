@@ -1,12 +1,13 @@
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 
+const redis = Redis.fromEnv();
 const KEY = "private-duels";
 
 /** GET — return all private duel IDs */
 export async function GET() {
   try {
-    const ids: string[] = await kv.smembers(KEY);
+    const ids: string[] = await redis.smembers(KEY);
     return NextResponse.json({ ids });
   } catch {
     return NextResponse.json({ ids: [] });
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
     if (!duelId) {
       return NextResponse.json({ error: "Missing duelId" }, { status: 400 });
     }
-    await kv.sadd(KEY, duelId);
+    await redis.sadd(KEY, duelId);
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Failed to store" }, { status: 500 });
