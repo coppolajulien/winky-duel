@@ -46,13 +46,13 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
   const shareOnX = useCallback(() => {
     let text: string;
     if (result.error) {
-      text = `👁️ I just scored ${result.my} blinks in a Blinkit Duel!\n\nDeposited $${stake} USDM — who dares to challenge me? ⚔️`;
+      text = `👁️ I just scored ${result.my} blinks in a Blinkit Duel!\n\nDeposited $${stake} USDM. Who dares to challenge me? ⚔️`;
     } else if (result.isChallenge && result.won === true) {
       text = `👁️ I just won a Blinkit Duel!\n\n${result.my} vs ${result.target} blinks — earned $${netWin(stake)} USDM 💰\n\nThink you can blink faster? 👀`;
     } else if (result.isChallenge && result.won === false) {
       text = `👁️ Lost a Blinkit Duel... ${result.my} vs ${result.target} blinks 💀\n\nI need a rematch! Can you beat ${result.target} blinks?`;
     } else {
-      text = `👁️ I just scored ${result.my} blinks in a Blinkit Duel!\n\nDeposited $${stake} USDM — who dares to challenge me? ⚔️`;
+      text = `👁️ I just scored ${result.my} blinks in a Blinkit Duel!\n\nDeposited $${stake} USDM. Who dares to challenge me? ⚔️`;
     }
     text += `\n\n${duelUrl ?? APP_URL}`;
     const url = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
