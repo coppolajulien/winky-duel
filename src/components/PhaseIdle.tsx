@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useRef } from "react";
 import type { Duel } from "@/lib/types";
 
 const DESKTOP_SLIDES = [
@@ -36,15 +36,10 @@ interface PhaseIdleProps {
 }
 
 export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdleProps) {
-  const [videoLoaded, setVideoLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const heroVideo = useMemo(
     () => HERO_VIDEOS.length > 0 ? HERO_VIDEOS[Math.floor(Math.random() * HERO_VIDEOS.length)] : null,
-    []
-  );
-  const heroBgImage = useMemo(
-    () => DESKTOP_SLIDES[Math.floor(Math.random() * DESKTOP_SLIDES.length)],
     []
   );
 
@@ -67,32 +62,15 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
     <div className="flex flex-1 animate-[fade-in_0.5s_ease] flex-col items-center overflow-y-auto">
       {/* Hero section with video/image background */}
       <div className="relative flex w-full flex-col items-center justify-center px-8 py-16">
-        {/* Background: video (if available) or image fallback */}
-        {heroVideo ? (
-          <>
-            <video
-              ref={videoRef}
-              src={heroVideo}
-              autoPlay
-              loop
-              muted
-              playsInline
-              onCanPlay={() => setVideoLoaded(true)}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-            {/* Image fallback while video loads */}
-            {!videoLoaded && (
-              <img
-                src={heroBgImage}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            )}
-          </>
-        ) : (
-          <img
-            src={heroBgImage}
-            alt=""
+        {/* Background video */}
+        {heroVideo && (
+          <video
+            ref={videoRef}
+            src={heroVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
             className="absolute inset-0 h-full w-full object-cover"
           />
         )}
