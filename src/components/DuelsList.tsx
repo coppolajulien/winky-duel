@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Monitor, ChevronDown, X, Link2, Check, Info } from "lucide-react";
-import { STAKES, APP_URL } from "@/lib/constants";
+import { STAKES, APP_URL, RAKE_BPS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DuelStatus } from "@/lib/types";
@@ -87,6 +87,37 @@ export function DuelsList({
         !privateIds.has(String(d.id))
       )
   ).toSorted((a, b) => b.stake - a.stake);
+
+  // Personal stats from history
+  const stats = useMemo(() => {
+    const settled = history.filter((h) => h.status === DuelStatus.Settled);
+    const wins = settled.filter((h) => h.won === true).length;
+    const losses = settled.filter((h) => h.won === false).length;
+    const total = settled.length;
+    const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
+
+    // Calculate profit: win → +stake - fee, loss → -stake
+    let profit = 0;
+    for (const h of settled) {
+      if (h.won === true) {
+        const pool = h.stake * 2;
+        const fee = (pool * RAKE_BPS) / 10000;
+        profit += h.stake - fee;
+      } else if (h.won === false) {
+        profit -= h.stake;
+      }
+      // draw: 0
+    }
+
+    // Current win streak
+    let streak = 0;
+    for (const h of settled) {
+      if (h.won === true) streak++;
+      else break;
+    }
+
+    return { wins, losses, total, winRate, profit, streak };
+  }, [history]);
 
   const duelsTotalPages = Math.ceil(displayedDuels.length / DUELS_PAGE_SIZE);
   const paginatedDuels = displayedDuels.slice(
@@ -260,8 +291,17 @@ export function DuelsList({
 
         <div className="flex flex-col gap-1">
           {duelsLoading && duels.length === 0 && (
-            <div className="py-4 text-center text-[10px] text-wink-text-dim">
-              Loading duels...
+            <div className="flex flex-col gap-1">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="flex animate-pulse items-center gap-1.5 rounded-xl px-3 py-2.5">
+                  <div className="flex-1">
+                    <div className="h-3 w-24 rounded bg-white/[0.06]" />
+                    <div className="mt-1.5 h-2 w-12 rounded bg-white/[0.04]" />
+                  </div>
+                  <div className="h-5 w-8 rounded-md bg-white/[0.06]" />
+                  <div className="h-4 w-10 rounded bg-white/[0.06]" />
+                </div>
+              ))}
             </div>
           )}
 
@@ -394,6 +434,35 @@ export function DuelsList({
 
           {historyOpen && (
             <div className="px-3.5 pb-3.5">
+              {/* Stats bar */}
+              {stats.total > 0 && (
+                <div className="mb-3 grid grid-cols-4 gap-1.5">
+                  <div className="rounded-lg bg-wink-bg px-2 py-1.5 text-center">
+                    <div className="font-mono text-sm font-bold text-wink-text">{stats.winRate}%</div>
+                    <div className="text-[8px] text-wink-text-dim">Win rate</div>
+                  </div>
+                  <div className="rounded-lg bg-wink-bg px-2 py-1.5 text-center">
+                    <div className={cn(
+                      "font-mono text-sm font-bold",
+                      stats.profit > 0 ? "text-green-400" : stats.profit < 0 ? "text-red-400" : "text-wink-text"
+                    )}>
+                      {stats.profit >= 0 ? "+" : ""}{stats.profit % 1 === 0 ? stats.profit : stats.profit.toFixed(2)}
+                    </div>
+                    <div className="text-[8px] text-wink-text-dim">Profit $</div>
+                  </div>
+                  <div className="rounded-lg bg-wink-bg px-2 py-1.5 text-center">
+                    <div className="font-mono text-sm font-bold text-wink-text">
+                      {stats.wins}<span className="text-wink-text-dim">/{stats.total}</span>
+                    </div>
+                    <div className="text-[8px] text-wink-text-dim">W / Total</div>
+                  </div>
+                  <div className="rounded-lg bg-wink-bg px-2 py-1.5 text-center">
+                    <div className="font-mono text-sm font-bold text-wink-pink">{stats.streak}</div>
+                    <div className="text-[8px] text-wink-text-dim">Streak</div>
+                  </div>
+                </div>
+              )}
+
               {/* Filters */}
               <div className="mb-2 flex gap-1">
                 {(["all", "won", "lost"] as const).map((f) => (

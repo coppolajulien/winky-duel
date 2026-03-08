@@ -120,8 +120,14 @@ export function useGameLoop({
     };
   }, [phase, challenge]);
 
+  const lastBlinkTimeRef = useRef(0);
+
   const doBlink = useCallback(() => {
     if (phaseRef.current !== "playing") return;
+    // Anti-cheat: min 200ms between blinks (max 5/sec)
+    const now = Date.now();
+    if (now - lastBlinkTimeRef.current < 200) return;
+    lastBlinkTimeRef.current = now;
     const prevScore = myScoreRef.current;
     myScoreRef.current++;
     setMyScore(myScoreRef.current);
@@ -141,7 +147,16 @@ export function useGameLoop({
     stopMusic();
     setPhase("submitting");
 
-    const score = myScoreRef.current;
+    // Anti-cheat: cap score at realistic max (~3.3 blinks/sec)
+    const MAX_SCORE = Math.ceil(DURATION * 3.5);
+    const rawScore = myScoreRef.current;
+    const score = Math.min(rawScore, MAX_SCORE);
+    if (rawScore > MAX_SCORE) {
+      console.warn(`Score capped: ${rawScore} → ${MAX_SCORE}`);
+      myScoreRef.current = score;
+      setMyScore(score);
+    }
+
     const currentChallenge = challengeRef.current;
     const isChallenge = !!currentChallenge;
 
