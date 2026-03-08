@@ -11,6 +11,12 @@ const DESKTOP_SLIDES = [
   "/desktop-bg-3.jpg",
   "/desktop-bg-4.jpg",
   "/desktop-bg-5.jpg",
+  "/desktop-bg-6.jpg",
+  "/desktop-bg-7.jpg",
+  "/desktop-bg-8.jpg",
+  "/desktop-bg-9.jpg",
+  "/desktop-bg-10.jpg",
+  "/desktop-bg-11.jpg",
 ];
 
 // Drop mp4 files in /public/ and add paths here

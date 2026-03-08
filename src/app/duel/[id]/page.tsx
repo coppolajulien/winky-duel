@@ -17,6 +17,12 @@ const DESKTOP_SLIDES = [
   "/desktop-bg-3.jpg",
   "/desktop-bg-4.jpg",
   "/desktop-bg-5.jpg",
+  "/desktop-bg-6.jpg",
+  "/desktop-bg-7.jpg",
+  "/desktop-bg-8.jpg",
+  "/desktop-bg-9.jpg",
+  "/desktop-bg-10.jpg",
+  "/desktop-bg-11.jpg",
 ];
 
 export default function DuelPage({ params }: { params: Promise<{ id: string }> }) {

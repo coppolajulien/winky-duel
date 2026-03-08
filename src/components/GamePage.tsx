@@ -51,6 +51,12 @@ export default function GamePage() {
     "/desktop-bg-3.jpg",
     "/desktop-bg-4.jpg",
     "/desktop-bg-5.jpg",
+    "/desktop-bg-6.jpg",
+    "/desktop-bg-7.jpg",
+    "/desktop-bg-8.jpg",
+    "/desktop-bg-9.jpg",
+    "/desktop-bg-10.jpg",
+    "/desktop-bg-11.jpg",
   ];
   const gameBgImage = useMemo(
     () => DESKTOP_SLIDES[Math.floor(Math.random() * DESKTOP_SLIDES.length)],
@@ -141,6 +147,12 @@ export default function GamePage() {
     "/mobile-bg-3.png",
     "/mobile-bg-4.png",
     "/mobile-bg-5.png",
+    "/mobile-bg-6.png",
+    "/mobile-bg-7.png",
+    "/mobile-bg-8.png",
+    "/mobile-bg-9.png",
+    "/mobile-bg-10.png",
+    "/mobile-bg-11.png",
   ];
   const [slideIdx, setSlideIdx] = useState(0);
 
