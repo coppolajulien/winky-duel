@@ -1,6 +1,17 @@
 export const DURATION = 30;
 export const STAKES = [1, 5, 10, 25, 50, 100] as const;
 
+// Platform fee (matches on-chain RAKE_BPS). Change here when contract is redeployed.
+export const RAKE_BPS = 500; // 5% — change to 250 for 2.5%
+
+/** Net win amount: pool (2×stake) minus rake */
+export function netWin(stake: number): string {
+  const pool = stake * 2;
+  const fee = (pool * RAKE_BPS) / 10000;
+  const net = pool - fee;
+  return net % 1 === 0 ? String(net) : net.toFixed(2);
+}
+
 // ─── Chain & Contract Config ────────────────────────────────────
 export const WINKY_DUEL_ADDRESS = "0x136836878b4aD0C35ED62a0F3B8e83fEdB5ce17a" as const;
 export const MOCK_USDM_ADDRESS = "0x8A017435e8dD3aeCA65a1eA4411eD81b9302Ae9C" as const;

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Image, Check, Download } from "lucide-react";
 import type { GameResult, ChartPoint } from "@/lib/types";
 import { copyShareCard } from "@/lib/shareCard";
+import { netWin, RAKE_BPS } from "@/lib/constants";
 
 const APP_URL = "https://winky-duel.vercel.app";
 
@@ -38,7 +39,7 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
     if (result.error) {
       text = `👁️ I just scored ${result.my} blinks in a Winky Duel!\n\nStaked $${stake} USDM — who dares to challenge me? ⚔️`;
     } else if (result.isChallenge && result.won === true) {
-      text = `👁️ I just won a Winky Duel!\n\n${result.my} vs ${result.target} blinks — earned $${(stake * 2 * 0.95 - stake).toFixed(0)} USDM 💰\n\nThink you can blink faster? 👀`;
+      text = `👁️ I just won a Winky Duel!\n\n${result.my} vs ${result.target} blinks — earned $${(parseFloat(netWin(stake)) - stake).toFixed(0)} USDM 💰\n\nThink you can blink faster? 👀`;
     } else if (result.isChallenge && result.won === false) {
       text = `👁️ Lost a Winky Duel... ${result.my} vs ${result.target} blinks 💀\n\nI need a rematch! Can you beat ${result.target} blinks?`;
     } else {
@@ -107,8 +108,13 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
 
           {/* Winnings */}
           {result.isChallenge && result.won === true && !result.error && (
-            <div className="font-mono text-xl font-bold text-wink-pink drop-shadow-lg md:text-2xl">
-              +${(stake * 2 * 0.95 - stake).toFixed(2)}
+            <div className="flex flex-col items-center">
+              <div className="font-mono text-xl font-bold text-wink-pink drop-shadow-lg md:text-2xl">
+                +${(parseFloat(netWin(stake)) - stake).toFixed(2)}
+              </div>
+              <div className="text-[9px] text-white/30">
+                {RAKE_BPS / 100}% fee applied
+              </div>
             </div>
           )}
 

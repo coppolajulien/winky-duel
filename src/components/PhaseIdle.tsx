@@ -2,6 +2,7 @@
 
 import { useMemo, useRef } from "react";
 import type { Duel } from "@/lib/types";
+import { netWin, RAKE_BPS } from "@/lib/constants";
 
 const DESKTOP_SLIDES = [
   "/desktop-bg.jpg",
@@ -126,7 +127,10 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
                     <p className="text-lg font-bold leading-tight text-white">
                       Beat <span className="text-wink-pink">{d.score}</span> blinks.
                       <br />
-                      Take <span className="text-wink-pink">${d.stake}</span>.
+                      Win <span className="text-wink-pink">${netWin(d.stake)}</span>.
+                    </p>
+                    <p className="mt-0.5 text-[8px] text-white/30">
+                      {RAKE_BPS / 100}% fee included
                     </p>
                     <p className="mt-1 font-mono text-[9px] text-white/40">
                       {d.creator}
