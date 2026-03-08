@@ -7,7 +7,7 @@ import { publicClient } from "@/hooks/useWallet";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI, MOCK_USDM_ADDRESS, ERC20_ABI } from "@/lib/constants";
 import { DuelStatus } from "@/lib/types";
 import type { GamePhase, Duel, ChartPoint, GameResult } from "@/lib/types";
-import { playCountdown, playGo, playOvertake, playWin, playLose } from "@/hooks/useSounds";
+import { playCountdown, playGo, playOvertake, playWin, playLose, startMusic, stopMusic } from "@/hooks/useSounds";
 
 interface ContractActions {
   createDuel: (score: number, stakeUsdm: number) => Promise<`0x${string}`>;
@@ -134,6 +134,7 @@ export function useGameLoop({
   }, [triggerFlash]);
 
   const finish = useCallback(async () => {
+    stopMusic();
     setPhase("submitting");
 
     const score = myScoreRef.current;
@@ -220,6 +221,7 @@ export function useGameLoop({
     setChartData(chartRef.current);
     setTimeLeft(DURATION);
     setPhase("playing");
+    startMusic();
 
     let t = DURATION;
     timerRef.current = setInterval(() => {
@@ -359,6 +361,7 @@ export function useGameLoop({
   const reset = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (chartIvRef.current) clearInterval(chartIvRef.current);
+    stopMusic();
     setPhase("idle");
     setMyScore(0);
     setTimeLeft(DURATION);

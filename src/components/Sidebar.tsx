@@ -2,11 +2,12 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { Copy, Check, ArrowUpRight, Trophy } from "lucide-react";
+import { Copy, Check, ArrowUpRight, Trophy, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { Duel, HistoryDuel } from "@/lib/types";
 import { DuelsList } from "./DuelsList";
+import { isMuted, setMuted } from "@/hooks/useSounds";
 
 interface SidebarProps {
   stake: number;
@@ -52,6 +53,13 @@ export function Sidebar({
   onOpenSend,
 }: SidebarProps) {
   const [copied, setCopied] = useState(false);
+  const [muted, setMutedState] = useState(isMuted);
+
+  const toggleMute = useCallback(() => {
+    const next = !muted;
+    setMutedState(next);
+    setMuted(next);
+  }, [muted]);
 
   const copyAddress = useCallback(() => {
     if (!address) return;
@@ -158,7 +166,7 @@ export function Sidebar({
       </div>
 
       {/* Footer */}
-      <div className="border-t border-wink-border px-5 py-3">
+      <div className="flex items-center justify-between border-t border-wink-border px-5 py-3">
         <Link
           href="/leaderboard"
           className="flex items-center gap-2 text-[10px] font-semibold text-wink-text-dim transition-colors hover:text-wink-pink"
@@ -166,6 +174,13 @@ export function Sidebar({
           <Trophy className="h-3.5 w-3.5" />
           Leaderboard
         </Link>
+        <button
+          onClick={toggleMute}
+          className="flex items-center gap-1.5 text-[10px] text-wink-text-dim transition-colors hover:text-wink-text"
+          title={muted ? "Unmute sounds" : "Mute sounds"}
+        >
+          {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+        </button>
       </div>
     </div>
   );
