@@ -71,6 +71,7 @@ export default function GamePage() {
     myBlinking,
     overtook,
     result,
+    resultStake,
     errorBanner,
     dismissError,
     launch,
@@ -457,7 +458,7 @@ export default function GamePage() {
           {phase === "result" && result && (
             <PhaseResult
               result={result}
-              stake={stake}
+              stake={resultStake}
               chartData={chartData}
               onReset={handleReset}
             />

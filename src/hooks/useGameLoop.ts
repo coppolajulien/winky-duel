@@ -73,6 +73,7 @@ export function useGameLoop({
   const [myBlinking, setMyBlinking] = useState(false);
   const [overtook, setOvertook] = useState(false);
   const [result, setResult] = useState<GameResult | null>(null);
+  const [resultStake, setResultStake] = useState<number>(5);
   const [errorBanner, setErrorBanner] = useState<ErrorBanner | null>(null);
   const [susText, setSusText] = useState<string | null>(null);
 
@@ -230,6 +231,7 @@ export function useGameLoop({
         });
       }
 
+      setResultStake(stakeRef.current);
       setPhase("result");
       refetchDuels();
       refreshBalance();
@@ -258,6 +260,7 @@ export function useGameLoop({
         isChallenge,
         error: errorMsg,
       });
+      setResultStake(stakeRef.current);
       setPhase("result");
     }
   }, [contractActions, addTx, refetchDuels, refreshBalance]);
@@ -418,6 +421,7 @@ export function useGameLoop({
     setChartData([]);
     setChallenge(null);
     setResult(null);
+    setResultStake(5);
     setSusText(null);
     myScoreRef.current = 0;
     chartRef.current = [];
@@ -445,6 +449,7 @@ export function useGameLoop({
     myBlinking,
     overtook,
     result,
+    resultStake,
     errorBanner,
     dismissError,
     launch,
