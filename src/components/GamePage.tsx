@@ -382,7 +382,7 @@ export default function GamePage() {
                       onClick={confirmCamera}
                       className="rounded-full bg-wink-pink px-8 py-2.5 text-sm font-bold text-white transition-all hover:brightness-110 active:scale-95"
                     >
-                      ▶ Duel
+                      Start the Duel
                     </button>
                   </>
                 )}

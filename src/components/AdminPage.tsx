@@ -11,6 +11,7 @@ import {
   BLOCK_EXPLORER_URL,
 } from "@/lib/constants";
 import { DuelStatus } from "@/lib/types";
+import { getPrivateDuelIds } from "@/lib/privateDuels";
 
 // Only this address can access the admin page
 const ADMIN_ADDRESS = "0x55772979783e58BE37109eEa2C4AC83F755aA243".toLowerCase();
@@ -169,6 +170,8 @@ export default function AdminPage() {
     return "text-red-400";
   };
 
+  const privateIds = getPrivateDuelIds();
+
   // Filtered + paginated duels
   const filteredDuels = statusFilter === "all"
     ? duels
@@ -279,6 +282,7 @@ export default function AdminPage() {
           { label: "Locked", value: stats.lockedDuels, color: "text-orange-400" },
           { label: "Settled", value: stats.settledDuels, color: "text-green-400" },
           { label: "Cancelled", value: stats.cancelledDuels, color: "text-red-400" },
+          { label: "Private", value: duels.filter((d) => privateIds.has(String(d.id))).length, color: "text-purple-400" },
           { label: "Rake", value: `$${stats.rakeBalance}`, color: "text-wink-pink" },
           { label: "Contract USDM", value: `$${stats.contractUsdm}`, color: "text-wink-text" },
         ].map((s) => (
@@ -383,7 +387,14 @@ export default function AdminPage() {
                 >
                   <td className="px-4 py-2.5 font-mono font-bold">#{String(d.id)}</td>
                   <td className={`px-4 py-2.5 font-semibold ${statusColor(d.status)}`}>
-                    {statusLabel(d.status)}
+                    <span className="flex items-center gap-1.5">
+                      {statusLabel(d.status)}
+                      {privateIds.has(String(d.id)) && (
+                        <span className="rounded bg-purple-500/20 px-1.5 py-0.5 text-[8px] font-bold uppercase text-purple-400">
+                          Private
+                        </span>
+                      )}
+                    </span>
                   </td>
                   <td className="px-4 py-2.5 font-mono">
                     <a
