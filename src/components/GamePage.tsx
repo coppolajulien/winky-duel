@@ -282,7 +282,7 @@ export default function GamePage() {
           )}
           {phase === "idle" && cameraStatus !== "denied" && (
             <PhaseIdle
-              duels={duels}
+              duels={duels.filter((d) => !wallet.address || d.creatorFull.toLowerCase() !== wallet.address.toLowerCase())}
               authenticated={wallet.authenticated}
               onLaunch={(duel) => { resetToasts(); launch(duel); }}
               onCreate={() => { resetToasts(); launch(null); }}

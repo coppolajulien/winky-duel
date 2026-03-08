@@ -116,7 +116,7 @@ export function DuelsList({
         <Button
           onClick={() => authenticated ? onLaunch(null) : login()}
           disabled={isMobile}
-          className="w-full rounded-xl bg-wink-pink text-[11px] font-bold text-white hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full rounded-xl bg-wink-pink text-[11px] font-bold text-white transition-opacity duration-200 hover:opacity-85 disabled:opacity-40 disabled:cursor-not-allowed"
           size="sm"
         >
           {isMobile ? "PLAY ON DESKTOP" : authenticated ? "CREATE A DUEL" : "CONNECT TO PLAY"}
