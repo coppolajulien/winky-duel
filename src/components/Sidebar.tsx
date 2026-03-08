@@ -29,6 +29,8 @@ interface SidebarProps {
   duelsLoading: boolean;
   currentAddress: `0x${string}` | null;
   onOpenSend?: () => void;
+  isPrivate: boolean;
+  setIsPrivate: (v: boolean) => void;
 }
 
 export function Sidebar({
@@ -51,6 +53,8 @@ export function Sidebar({
   duelsLoading,
   currentAddress,
   onOpenSend,
+  isPrivate,
+  setIsPrivate,
 }: SidebarProps) {
   const [copied, setCopied] = useState(false);
   const [muted, setMutedState] = useState(isMuted);
@@ -162,6 +166,8 @@ export function Sidebar({
           login={login}
           duelsLoading={duelsLoading}
           currentAddress={currentAddress}
+          isPrivate={isPrivate}
+          setIsPrivate={setIsPrivate}
         />
       </div>
 

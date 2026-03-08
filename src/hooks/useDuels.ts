@@ -55,6 +55,41 @@ function formatHistory(raw: OnChainDuel, currentAddress: string | null): History
   };
 }
 
+/** Fetch a single duel by ID directly from the contract */
+export async function fetchDuelById(id: bigint): Promise<{ duel: Duel; status: DuelStatus } | null> {
+  try {
+    const raw = await publicClient.readContract({
+      address: WINKY_DUEL_ADDRESS,
+      abi: WINKY_DUEL_ABI,
+      functionName: "getDuel",
+      args: [id],
+    }) as {
+      creator: `0x${string}`;
+      challenger: `0x${string}`;
+      stake: bigint;
+      creatorScore: number;
+      challengerScore: number;
+      status: number;
+    };
+
+    if (raw.creator === ZERO_ADDRESS) return null;
+
+    const onChain: OnChainDuel = {
+      id,
+      creator: raw.creator,
+      challenger: raw.challenger,
+      stake: raw.stake,
+      creatorScore: Number(raw.creatorScore),
+      challengerScore: Number(raw.challengerScore),
+      status: Number(raw.status) as DuelStatus,
+    };
+
+    return { duel: formatDuel(onChain), status: onChain.status };
+  } catch {
+    return null;
+  }
+}
+
 export function useDuels(currentAddress?: string | null) {
   const [duels, setDuels] = useState<Duel[]>([]);
   const [history, setHistory] = useState<HistoryDuel[]>([]);

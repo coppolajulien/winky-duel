@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { parseUnits, formatUnits } from "viem";
+import { parseUnits, formatUnits, parseEventLogs } from "viem";
+import type { RefObject } from "react";
 import { DURATION } from "@/lib/constants";
+import { addPrivateDuel } from "@/lib/privateDuels";
 import { publicClient } from "@/hooks/useWallet";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI, MOCK_USDM_ADDRESS, ERC20_ABI } from "@/lib/constants";
 import { DuelStatus } from "@/lib/types";
@@ -26,6 +28,7 @@ interface UseGameLoopOptions {
   refetchDuels: () => Promise<void>;
   refreshBalance: () => Promise<void>;
   walletAddress: `0x${string}` | null;
+  isPrivateRef: RefObject<boolean>;
 }
 
 export interface ErrorBanner {
@@ -57,6 +60,7 @@ export function useGameLoop({
   refetchDuels,
   refreshBalance,
   walletAddress,
+  isPrivateRef,
 }: UseGameLoopOptions) {
   const [phase, setPhase] = useState<GamePhase>("idle");
   const [stake, setStake] = useState(5);
@@ -172,11 +176,30 @@ export function useGameLoop({
         if (won === true) playWin();
         else if (won === false) playLose();
       } else {
+        // Parse duelId from DuelCreated event for share link
+        let createdDuelId: bigint | undefined;
+        try {
+          const logs = parseEventLogs({
+            abi: WINKY_DUEL_ABI,
+            logs: receipt.logs,
+            eventName: "DuelCreated",
+          });
+          if (logs.length > 0) {
+            createdDuelId = (logs[0].args as { duelId: bigint }).duelId;
+          }
+        } catch {
+          // Non-critical: share link won't be available
+        }
+        // Save to localStorage if created as private
+        if (createdDuelId != null && isPrivateRef.current) {
+          addPrivateDuel(createdDuelId);
+        }
         setResult({
           my: score,
           target: null,
           won: null,
           isChallenge: false,
+          duelId: createdDuelId,
         });
       }
 

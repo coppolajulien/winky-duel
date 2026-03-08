@@ -3,12 +3,10 @@
 import { useState, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Image, Check, Download } from "lucide-react";
+import { Image, Check, Download, Link2 } from "lucide-react";
 import type { GameResult, ChartPoint } from "@/lib/types";
 import { copyShareCard } from "@/lib/shareCard";
-import { netWin, RAKE_BPS } from "@/lib/constants";
-
-const APP_URL = "https://winky-duel.vercel.app";
+import { netWin, RAKE_BPS, APP_URL } from "@/lib/constants";
 
 const DESKTOP_SLIDES = [
   "/desktop-bg.jpg",
@@ -28,27 +26,38 @@ interface PhaseResultProps {
 
 export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultProps) {
   const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "copied" | "downloaded">("idle");
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const duelUrl = result.duelId != null ? `${APP_URL}/duel/${result.duelId}` : null;
 
   const bgImage = useMemo(
     () => DESKTOP_SLIDES[Math.floor(Math.random() * DESKTOP_SLIDES.length)],
     []
   );
 
+  const copyLink = useCallback(() => {
+    if (!duelUrl) return;
+    navigator.clipboard.writeText(duelUrl).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2500);
+    });
+  }, [duelUrl]);
+
   const shareOnX = useCallback(() => {
     let text: string;
     if (result.error) {
-      text = `👁️ I just scored ${result.my} blinks in a Winky Duel!\n\nStaked $${stake} USDM — who dares to challenge me? ⚔️`;
+      text = `👁️ I just scored ${result.my} blinks in a Blinkit Duel!\n\nStaked $${stake} USDM — who dares to challenge me? ⚔️`;
     } else if (result.isChallenge && result.won === true) {
-      text = `👁️ I just won a Winky Duel!\n\n${result.my} vs ${result.target} blinks — earned $${(parseFloat(netWin(stake)) - stake).toFixed(0)} USDM 💰\n\nThink you can blink faster? 👀`;
+      text = `👁️ I just won a Blinkit Duel!\n\n${result.my} vs ${result.target} blinks — earned $${(parseFloat(netWin(stake)) - stake).toFixed(0)} USDM 💰\n\nThink you can blink faster? 👀`;
     } else if (result.isChallenge && result.won === false) {
-      text = `👁️ Lost a Winky Duel... ${result.my} vs ${result.target} blinks 💀\n\nI need a rematch! Can you beat ${result.target} blinks?`;
+      text = `👁️ Lost a Blinkit Duel... ${result.my} vs ${result.target} blinks 💀\n\nI need a rematch! Can you beat ${result.target} blinks?`;
     } else {
-      text = `👁️ I just scored ${result.my} blinks in a Winky Duel!\n\nStaked $${stake} USDM — who dares to challenge me? ⚔️`;
+      text = `👁️ I just scored ${result.my} blinks in a Blinkit Duel!\n\nStaked $${stake} USDM — who dares to challenge me? ⚔️`;
     }
-    text += `\n\n${APP_URL}`;
+    text += `\n\n${duelUrl ?? APP_URL}`;
     const url = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank", "noopener,noreferrer");
-  }, [result, stake]);
+  }, [result, stake, duelUrl]);
 
   const handleCopyImage = useCallback(async () => {
     setCopyStatus("copying");
@@ -187,6 +196,27 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
             </span>
           )}
         </Button>
+        {duelUrl && (
+          <Button
+            onClick={copyLink}
+            variant="outline"
+            className="rounded-full border-wink-border text-wink-text hover:bg-card"
+          >
+            <span className="flex items-center gap-1.5">
+              {linkCopied ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  Link Copied!
+                </>
+              ) : (
+                <>
+                  <Link2 className="h-3.5 w-3.5" />
+                  Copy Link
+                </>
+              )}
+            </span>
+          </Button>
+        )}
         <Button
           onClick={shareOnX}
           className="rounded-full bg-card text-wink-text hover:brightness-110"

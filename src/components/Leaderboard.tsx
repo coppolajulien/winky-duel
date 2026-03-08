@@ -83,7 +83,7 @@ export function Leaderboard({ entries, loading }: LeaderboardProps) {
                 </span>
                 <div>
                   <a
-                    href={`https://mega.etherscan.io/address/${r.addrFull}`}
+                    href={`https://mtrkr.xyz/wallet/${r.addrFull}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-mono text-[11px] text-wink-text transition-colors hover:text-wink-pink"

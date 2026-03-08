@@ -76,4 +76,5 @@ export interface GameResult {
   won: boolean | null;
   isChallenge: boolean;
   error?: string;
+  duelId?: bigint;
 }

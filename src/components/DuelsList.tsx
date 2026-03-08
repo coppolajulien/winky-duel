@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Monitor, ChevronDown, X } from "lucide-react";
-import { STAKES } from "@/lib/constants";
+import { Monitor, ChevronDown, X, Link2, Check } from "lucide-react";
+import { STAKES, APP_URL } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DuelStatus } from "@/lib/types";
 import type { Duel, HistoryDuel } from "@/lib/types";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { getPrivateDuelIds } from "@/lib/privateDuels";
 
 const HISTORY_PAGE_SIZE = 5;
 const DUELS_PAGE_SIZE = 5;
@@ -25,6 +26,8 @@ interface DuelsListProps {
   login: () => void;
   duelsLoading: boolean;
   currentAddress: `0x${string}` | null;
+  isPrivate: boolean;
+  setIsPrivate: (v: boolean) => void;
 }
 
 export function DuelsList({
@@ -40,13 +43,25 @@ export function DuelsList({
   login,
   duelsLoading,
   currentAddress,
+  isPrivate,
+  setIsPrivate,
 }: DuelsListProps) {
   const isMobile = useIsMobile();
+  const privateIds = getPrivateDuelIds();
   const [historyPage, setHistoryPage] = useState(0);
   const [historyFilter, setHistoryFilter] = useState<"all" | "won" | "lost">("all");
   const [duelsPage, setDuelsPage] = useState(0);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [showMine, setShowMine] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const copyDuelLink = (duelId: bigint) => {
+    const url = `${APP_URL}/duel/${duelId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedId(String(duelId));
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  };
 
   const filteredHistory = historyFilter === "all"
     ? history
@@ -66,7 +81,10 @@ export function DuelsList({
 
   const displayedDuels = (showMine
     ? duels.filter((d) => currentAddress && d.creatorFull.toLowerCase() === currentAddress.toLowerCase())
-    : duels.filter((d) => !currentAddress || d.creatorFull.toLowerCase() !== currentAddress.toLowerCase())
+    : duels.filter((d) =>
+        (!currentAddress || d.creatorFull.toLowerCase() !== currentAddress.toLowerCase()) &&
+        !privateIds.has(String(d.id))
+      )
   ).toSorted((a, b) => b.stake - a.stake);
 
   const duelsTotalPages = Math.ceil(displayedDuels.length / DUELS_PAGE_SIZE);
@@ -113,13 +131,36 @@ export function DuelsList({
             </button>
           ))}
         </div>
+        {authenticated && (
+          <button
+            onClick={() => setIsPrivate(!isPrivate)}
+            className="mb-2 flex w-full items-center justify-between rounded-lg bg-wink-bg px-3 py-2"
+          >
+            <span className="text-[10px] font-semibold text-wink-text-dim">
+              Private (link only)
+            </span>
+            <div
+              className={cn(
+                "h-4 w-7 rounded-full transition-colors duration-200",
+                isPrivate ? "bg-wink-pink" : "bg-white/10"
+              )}
+            >
+              <div
+                className={cn(
+                  "h-4 w-4 rounded-full bg-white shadow transition-transform duration-200",
+                  isPrivate ? "translate-x-3" : "translate-x-0"
+                )}
+              />
+            </div>
+          </button>
+        )}
         <Button
           onClick={() => authenticated ? onLaunch(null) : login()}
           disabled={isMobile}
           className="w-full rounded-xl bg-wink-pink text-[11px] font-bold text-white transition-opacity duration-200 hover:opacity-85 disabled:opacity-40 disabled:cursor-not-allowed"
           size="sm"
         >
-          {isMobile ? "PLAY ON DESKTOP" : authenticated ? "CREATE A DUEL" : "CONNECT TO PLAY"}
+          {isMobile ? "PLAY ON DESKTOP" : authenticated ? (isPrivate ? "CREATE PRIVATE DUEL" : "CREATE A DUEL") : "CONNECT TO PLAY"}
         </Button>
       </div>
 
@@ -180,6 +221,7 @@ export function DuelsList({
               currentAddress &&
               d.creatorFull.toLowerCase() === currentAddress.toLowerCase();
             const isHighStake = d.stake >= 50;
+            const isDuelPrivate = privateIds.has(String(d.id));
 
             return (
               <div
@@ -198,8 +240,23 @@ export function DuelsList({
                 )}
               >
                 <div className="flex-1">
-                  <div className="font-mono text-[10px] text-wink-text">
-                    {isOwn ? "You" : d.creator}
+                  <div className="flex items-center gap-1.5 font-mono text-[10px] text-wink-text">
+                    {isOwn ? "You" : (
+                      <a
+                        href={`https://mtrkr.xyz/wallet/${d.creatorFull}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-wink-pink transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {d.creator}
+                      </a>
+                    )}
+                    {isDuelPrivate && (
+                      <span className="rounded bg-wink-pink/15 px-1 py-px text-[8px] font-bold uppercase text-wink-pink">
+                        Private
+                      </span>
+                    )}
                   </div>
                   <div className="text-[9px] text-wink-text-dim">{d.time}</div>
                 </div>
@@ -209,6 +266,20 @@ export function DuelsList({
                 <div className="font-mono text-[11px] font-bold text-wink-pink">
                   ${d.stake}
                 </div>
+                {isOwn && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); copyDuelLink(d.id); }}
+                    className={cn(
+                      "flex h-5 w-5 items-center justify-center rounded-full border transition-colors",
+                      copiedId === String(d.id)
+                        ? "border-green-400/40 text-green-400"
+                        : "border-wink-border text-wink-text-dim hover:border-wink-pink/40 hover:text-wink-pink"
+                    )}
+                    title="Copy duel link"
+                  >
+                    {copiedId === String(d.id) ? <Check className="h-3 w-3" /> : <Link2 className="h-3 w-3" />}
+                  </button>
+                )}
                 {isOwn && onCancelDuel && (
                   <button
                     onClick={(e) => { e.stopPropagation(); onCancelDuel(d); }}
@@ -299,6 +370,7 @@ export function DuelsList({
                   const myScore = isCreator ? h.creatorScore : h.challengerScore;
                   const theirScore = isCreator ? h.challengerScore : h.creatorScore;
                   const opponent = isCreator ? h.challenger : h.creator;
+                  const opponentFull = isCreator ? h.challengerFull : h.creatorFull;
 
                   return (
                     <div
@@ -314,7 +386,16 @@ export function DuelsList({
                     >
                       <div className="flex-1">
                         <div className="font-mono text-[10px] text-wink-text">
-                          vs {opponent || "—"}
+                          vs {opponent ? (
+                            <a
+                              href={`https://mtrkr.xyz/wallet/${opponentFull}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-wink-pink transition-colors"
+                            >
+                              {opponent}
+                            </a>
+                          ) : "—"}
                         </div>
                         <div className="text-[9px] text-wink-text-dim">
                           {h.status === DuelStatus.Cancelled ? "Cancelled" : `${myScore} - ${theirScore}`}
@@ -335,6 +416,11 @@ export function DuelsList({
                           )}
                         >
                           {h.won === true ? "WON" : h.won === false ? "LOST" : "DRAW"}
+                        </div>
+                      )}
+                      {h.status === DuelStatus.Locked && (
+                        <div className="rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-yellow-500/10 text-yellow-400">
+                          PENDING
                         </div>
                       )}
                       {h.status === DuelStatus.Cancelled && (

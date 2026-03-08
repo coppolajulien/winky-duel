@@ -23,35 +23,57 @@ const DESKTOP_SLIDES = [
   "/desktop-bg-5.jpg",
 ];
 
+const DESKTOP_VIDEOS = [
+  "/video-blinkit-1.mp4",
+  "/video-blinkit-2.mp4",
+  "/video-blinkit-3.mp4",
+  "/video-blinkit-4.mp4",
+  "/video-blinkit-5.mp4",
+  "/video-blinkit-6.mp4",
+];
+
 
 export default function LandingPage() {
   const [slideIdx, setSlideIdx] = useState(0);
   const isMobile = useIsMobile();
-  const slides = isMobile ? MOBILE_SLIDES : DESKTOP_SLIDES;
+  const slides = isMobile ? MOBILE_SLIDES : DESKTOP_VIDEOS;
 
   useEffect(() => {
     const id = setInterval(() => {
       setSlideIdx((i) => (i + 1) % slides.length);
-    }, 4000);
+    }, 6000);
     return () => clearInterval(id);
   }, [isMobile]);
 
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden font-sans">
       {/* Background slider */}
-      {slides.map((src, i) => (
-        <img
-          key={src}
-          src={src}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out"
-          style={{
-            opacity: i === slideIdx ? 1 : 0,
-            animation: "kenburns 8s ease-in-out infinite alternate",
-            animationDelay: `${i * -1.3}s`,
-          }}
-        />
-      ))}
+      {isMobile
+        ? MOBILE_SLIDES.map((src, i) => (
+            <img
+              key={src}
+              src={src}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out"
+              style={{
+                opacity: i === slideIdx ? 1 : 0,
+                animation: "kenburns 8s ease-in-out infinite alternate",
+                animationDelay: `${i * -1.3}s`,
+              }}
+            />
+          ))
+        : DESKTOP_VIDEOS.map((src, i) => (
+            <video
+              key={src}
+              src={src}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out"
+              style={{ opacity: i === slideIdx ? 1 : 0 }}
+            />
+          ))}
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />

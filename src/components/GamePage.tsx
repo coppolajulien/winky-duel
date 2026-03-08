@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect, useMemo } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useTxToasts } from "@/hooks/useTxToasts";
 import { useBlinkDetector } from "@/hooks/useBlinkDetector";
@@ -30,10 +31,18 @@ export default function GamePage() {
   });
 
   const isMobile = useIsMobile();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const wallet = useWallet();
   const contract = useContract();
   const { duels, history, loading: duelsLoading, refetchDuels } = useDuels(wallet.address);
   const [sendModalOpen, setSendModalOpen] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
+  const isPrivateRef = useRef(false);
+  const joinHandled = useRef(false);
+
+  // Keep ref in sync for useGameLoop
+  isPrivateRef.current = isPrivate;
 
   const DESKTOP_SLIDES = [
     "/desktop-bg.jpg",
@@ -83,10 +92,25 @@ export default function GamePage() {
     refetchDuels,
     refreshBalance: wallet.refreshBalance,
     walletAddress: (wallet.address as `0x${string}`) ?? null,
+    isPrivateRef,
   });
 
   // Wire the blink ref after both hooks are initialized
   onBlinkRef.current = doBlink;
+
+  // Auto-join from shared link (?join=<duelId>)
+  const joinDuelId = searchParams.get("join");
+  useEffect(() => {
+    if (!joinDuelId || joinHandled.current || phase !== "idle" || !wallet.authenticated || duelsLoading) return;
+    const targetId = BigInt(joinDuelId);
+    const targetDuel = duels.find((d) => d.id === targetId);
+    if (targetDuel) {
+      joinHandled.current = true;
+      router.replace("/play", { scroll: false });
+      resetToasts();
+      launch(targetDuel);
+    }
+  }, [joinDuelId, duels, phase, wallet.authenticated, duelsLoading, router, resetToasts, launch]);
 
   // Reset toasts on game reset
   const handleReset = useCallback(() => {
@@ -205,6 +229,8 @@ export default function GamePage() {
             launch(duel);
           }}
           onCancelDuel={handleCancelDuel}
+          isPrivate={isPrivate}
+          setIsPrivate={setIsPrivate}
         />
       </div>
 

@@ -15,7 +15,12 @@ const DESKTOP_SLIDES = [
 
 // Drop mp4 files in /public/ and add paths here
 const HERO_VIDEOS: string[] = [
-  "/video-blinkit-it-1.mp4",
+  "/video-blinkit-1.mp4",
+  "/video-blinkit-2.mp4",
+  "/video-blinkit-3.mp4",
+  "/video-blinkit-4.mp4",
+  "/video-blinkit-5.mp4",
+  "/video-blinkit-6.mp4",
 ];
 
 /** Deterministic shuffle based on a simple seed */

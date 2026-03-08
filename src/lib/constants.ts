@@ -1,5 +1,6 @@
 export const DURATION = 30;
 export const STAKES = [1, 5, 10, 25, 50, 100] as const;
+export const APP_URL = "https://winky-duel.vercel.app";
 
 // Platform fee (matches on-chain RAKE_BPS). Change here when contract is redeployed.
 export const RAKE_BPS = 250; // 2.5%
