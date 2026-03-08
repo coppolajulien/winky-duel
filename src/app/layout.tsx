@@ -40,11 +40,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Blinkit" }],
   creator: "Blinkit",
-  metadataBase: new URL("https://blinkit.gg"),
+  metadataBase: new URL("https://winky-duel.vercel.app"),
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://blinkit.gg",
+    url: "https://winky-duel.vercel.app",
     siteName: "Blinkit",
     title: "Blinkit — Bet. Blink. Win the Pool.",
     description:

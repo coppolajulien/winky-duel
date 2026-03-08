@@ -132,7 +132,7 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
             {result.error
               ? `You blinked ${result.my} times`
               : !result.isChallenge
-                ? `Score of ${result.my} posted`
+                ? `Score of ${result.my} posted · $${stake} staked`
                 : null}
           </div>
 
