@@ -77,6 +77,7 @@ export default function GamePage() {
     reset,
     doBlink,
     confirmCamera,
+    susText,
   } = useGameLoop({
     addTx,
     initCamera,
@@ -449,6 +450,7 @@ export default function GamePage() {
               stake={stake}
               canvasRef={canvasRef}
               onRemoveTx={removeTx}
+              susText={susText}
             />
           )}
           {phase === "submitting" && <PhaseSubmitting />}

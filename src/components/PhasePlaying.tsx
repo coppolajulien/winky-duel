@@ -20,6 +20,7 @@ interface PhasePlayingProps {
   stake: number;
   canvasRef: RefObject<HTMLCanvasElement | null>;
   onRemoveTx: (id: number) => void;
+  susText?: string | null;
 }
 
 export function PhasePlaying({
@@ -33,6 +34,7 @@ export function PhasePlaying({
   stake,
   canvasRef,
   onRemoveTx,
+  susText,
 }: PhasePlayingProps) {
   const isMobile = useIsMobile();
 
@@ -68,6 +70,11 @@ export function PhasePlaying({
             </span>
             <span className="text-[10px] text-wink-text-dim md:text-[11px]">blinks</span>
           </div>
+          {susText && (
+            <div className="animate-[fade-in_0.3s_ease] rounded-full bg-wink-pink/20 px-2.5 py-0.5 text-[10px] font-semibold text-wink-pink">
+              {susText}
+            </div>
+          )}
         </div>
 
         <div

@@ -74,6 +74,7 @@ export function useGameLoop({
   const [overtook, setOvertook] = useState(false);
   const [result, setResult] = useState<GameResult | null>(null);
   const [errorBanner, setErrorBanner] = useState<ErrorBanner | null>(null);
+  const [susText, setSusText] = useState<string | null>(null);
 
   const cameraConfirmRef = useRef<(() => void) | null>(null);
   const myScoreRef = useRef(0);
@@ -135,6 +136,17 @@ export function useGameLoop({
     triggerFlash();
     setTimeout(() => setMyBlinking(false), 150);
 
+    // Funny sus messages at 120+ blinks
+    const SUS_MESSAGES = [
+      "Are you even human? 👀",
+      "Bro, your eyes okay?",
+      "FBI wants to know your location",
+      "Touch grass maybe? 🌱",
+    ];
+    if (myScoreRef.current === 120) {
+      setSusText(SUS_MESSAGES[Math.floor(Math.random() * SUS_MESSAGES.length)]);
+    }
+
     const target = challengeRef.current?.score;
     if (target !== undefined && prevScore <= target && myScoreRef.current > target) {
       setOvertook(true);
@@ -147,8 +159,8 @@ export function useGameLoop({
     stopMusic();
     setPhase("submitting");
 
-    // Anti-cheat: cap score at realistic max (~3.3 blinks/sec)
-    const MAX_SCORE = Math.ceil(DURATION * 3.5);
+    // Anti-cheat: cap score at 150
+    const MAX_SCORE = 150;
     const rawScore = myScoreRef.current;
     const score = Math.min(rawScore, MAX_SCORE);
     if (rawScore > MAX_SCORE) {
@@ -406,6 +418,7 @@ export function useGameLoop({
     setChartData([]);
     setChallenge(null);
     setResult(null);
+    setSusText(null);
     myScoreRef.current = 0;
     chartRef.current = [];
   }, []);
@@ -438,5 +451,6 @@ export function useGameLoop({
     reset,
     doBlink,
     confirmCamera,
+    susText,
   };
 }
