@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { WinBubbles } from "./WinBubbles";
@@ -33,15 +33,59 @@ const DESKTOP_VIDEOS = [
 ];
 
 
+function VideoSlideshow() {
+  const [idx, setIdx] = useState(0);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+
+  const advance = useCallback(() => {
+    setIdx((prev) => (prev + 1) % DESKTOP_VIDEOS.length);
+  }, []);
+
+  // Play only the active video, pause others and reset them
+  useEffect(() => {
+    videoRefs.current.forEach((vid, i) => {
+      if (!vid) return;
+      if (i === idx) {
+        vid.currentTime = 0;
+        vid.play().catch(() => {});
+      } else {
+        vid.pause();
+      }
+    });
+  }, [idx]);
+
+  // Fixed 4s per video
+  useEffect(() => {
+    const timer = setTimeout(advance, 4000);
+    return () => clearTimeout(timer);
+  }, [idx, advance]);
+
+  return (
+    <>
+      {DESKTOP_VIDEOS.map((src, i) => (
+        <video
+          key={src}
+          ref={(el) => { videoRefs.current[i] = el; }}
+          src={src}
+          muted
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out"
+          style={{ opacity: i === idx ? 1 : 0 }}
+        />
+      ))}
+    </>
+  );
+}
+
 export default function LandingPage() {
   const [slideIdx, setSlideIdx] = useState(0);
   const isMobile = useIsMobile();
-  const slides = isMobile ? MOBILE_SLIDES : DESKTOP_VIDEOS;
 
   useEffect(() => {
+    if (!isMobile) return;
     const id = setInterval(() => {
-      setSlideIdx((i) => (i + 1) % slides.length);
-    }, 6000);
+      setSlideIdx((i) => (i + 1) % MOBILE_SLIDES.length);
+    }, 4000);
     return () => clearInterval(id);
   }, [isMobile]);
 
@@ -62,18 +106,7 @@ export default function LandingPage() {
               }}
             />
           ))
-        : DESKTOP_VIDEOS.map((src, i) => (
-            <video
-              key={src}
-              src={src}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out"
-              style={{ opacity: i === slideIdx ? 1 : 0 }}
-            />
-          ))}
+        : <VideoSlideshow />}
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />

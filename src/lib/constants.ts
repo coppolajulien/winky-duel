@@ -5,12 +5,12 @@ export const APP_URL = "https://winky-duel.vercel.app";
 // Platform fee (matches on-chain RAKE_BPS). Change here when contract is redeployed.
 export const RAKE_BPS = 250; // 2.5%
 
-/** Net win amount: pool (2×stake) minus rake */
+/** Net profit: opponent's stake minus rake on the full pool */
 export function netWin(stake: number): string {
   const pool = stake * 2;
   const fee = (pool * RAKE_BPS) / 10000;
-  const net = pool - fee;
-  return net % 1 === 0 ? String(net) : net.toFixed(2);
+  const profit = stake - fee;
+  return profit % 1 === 0 ? String(profit) : profit.toFixed(2);
 }
 
 // ─── Chain & Contract Config ────────────────────────────────────

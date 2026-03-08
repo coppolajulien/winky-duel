@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Monitor, ChevronDown, X, Link2, Check } from "lucide-react";
+import { Monitor, ChevronDown, X, Link2, Check, Info } from "lucide-react";
 import { STAKES, APP_URL } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,7 @@ export function DuelsList({
   const [historyOpen, setHistoryOpen] = useState(false);
   const [showMine, setShowMine] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showRules, setShowRules] = useState(false);
 
   const copyDuelLink = (duelId: bigint) => {
     const url = `${APP_URL}/duel/${duelId}`;
@@ -110,11 +111,65 @@ export function DuelsList({
         </div>
       )}
 
+      {/* Rules popup */}
+      {showRules && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="relative mx-4 w-full max-w-sm rounded-2xl bg-[#1a1a1f] p-6 shadow-2xl">
+            <button
+              onClick={() => setShowRules(false)}
+              className="absolute right-3 top-3 text-white/40 transition-colors hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <h3 className="mb-4 text-sm font-bold text-white">How Blinkit works</h3>
+            <ol className="space-y-2.5 text-[11px] leading-relaxed text-white/70">
+              <li className="flex gap-2">
+                <span className="font-bold text-wink-pink">1.</span>
+                <span>Choose a stake amount and create a duel. You&apos;ll blink as fast as you can for 30 seconds.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="font-bold text-wink-pink">2.</span>
+                <span>Your score is recorded on-chain. Another player accepts the challenge by matching your stake.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="font-bold text-wink-pink">3.</span>
+                <span>The challenger blinks for 30 seconds. Whoever blinks the most wins the opponent&apos;s stake!</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="font-bold text-wink-pink">4.</span>
+                <span>A 2.5% fee is taken from the total pool to cover gas fees, keep the servers running and fund new features.</span>
+              </li>
+            </ol>
+            <h4 className="mt-4 mb-1.5 text-[11px] font-bold text-white">Public vs Private</h4>
+            <ul className="space-y-1.5 text-[11px] leading-relaxed text-white/70">
+              <li className="flex gap-2">
+                <span className="font-bold text-wink-pink">·</span>
+                <span><strong className="text-white/90">Public</strong> — Your duel appears in the lobby. Anyone can accept it.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="font-bold text-wink-pink">·</span>
+                <span><strong className="text-white/90">Private</strong> — Your duel is hidden from the lobby. Only people with your link can accept it. Perfect for challenging friends!</span>
+              </li>
+            </ul>
+            <p className="mt-3 text-[10px] text-white/50">🔒 Your camera is used only to detect blinks locally. Your face is never recorded, stored or displayed.</p>
+            <p className="mt-2 text-[10px] text-white/30">All transactions happen on MegaETH using USDM.</p>
+          </div>
+        </div>
+      )}
+
       {/* Box 1: New Duel */}
       <div className="rounded-xl bg-card p-3.5">
-        <h2 className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-wink-text-dim">
-          New Duel
-        </h2>
+        <div className="mb-2.5 flex items-center justify-between">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.08em] text-wink-text-dim">
+            New Duel
+          </h2>
+          <button
+            onClick={() => setShowRules(true)}
+            className="text-wink-text-dim transition-colors hover:text-wink-text"
+          >
+            <Info className="h-3.5 w-3.5" />
+          </button>
+        </div>
         <div className="mb-2.5 flex gap-1.5">
           {STAKES.map((s) => (
             <button
