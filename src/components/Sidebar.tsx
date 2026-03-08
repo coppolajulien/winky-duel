@@ -158,7 +158,7 @@ export function Sidebar({
       </div>
 
       {/* Footer */}
-      <div className="border-t border-wink-border px-5 py-3">
+      <div className="flex items-center justify-between border-t border-wink-border px-5 py-3">
         <Link
           href="/leaderboard"
           className="flex items-center gap-2 text-[10px] font-semibold text-wink-text-dim transition-colors hover:text-wink-pink"
@@ -166,6 +166,24 @@ export function Sidebar({
           <Trophy className="h-3.5 w-3.5" />
           Leaderboard
         </Link>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[9px] font-medium uppercase tracking-wider text-wink-text-dim/40">
+            Powered on
+          </span>
+          <span
+            className="inline-block h-[12px] w-[68px]"
+            style={{
+              WebkitMaskImage: "url(/megaeth-logo.svg)",
+              WebkitMaskSize: "contain",
+              WebkitMaskRepeat: "no-repeat",
+              maskImage: "url(/megaeth-logo.svg)",
+              maskSize: "contain",
+              maskRepeat: "no-repeat",
+              backgroundColor: "var(--wink-text-dim)",
+              opacity: 0.35,
+            }}
+          />
+        </div>
       </div>
     </div>
   );
