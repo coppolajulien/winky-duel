@@ -109,14 +109,7 @@ export function DuelsList({
       // draw: 0
     }
 
-    // Current win streak
-    let streak = 0;
-    for (const h of settled) {
-      if (h.won === true) streak++;
-      else break;
-    }
-
-    return { wins, losses, total, winRate, profit, streak };
+    return { wins, losses, total, winRate, profit };
   }, [history]);
 
   const duelsTotalPages = Math.ceil(displayedDuels.length / DUELS_PAGE_SIZE);
@@ -436,7 +429,7 @@ export function DuelsList({
             <div className="px-3.5 pb-3.5">
               {/* Stats bar */}
               {stats.total > 0 && (
-                <div className="mb-3 grid grid-cols-4 gap-1.5">
+                <div className="mb-3 grid grid-cols-3 gap-1.5">
                   <div className="rounded-lg bg-wink-bg px-2 py-1.5 text-center">
                     <div className="font-mono text-sm font-bold text-wink-text">{stats.winRate}%</div>
                     <div className="text-[8px] text-wink-text-dim">Win rate</div>
@@ -455,10 +448,6 @@ export function DuelsList({
                       {stats.wins}<span className="text-wink-text-dim">/{stats.total}</span>
                     </div>
                     <div className="text-[8px] text-wink-text-dim">W / Total</div>
-                  </div>
-                  <div className="rounded-lg bg-wink-bg px-2 py-1.5 text-center">
-                    <div className="font-mono text-sm font-bold text-wink-pink">{stats.streak}</div>
-                    <div className="text-[8px] text-wink-text-dim">Streak</div>
                   </div>
                 </div>
               )}
