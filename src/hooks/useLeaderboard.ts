@@ -79,12 +79,12 @@ export function useLeaderboard() {
         const winner = cScore > chScore ? raw.creator : raw.challenger;
         const winnerScore = cScore > chScore ? cScore : chScore;
         const stakeNum = parseFloat(formatUnits(raw.stake, 18));
-        const payout = stakeNum * 2 * (1 - RAKE_BPS / 10_000); // 95% of pot
+        const netProfit = stakeNum * 2 * (1 - RAKE_BPS / 10_000) - stakeNum; // real profit (payout minus own stake)
 
         const addr = winner.toLowerCase();
         const existing = stats.get(addr) || { wins: 0, totalEarnings: 0, totalBlinks: 0 };
         existing.wins += 1;
-        existing.totalEarnings += payout;
+        existing.totalEarnings += netProfit;
         existing.totalBlinks += winnerScore;
         stats.set(addr, existing);
       }
