@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Web3ProviderWrapper } from "@/components/Web3ProviderWrapper";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { MobileGate } from "@/components/MobileGate";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -91,7 +92,7 @@ export default function RootLayout({
             enableSystem={false}
             disableTransitionOnChange
           >
-            {children}
+            <MobileGate>{children}</MobileGate>
             <Toaster
               theme="dark"
               position="bottom-right"

@@ -11,8 +11,7 @@ import { useContract } from "@/hooks/useContract";
 import { useDuels, fetchDuelById } from "@/hooks/useDuels";
 import { DuelStatus } from "@/lib/types";
 import type { Duel } from "@/lib/types";
-import { DESKTOP_SLIDES, MOBILE_SLIDES } from "@/lib/constants";
-import { useIsMobile } from "@/hooks/useIsMobile";
+import { DESKTOP_SLIDES } from "@/lib/constants";
 import { Sidebar } from "./Sidebar";
 import { MobileGameHeader } from "./MobileGameHeader";
 import { PhaseIdle } from "./PhaseIdle";
@@ -31,7 +30,6 @@ export default function GamePage() {
     onBlinkRef,
   });
 
-  const isMobile = useIsMobile();
   const searchParams = useSearchParams();
   const router = useRouter();
   const wallet = useWallet();
@@ -138,56 +136,6 @@ export default function GamePage() {
   }, [contract, addTx, refetchDuels, wallet]);
 
   const isGameActive = phase !== "idle";
-
-  const [slideIdx, setSlideIdx] = useState(0);
-
-  useEffect(() => {
-    if (!isMobile) return;
-    const id = setInterval(() => {
-      setSlideIdx((i) => (i + 1) % MOBILE_SLIDES.length);
-    }, 4000);
-    return () => clearInterval(id);
-  }, [isMobile]);
-
-  if (isMobile) {
-    return (
-      <div className="relative flex h-[100dvh] flex-col items-center justify-center gap-5 overflow-hidden font-sans">
-        {/* Stacked images with crossfade + Ken Burns */}
-        {MOBILE_SLIDES.map((src, i) => (
-          <img
-            key={src}
-            src={src}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out"
-            style={{
-              opacity: i === slideIdx ? 1 : 0,
-              animation: "kenburns 8s ease-in-out infinite alternate",
-              animationDelay: `${i * -1.3}s`,
-            }}
-          />
-        ))}
-        {/* Color overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
-        {/* Content */}
-        <div className="relative z-10 flex flex-col items-center gap-4">
-          <span
-            className="inline-block h-[84px] w-[84px]"
-            style={{
-              WebkitMaskImage: "url(/logo-blinkit.svg)",
-              WebkitMaskSize: "contain",
-              WebkitMaskRepeat: "no-repeat",
-              maskImage: "url(/logo-blinkit.svg)",
-              maskSize: "contain",
-              maskRepeat: "no-repeat",
-              backgroundColor: "white",
-            }}
-          />
-          <span className="text-2xl font-bold tracking-wide text-white">BLINKIT</span>
-          <span className="text-sm text-white/70">Blink is desktop only.... for now!</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden font-sans text-foreground md:h-screen md:flex-row">

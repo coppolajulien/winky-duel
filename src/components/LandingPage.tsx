@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import { WinBubbles } from "./WinBubbles";
-import { DESKTOP_SLIDES, MOBILE_SLIDES } from "@/lib/constants";
 
 const DESKTOP_VIDEOS = [
   "/video-blinkit-1.mp4",
@@ -66,35 +64,10 @@ function VideoSlideshow() {
 }
 
 export default function LandingPage() {
-  const [slideIdx, setSlideIdx] = useState(0);
-  const isMobile = useIsMobile();
-
-  useEffect(() => {
-    if (!isMobile) return;
-    const id = setInterval(() => {
-      setSlideIdx((i) => (i + 1) % MOBILE_SLIDES.length);
-    }, 4000);
-    return () => clearInterval(id);
-  }, [isMobile]);
-
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden font-sans">
-      {/* Background slider */}
-      {isMobile
-        ? MOBILE_SLIDES.map((src, i) => (
-            <img
-              key={src}
-              src={src}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out"
-              style={{
-                opacity: i === slideIdx ? 1 : 0,
-                animation: "kenburns 8s ease-in-out infinite alternate",
-                animationDelay: `${i * -1.3}s`,
-              }}
-            />
-          ))
-        : <VideoSlideshow />}
+      {/* Background video slideshow */}
+      <VideoSlideshow />
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
@@ -102,32 +75,30 @@ export default function LandingPage() {
       {/* Win bubbles animation */}
       <WinBubbles />
 
-      {/* Navbar — desktop only */}
-      {!isMobile && (
-        <nav className="relative z-10 flex items-center justify-between px-6 py-5 md:px-12 md:py-6">
-          <a href="/" className="flex items-center gap-2.5">
-            <span
-              className="inline-block h-[72px] w-[72px]"
-              style={{
-                WebkitMaskImage: "url(/logo-blinkit.svg)",
-                WebkitMaskSize: "contain",
-                WebkitMaskRepeat: "no-repeat",
-                maskImage: "url(/logo-blinkit.svg)",
-                maskSize: "contain",
-                maskRepeat: "no-repeat",
-                backgroundColor: "white",
-              }}
-            />
-            <span className="text-2xl font-bold tracking-wide text-white">BLINKIT</span>
-          </a>
-          <Link
-            href="/play"
-            className="rounded-full border border-white/30 px-5 py-2 text-xs font-semibold text-white transition-all hover:border-white/60 hover:bg-white/10"
-          >
-            Launch App
-          </Link>
-        </nav>
-      )}
+      {/* Navbar */}
+      <nav className="relative z-10 flex items-center justify-between px-6 py-5 md:px-12 md:py-6">
+        <a href="/" className="flex items-center gap-2.5">
+          <span
+            className="inline-block h-[72px] w-[72px]"
+            style={{
+              WebkitMaskImage: "url(/logo-blinkit.svg)",
+              WebkitMaskSize: "contain",
+              WebkitMaskRepeat: "no-repeat",
+              maskImage: "url(/logo-blinkit.svg)",
+              maskSize: "contain",
+              maskRepeat: "no-repeat",
+              backgroundColor: "white",
+            }}
+          />
+          <span className="text-2xl font-bold tracking-wide text-white">BLINKIT</span>
+        </a>
+        <Link
+          href="/play"
+          className="rounded-full border border-white/30 px-5 py-2 text-xs font-semibold text-white transition-all hover:border-white/60 hover:bg-white/10"
+        >
+          Launch App
+        </Link>
+      </nav>
 
       {/* Powered by MegaETH — bottom */}
       <div className="absolute bottom-5 left-0 right-0 z-10 flex items-center justify-center gap-2">
@@ -150,24 +121,7 @@ export default function LandingPage() {
 
       {/* Center content */}
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6">
-        {/* Content */}
         <div className="relative z-10 flex flex-col items-center gap-5 text-center">
-          {/* Mobile: logo centered */}
-          {isMobile && (
-            <span
-              className="inline-block h-[84px] w-[84px]"
-              style={{
-                WebkitMaskImage: "url(/logo-blinkit.svg)",
-                WebkitMaskSize: "contain",
-                WebkitMaskRepeat: "no-repeat",
-                maskImage: "url(/logo-blinkit.svg)",
-                maskSize: "contain",
-                maskRepeat: "no-repeat",
-                backgroundColor: "white",
-              }}
-            />
-          )}
-
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.25em] text-white/40">
             The first PvP blink-to-earn game
           </h2>
@@ -178,23 +132,15 @@ export default function LandingPage() {
             Win the pool.
           </h1>
 
-          {isMobile ? (
-            <p className="max-w-md text-sm text-white/60">
-              Desktop only... for now!
-            </p>
-          ) : (
-            <>
-              <h3 className="max-w-md text-base font-normal text-white/60 md:text-lg">
-                Open a duel. Deposit USDM. Most blinks takes it all.
-              </h3>
-              <Link
-                href="/play"
-                className="mt-4 rounded-full border-2 border-white px-10 py-3.5 text-base font-bold text-white transition-all hover:bg-white hover:text-black"
-              >
-                Challenge Now →
-              </Link>
-            </>
-          )}
+          <h3 className="max-w-md text-base font-normal text-white/60 md:text-lg">
+            Open a duel. Deposit USDM. Most blinks takes it all.
+          </h3>
+          <Link
+            href="/play"
+            className="mt-4 rounded-full border-2 border-white px-10 py-3.5 text-base font-bold text-white transition-all hover:bg-white hover:text-black"
+          >
+            Challenge Now →
+          </Link>
         </div>
       </div>
 

@@ -4,7 +4,6 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { formatUnits } from "viem";
 import { fetchDuelById } from "@/hooks/useDuels";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import { netWin, RAKE_BPS, WALLET_PROFILE_URL, DESKTOP_SLIDES } from "@/lib/constants";
 import { DuelStatus } from "@/lib/types";
 import type { Duel } from "@/lib/types";
@@ -13,7 +12,6 @@ import { Button } from "@/components/ui/button";
 export default function DuelPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const isMobile = useIsMobile();
 
   const [duel, setDuel] = useState<Duel | null>(null);
   const [status, setStatus] = useState<DuelStatus | null>(null);
@@ -56,44 +54,6 @@ export default function DuelPage({ params }: { params: Promise<{ id: string }> }
   const handleAccept = () => {
     router.push(`/play?join=${id}`);
   };
-
-  // Mobile block
-  if (isMobile) {
-    return (
-      <div className="relative flex h-dvh flex-col items-center justify-center gap-4 overflow-hidden p-8 text-center">
-        {DESKTOP_SLIDES.map((src, i) => (
-          <img
-            key={src}
-            src={src}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out"
-            style={{
-              opacity: i === slideIdx ? 1 : 0,
-              animation: "kenburns 8s ease-in-out infinite alternate",
-              animationDelay: `${i * -1.3}s`,
-            }}
-          />
-        ))}
-        <div className="absolute inset-0 bg-black/60" />
-        <div className="relative z-10 flex flex-col items-center gap-4">
-          <span
-            className="inline-block h-[48px] w-[48px]"
-            style={{
-              WebkitMaskImage: "url(/logo-blinkit.svg)",
-              WebkitMaskSize: "contain",
-              WebkitMaskRepeat: "no-repeat",
-              maskImage: "url(/logo-blinkit.svg)",
-              maskSize: "contain",
-              maskRepeat: "no-repeat",
-              backgroundColor: "white",
-            }}
-          />
-          <span className="text-2xl font-bold tracking-wide text-white">BLINKIT</span>
-          <p className="text-white/60">Blink is desktop only.... for now!</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="relative flex h-dvh flex-col items-center justify-center overflow-hidden">
