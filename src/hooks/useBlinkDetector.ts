@@ -1,12 +1,22 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect, type MutableRefObject } from "react";
+import type { FaceLandmarker, NormalizedLandmark } from "@mediapipe/tasks-vision";
 import { drawMesh } from "@/lib/drawMesh";
 import { useThemeColors, type ThemeColors } from "@/lib/theme";
+import {
+  BLINK_THRESHOLD,
+  BLINK_COOLDOWN,
+  CAMERA_WIDTH,
+  CAMERA_HEIGHT,
+  CAMERA_TIMEOUT,
+  CAMERA_WARMUP,
+} from "@/lib/constants";
 
-// ── Blendshape blink detection constants ──
-const BLINK_THRESHOLD = 0.24; // blendshape score 0→1 (eyes closed > threshold = blink)
-const BLINK_COOLDOWN = 120;   // ms between registered blinks
+interface BlendshapeCategory {
+  categoryName: string;
+  score: number;
+}
 
 interface UseBlinkDetectorOptions {
   onBlinkRef: MutableRefObject<(() => void) | null>;
@@ -15,7 +25,7 @@ interface UseBlinkDetectorOptions {
 export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const flRef = useRef<any>(null);
+  const flRef = useRef<FaceLandmarker | null>(null);
   const frameCtRef = useRef(0);
   const lastBlinkRef = useRef(0);
   const animRef = useRef<number>(0);
@@ -50,16 +60,16 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   }, []);
 
   const safeDetect = useCallback(
-    (fl: any, v: HTMLVideoElement, timestamp: number): { landmarks: any; blinkScore: number } | null => {
+    (fl: FaceLandmarker, v: HTMLVideoElement, timestamp: number): { landmarks: NormalizedLandmark[]; blinkScore: number } | null => {
       try {
         const res = fl.detectForVideo(v, timestamp);
         if (res.faceLandmarks?.length > 0) {
           // Extract blendshape blink scores
           let blinkScore = 0;
-          const shapes = res.faceBlendshapes?.[0]?.categories;
+          const shapes = res.faceBlendshapes?.[0]?.categories as BlendshapeCategory[] | undefined;
           if (shapes) {
-            const blinkL = shapes.find((c: any) => c.categoryName === "eyeBlinkLeft");
-            const blinkR = shapes.find((c: any) => c.categoryName === "eyeBlinkRight");
+            const blinkL = shapes.find((c) => c.categoryName === "eyeBlinkLeft");
+            const blinkR = shapes.find((c) => c.categoryName === "eyeBlinkRight");
             const left = blinkL?.score ?? 0;
             const right = blinkR?.score ?? 0;
             blinkScore = (left + right) / 2;
@@ -203,7 +213,7 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
       let stream: MediaStream;
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 320, height: 240, facingMode: "user" },
+          video: { width: CAMERA_WIDTH, height: CAMERA_HEIGHT, facingMode: "user" },
         });
       } catch (firstErr) {
         console.warn("[Blinkit] Retrying with minimal video constraints...", firstErr);
@@ -250,7 +260,7 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
           v.onloadeddata = () => resolve(true);
         }),
         new Promise<false>((resolve) =>
-          setTimeout(() => resolve(false), 10000)
+          setTimeout(() => resolve(false), CAMERA_TIMEOUT)
         ),
       ]);
 
@@ -264,11 +274,11 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
       }
 
       if (canvasRef.current) {
-        canvasRef.current.width = 320;
-        canvasRef.current.height = 240;
+        canvasRef.current.width = CAMERA_WIDTH;
+        canvasRef.current.height = CAMERA_HEIGHT;
       }
 
-      await new Promise<void>((r) => setTimeout(r, 300));
+      await new Promise<void>((r) => setTimeout(r, CAMERA_WARMUP));
       warmedUpRef.current = true;
 
       cameraReady.current = true;

@@ -3,9 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { formatUnits } from "viem";
 import { publicClient } from "@/hooks/useWallet";
-import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI, RAKE_BPS } from "@/lib/constants";
+import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI, RAKE_BPS, MAX_DUELS } from "@/lib/constants";
 import type { LeaderboardEntry, DuelStatus } from "@/lib/types";
-const MAX_DUELS = 200; // cap for performance
 
 function shortAddr(addr: string): string {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;

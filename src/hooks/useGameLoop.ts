@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { parseUnits, formatUnits, parseEventLogs } from "viem";
 import type { RefObject } from "react";
 import { toast } from "sonner";
-import { DURATION } from "@/lib/constants";
+import { DURATION, MIN_BLINK_INTERVAL, MAX_SCORE, SUS_THRESHOLD } from "@/lib/constants";
 import { addPrivateDuel } from "@/lib/privateDuels";
 import { publicClient } from "@/hooks/useWallet";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI, MOCK_USDM_ADDRESS, ERC20_ABI } from "@/lib/constants";
@@ -115,9 +115,9 @@ export function useGameLoop({
 
   const doBlink = useCallback(() => {
     if (phaseRef.current !== "playing") return;
-    // Anti-cheat: min 200ms between blinks (max 5/sec)
+    // Anti-cheat: enforce minimum interval between blinks
     const now = Date.now();
-    if (now - lastBlinkTimeRef.current < 200) return;
+    if (now - lastBlinkTimeRef.current < MIN_BLINK_INTERVAL) return;
     lastBlinkTimeRef.current = now;
     const prevScore = myScoreRef.current;
     myScoreRef.current++;
@@ -133,7 +133,7 @@ export function useGameLoop({
       "FBI wants to know your location",
       "Touch grass maybe? 🌱",
     ];
-    if (myScoreRef.current === 120) {
+    if (myScoreRef.current === SUS_THRESHOLD) {
       setSusText(SUS_MESSAGES[Math.floor(Math.random() * SUS_MESSAGES.length)]);
     }
 
@@ -151,8 +151,7 @@ export function useGameLoop({
     setChartData([...chartRef.current]);
     setPhase("submitting");
 
-    // Anti-cheat: cap score at 150
-    const MAX_SCORE = 150;
+    // Anti-cheat: cap score
     const rawScore = myScoreRef.current;
     const score = Math.min(rawScore, MAX_SCORE);
     if (rawScore > MAX_SCORE) {

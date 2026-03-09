@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { formatUnits } from "viem";
 import { publicClient } from "@/hooks/useWallet";
-import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI } from "@/lib/constants";
+import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI, DUEL_HISTORY_WINDOW, DUEL_REFRESH_INTERVAL } from "@/lib/constants";
 import type { Duel, HistoryDuel, OnChainDuel, DuelStatus } from "@/lib/types";
 import { fetchPrivateDuelIds } from "@/lib/privateDuels";
 
@@ -123,8 +123,8 @@ export function useDuels(currentAddress?: string | null) {
         return;
       }
 
-      // 2. Build list of ALL duel IDs (cap at last 50 for perf)
-      const start = Math.max(0, total - 50);
+      // 2. Build list of ALL duel IDs (cap at last N for perf)
+      const start = Math.max(0, total - DUEL_HISTORY_WINDOW);
       const allIds: bigint[] = [];
       for (let i = start; i < total; i++) {
         allIds.push(BigInt(i));
@@ -188,7 +188,7 @@ export function useDuels(currentAddress?: string | null) {
 
   useEffect(() => { fetchDuels(); }, [fetchDuels]);
   useEffect(() => {
-    const iv = setInterval(fetchDuels, 10_000);
+    const iv = setInterval(fetchDuels, DUEL_REFRESH_INTERVAL);
     return () => clearInterval(iv);
   }, [fetchDuels]);
 

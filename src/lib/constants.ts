@@ -2,6 +2,24 @@ export const DURATION = 30;
 export const STAKES = [1, 5, 10, 25, 50, 100] as const;
 export const APP_URL = "https://winky-duel.vercel.app";
 
+// ─── Game Config ────────────────────────────────────────────────
+export const BLINK_THRESHOLD = 0.24;  // blendshape score 0→1 (eyes closed > threshold = blink)
+export const BLINK_COOLDOWN = 120;    // ms between registered blinks (detection)
+export const MIN_BLINK_INTERVAL = 200; // ms anti-cheat: max 5 blinks/sec
+export const MAX_SCORE = 150;          // anti-cheat: score cap per game
+export const SUS_THRESHOLD = 120;      // blink count that triggers funny messages
+
+// ─── Camera Config ──────────────────────────────────────────────
+export const CAMERA_WIDTH = 320;
+export const CAMERA_HEIGHT = 240;
+export const CAMERA_TIMEOUT = 10_000; // ms to wait for video stream
+export const CAMERA_WARMUP = 300;     // ms before blink detection starts
+
+// ─── Data Fetching ──────────────────────────────────────────────
+export const MAX_DUELS = 200;           // max duels to fetch for leaderboard
+export const DUEL_HISTORY_WINDOW = 50;  // last N duels to show in history
+export const DUEL_REFRESH_INTERVAL = 10_000; // ms between auto-refreshes
+
 // Platform fee (matches on-chain RAKE_BPS). Change here when contract is redeployed.
 export const RAKE_BPS = 250; // 2.5%
 
