@@ -5,6 +5,7 @@ import { parseUnits, formatUnits, parseEventLogs } from "viem";
 import type { RefObject } from "react";
 import { toast } from "sonner";
 import { DURATION, MIN_BLINK_INTERVAL, MAX_SCORE, SUS_THRESHOLD } from "@/lib/constants";
+import { startGame, recordBlink as recordBlinkApi, finishGame } from "@/lib/gameApi";
 import { addPrivateDuel } from "@/lib/privateDuels";
 import { publicClient } from "@/hooks/useWallet";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI, MOCK_USDM_ADDRESS, ERC20_ABI } from "@/lib/constants";
@@ -13,9 +14,9 @@ import type { GamePhase, Duel, ChartPoint, GameResult } from "@/lib/types";
 import { playCountdown, playGo, playOvertake, playWin, playLose, startMusic, stopMusic } from "@/hooks/useSounds";
 
 interface ContractActions {
-  createDuel: (score: number, stakeUsdm: number) => Promise<`0x${string}`>;
+  createDuel: (score: number, stakeUsdm: number, signature: `0x${string}`) => Promise<`0x${string}`>;
   joinDuel: (duelId: bigint, stakeRaw: bigint) => Promise<`0x${string}`>;
-  submitScore: (duelId: bigint, score: number) => Promise<`0x${string}`>;
+  submitScore: (duelId: bigint, score: number, signature: `0x${string}`) => Promise<`0x${string}`>;
   checkAllowance: () => Promise<bigint>;
   ensureAllowance: (amount: bigint) => Promise<`0x${string}` | null>;
 }
@@ -73,6 +74,8 @@ export function useGameLoop({
   const [susText, setSusText] = useState<string | null>(null);
 
   const cameraConfirmRef = useRef<(() => void) | null>(null);
+  const sessionIdRef = useRef<string | null>(null);
+  const gameStartTimeRef = useRef<number>(0);
   const myScoreRef = useRef(0);
   const chartRef = useRef<ChartPoint[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval>>(null);
@@ -126,6 +129,12 @@ export function useGameLoop({
     triggerFlash();
     setTimeout(() => setMyBlinking(false), 150);
 
+    // Fire-and-forget blink to server
+    if (sessionIdRef.current && gameStartTimeRef.current) {
+      const elapsed = now - gameStartTimeRef.current;
+      recordBlinkApi(sessionIdRef.current, elapsed);
+    }
+
     // Funny sus messages at 120+ blinks
     const SUS_MESSAGES = [
       "Are you even human? 👀",
@@ -151,28 +160,33 @@ export function useGameLoop({
     setChartData([...chartRef.current]);
     setPhase("submitting");
 
-    // Anti-cheat: cap score
-    const rawScore = myScoreRef.current;
-    const score = Math.min(rawScore, MAX_SCORE);
-    if (rawScore > MAX_SCORE) {
-      console.warn(`Score capped: ${rawScore} → ${MAX_SCORE}`);
-      myScoreRef.current = score;
-      setMyScore(score);
-    }
-
     const currentChallenge = challengeRef.current;
     const isChallenge = !!currentChallenge;
+    let score = myScoreRef.current;
 
     try {
+      // ── Get server-attested score + signature ──
+      if (!sessionIdRef.current) {
+        throw new Error("No game session");
+      }
+      const attestation = await finishGame(sessionIdRef.current);
+      score = attestation.score;
+      const signature = attestation.signature as `0x${string}`;
+      sessionIdRef.current = null;
+
+      // Update local score to match server
+      myScoreRef.current = score;
+      setMyScore(score);
+
       let hash: `0x${string}`;
 
       if (isChallenge) {
         // Challenger already deposited via joinDuel — just submit score
-        hash = await contractActions.submitScore(currentChallenge!.id, score);
+        hash = await contractActions.submitScore(currentChallenge!.id, score, signature);
         addTx(hash, "Submit Score");
       } else {
         // Creator: create duel with score + deposit in one TX
-        hash = await contractActions.createDuel(score, stakeRef.current);
+        hash = await contractActions.createDuel(score, stakeRef.current, signature);
         addTx(hash, "Create Duel");
       }
 
@@ -232,6 +246,8 @@ export function useGameLoop({
       let errorMsg: string;
       if (raw === "DUEL_TAKEN" || raw.includes("DuelNotOpen") || raw.includes("DuelNotLocked")) {
         errorMsg = "This duel is no longer available.";
+      } else if (raw.includes("InvalidSignature")) {
+        errorMsg = "Score verification failed. Please try again.";
       } else if (raw.includes("NotChallenger")) {
         errorMsg = "You are not the challenger for this duel.";
       } else if (raw.includes("InsufficientBalance") || raw.includes("transfer amount exceeds balance")) {
@@ -257,6 +273,7 @@ export function useGameLoop({
 
   const go = useCallback(() => {
     myScoreRef.current = 0;
+    gameStartTimeRef.current = Date.now();
     chartRef.current = [
       { t: 0, you: 0, ...(challenge ? { target: challenge.score } : {}) },
     ];
@@ -376,6 +393,19 @@ export function useGameLoop({
         });
       }
 
+      // ── Step 3.5: Start server game session ──
+      if (walletAddress) {
+        try {
+          const session = await startGame(walletAddress);
+          sessionIdRef.current = session.sessionId;
+        } catch (err) {
+          console.error("Failed to start game session:", err);
+          toast.error("Failed to start game session. Please try again.");
+          setPhase("idle");
+          return;
+        }
+      }
+
       // ── Step 4: Countdown 3-2-1 ──
       setPhase("countdown");
       let c = 3;
@@ -415,6 +445,8 @@ export function useGameLoop({
     setSusText(null);
     myScoreRef.current = 0;
     chartRef.current = [];
+    sessionIdRef.current = null;
+    gameStartTimeRef.current = 0;
   }, []);
 
   useEffect(() => {

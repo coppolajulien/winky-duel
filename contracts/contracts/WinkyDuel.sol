@@ -6,13 +6,15 @@ pragma solidity ^0.8.24;
  * @notice Blink-to-win duel game with USDM escrow on MegaETH.
  *         Players blink in front of their camera for 30 seconds.
  *         Every blink is detected on-chain. The highest score wins the pot.
+ *         Scores are attested by a trusted server via ECDSA signature.
  *
  * Flow:
- *   1. Creator approves USDM → creates duel with createDuel(score, amount)
- *   2. Challenger approves USDM → joins via joinDuel(duelId) — deposits stake
- *   3. Challenger plays the game (blink detection)
- *   4. Challenger calls submitScore(duelId, score) — auto-settles winner
- *   5. If challenger abandons, creator calls claimAbandoned(duelId) after timeout
+ *   1. Creator approves USDM → plays game → server signs score
+ *   2. Creator calls createDuel(score, amount, signature)
+ *   3. Challenger approves USDM → joins via joinDuel(duelId) — deposits stake
+ *   4. Challenger plays the game → server signs score
+ *   5. Challenger calls submitScore(duelId, score, signature) — auto-settles winner
+ *   6. If challenger abandons, creator calls claimAbandoned(duelId) after timeout
  */
 
 interface IERC20 {
@@ -42,9 +44,12 @@ contract WinkyDuel {
 
     // ─── State ──────────────────────────────────────────────────────
     IERC20 public immutable token; // USDM token
+    address public trustedSigner;  // Server address that signs scores
     uint256 public nextDuelId;
     uint256 public rakeBalance;
     address public owner;
+
+    mapping(address => uint256) public nonces; // Anti-replay nonce per player
 
     uint256 public constant RAKE_BPS = 250;          // 2.5% (250 basis points)
     uint256 public constant MIN_STAKE = 1e18;         // 1 USDM minimum
@@ -90,6 +95,8 @@ contract WinkyDuel {
     error NoRake();
     error TransferFailed();
     error InvalidToken();
+    error InvalidSigner();
+    error InvalidSignature();
     error TooEarly();
 
     // ─── Modifiers ──────────────────────────────────────────────────
@@ -99,9 +106,11 @@ contract WinkyDuel {
     }
 
     // ─── Constructor ────────────────────────────────────────────────
-    constructor(address _token) {
+    constructor(address _token, address _signer) {
         if (_token == address(0)) revert InvalidToken();
+        if (_signer == address(0)) revert InvalidSigner();
         token = IERC20(_token);
+        trustedSigner = _signer;
         owner = msg.sender;
     }
 
@@ -110,12 +119,18 @@ contract WinkyDuel {
     /**
      * @notice Create a new duel by depositing USDM as stake.
      *         Caller must have approved this contract to spend `amount` USDM.
-     * @param score The creator's blink score (played before calling).
+     *         Score must be signed by the trusted server.
+     * @param score The creator's blink score (attested by server).
      * @param amount The USDM amount to stake (e.g. 5e18 for $5).
+     * @param signature Server ECDSA signature over (player, score, nonce, contract).
      * @return duelId The ID of the newly created duel.
      */
-    function createDuel(uint32 score, uint256 amount) external returns (uint256 duelId) {
+    function createDuel(uint32 score, uint256 amount, bytes calldata signature) external returns (uint256 duelId) {
         if (amount < MIN_STAKE) revert InsufficientStake();
+
+        // Verify server attestation
+        uint256 nonce = nonces[msg.sender]++;
+        if (!_verifySignature(msg.sender, score, nonce, signature)) revert InvalidSignature();
 
         // Pull USDM from caller
         bool ok = token.transferFrom(msg.sender, address(this), amount);
@@ -169,14 +184,20 @@ contract WinkyDuel {
     /**
      * @notice Submit the challenger's score and settle the duel.
      *         Only the locked-in challenger can call this.
+     *         Score must be signed by the trusted server.
      * @param duelId The ID of the locked duel.
-     * @param score The challenger's blink score.
+     * @param score The challenger's blink score (attested by server).
+     * @param signature Server ECDSA signature over (player, score, nonce, contract).
      */
-    function submitScore(uint256 duelId, uint32 score) external {
+    function submitScore(uint256 duelId, uint32 score, bytes calldata signature) external {
         Duel storage d = duels[duelId];
 
         if (d.status != Status.Locked) revert DuelNotLocked();
         if (msg.sender != d.challenger) revert NotChallenger();
+
+        // Verify server attestation
+        uint256 nonce = nonces[msg.sender]++;
+        if (!_verifySignature(msg.sender, score, nonce, signature)) revert InvalidSignature();
 
         d.challengerScore = score;
         d.status = Status.Settled;
@@ -295,6 +316,15 @@ contract WinkyDuel {
         owner = newOwner;
     }
 
+    /**
+     * @notice Update the trusted signer address (for key rotation).
+     * @param _signer The new signer address.
+     */
+    function setTrustedSigner(address _signer) external onlyOwner {
+        if (_signer == address(0)) revert InvalidSigner();
+        trustedSigner = _signer;
+    }
+
     // ─── Internal ───────────────────────────────────────────────────
 
     /**
@@ -320,5 +350,33 @@ contract WinkyDuel {
     function _safeTransfer(address to, uint256 amount) private {
         bool ok = token.transfer(to, amount);
         if (!ok) revert TransferFailed();
+    }
+
+    /**
+     * @dev Verify that a score was signed by the trustedSigner.
+     *      Message: keccak256(player, score, nonce, contractAddress)
+     */
+    function _verifySignature(
+        address player,
+        uint32 score,
+        uint256 nonce,
+        bytes calldata signature
+    ) private view returns (bool) {
+        bytes32 messageHash = keccak256(abi.encodePacked(player, score, nonce, address(this)));
+        bytes32 ethSignedHash = keccak256(
+            abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash)
+        );
+        (bytes32 r, bytes32 s, uint8 v) = _splitSig(signature);
+        return ecrecover(ethSignedHash, v, r, s) == trustedSigner;
+    }
+
+    /**
+     * @dev Split a 65-byte signature into r, s, v components.
+     */
+    function _splitSig(bytes calldata sig) private pure returns (bytes32 r, bytes32 s, uint8 v) {
+        require(sig.length == 65, "invalid sig length");
+        r = bytes32(sig[0:32]);
+        s = bytes32(sig[32:64]);
+        v = uint8(sig[64]);
     }
 }

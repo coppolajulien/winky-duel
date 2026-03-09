@@ -80,9 +80,9 @@ export function useContract() {
     [checkAllowance, approveUSDM]
   );
 
-  /** Create a duel on-chain. Returns TX hash. */
+  /** Create a duel on-chain with server signature. Returns TX hash. */
   const createDuel = useCallback(
-    async (score: number, stakeUsdm: number): Promise<`0x${string}`> => {
+    async (score: number, stakeUsdm: number, signature: `0x${string}`): Promise<`0x${string}`> => {
       const amount = parseUnits(String(stakeUsdm), 18);
       await ensureAllowance(amount);
 
@@ -91,7 +91,7 @@ export function useContract() {
         address: WINKY_DUEL_ADDRESS,
         abi: WINKY_DUEL_ABI,
         functionName: "createDuel",
-        args: [score, amount],
+        args: [score, amount, signature],
         gas: GAS_LIMITS.createDuel,
       });
     },
@@ -115,15 +115,15 @@ export function useContract() {
     [getWalletClient, ensureAllowance]
   );
 
-  /** Submit the challenger's score after playing. Returns TX hash. */
+  /** Submit the challenger's score with server signature. Returns TX hash. */
   const submitScore = useCallback(
-    async (duelId: bigint, score: number): Promise<`0x${string}`> => {
+    async (duelId: bigint, score: number, signature: `0x${string}`): Promise<`0x${string}`> => {
       const wc = await getWalletClient();
       return wc.writeContract({
         address: WINKY_DUEL_ADDRESS,
         abi: WINKY_DUEL_ABI,
         functionName: "submitScore",
-        args: [duelId, score],
+        args: [duelId, score, signature],
         gas: GAS_LIMITS.submitScore,
       });
     },

@@ -43,14 +43,24 @@ async function main() {
     return;
   }
 
+  // Signer address for score attestation
+  const signerAddress = process.env.GAME_SIGNER_ADDRESS;
+  if (!signerAddress) {
+    console.error("❌ GAME_SIGNER_ADDRESS env var not set");
+    process.exitCode = 1;
+    return;
+  }
+
   console.log("\n📦 Deploying WinkyDuel with USDM:", usdmAddress);
+  console.log("🔑 Trusted signer:", signerAddress);
   const factory = await ethers.getContractFactory("WinkyDuel");
-  const duel = await factory.deploy(usdmAddress);
+  const duel = await factory.deploy(usdmAddress, signerAddress);
   await duel.waitForDeployment();
 
   const address = await duel.getAddress();
   console.log("\n✅ WinkyDuel deployed to:", address);
   console.log("💰 USDM token:", usdmAddress);
+  console.log("🔑 Signer:", signerAddress);
   console.log(
     "🔍 Explorer:",
     `https://megaeth-testnet-v2.blockscout.com/address/${address}`

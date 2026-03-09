@@ -63,7 +63,7 @@ export const MOBILE_SLIDES = [
 ] as const;
 
 // ─── Chain & Contract Config ────────────────────────────────────
-export const WINKY_DUEL_ADDRESS = "0xE51A1C6D006f2aD6d34dC31DB904b30546aB764e" as const;
+export const WINKY_DUEL_ADDRESS = "0xA0774b2F5ceCac937065ADA39219A8De60118EBB" as const;
 export const MOCK_USDM_ADDRESS = "0x8A017435e8dD3aeCA65a1eA4411eD81b9302Ae9C" as const;
 export const BLOCK_EXPLORER_URL = "https://megaeth-testnet-v2.blockscout.com" as const;
 export const WALLET_PROFILE_URL = "https://mtrkr.xyz" as const;
@@ -110,6 +110,8 @@ export const WINKY_DUEL_ABI = [
   { inputs: [], name: "DuelNotOpen", type: "error" },
   { inputs: [], name: "DuelNotLocked", type: "error" },
   { inputs: [], name: "InsufficientStake", type: "error" },
+  { inputs: [], name: "InvalidSignature", type: "error" },
+  { inputs: [], name: "InvalidSigner", type: "error" },
   { inputs: [], name: "InvalidToken", type: "error" },
   { inputs: [], name: "NoRake", type: "error" },
   { inputs: [], name: "NotCreator", type: "error" },
@@ -264,11 +266,26 @@ export const WINKY_DUEL_ABI = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    inputs: [],
+    name: "trustedSigner",
+    outputs: [{ name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "", type: "address" }],
+    name: "nonces",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
   // Write functions
   {
     inputs: [
       { name: "score", type: "uint32" },
       { name: "amount", type: "uint256" },
+      { name: "signature", type: "bytes" },
     ],
     name: "createDuel",
     outputs: [{ name: "duelId", type: "uint256" }],
@@ -286,6 +303,7 @@ export const WINKY_DUEL_ABI = [
     inputs: [
       { name: "duelId", type: "uint256" },
       { name: "score", type: "uint32" },
+      { name: "signature", type: "bytes" },
     ],
     name: "submitScore",
     outputs: [],
@@ -323,6 +341,13 @@ export const WINKY_DUEL_ABI = [
   {
     inputs: [{ name: "newOwner", type: "address" }],
     name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "_signer", type: "address" }],
+    name: "setTrustedSigner",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
