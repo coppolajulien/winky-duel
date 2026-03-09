@@ -99,21 +99,21 @@ export function useDuels(currentAddress?: string | null) {
   const fetchDuels = useCallback(async () => {
     setLoading(true);
     try {
-      // Refresh private duel IDs cache from server
-      await fetchPrivateDuelIds();
-
-      // 1. Get nextDuelId to know how many duels exist
-      const [openIds, nextId] = await Promise.all([
-        publicClient.readContract({
-          address: WINKY_DUEL_ADDRESS,
-          abi: WINKY_DUEL_ABI,
-          functionName: "getOpenDuels",
-        }) as Promise<bigint[]>,
-        publicClient.readContract({
-          address: WINKY_DUEL_ADDRESS,
-          abi: WINKY_DUEL_ABI,
-          functionName: "nextDuelId",
-        }) as Promise<bigint>,
+      // Fetch private IDs + blockchain data in parallel (not sequentially)
+      const [, [openIds, nextId]] = await Promise.all([
+        fetchPrivateDuelIds(),
+        Promise.all([
+          publicClient.readContract({
+            address: WINKY_DUEL_ADDRESS,
+            abi: WINKY_DUEL_ABI,
+            functionName: "getOpenDuels",
+          }) as Promise<bigint[]>,
+          publicClient.readContract({
+            address: WINKY_DUEL_ADDRESS,
+            abi: WINKY_DUEL_ABI,
+            functionName: "nextDuelId",
+          }) as Promise<bigint>,
+        ]),
       ]);
 
       const total = Number(nextId);

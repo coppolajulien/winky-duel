@@ -5,7 +5,6 @@ import Link from "next/link";
 import type { Duel } from "@/lib/types";
 import { netWin, RAKE_BPS, DESKTOP_SLIDES } from "@/lib/constants";
 
-// Drop mp4 files in /public/ and add paths here
 const HERO_VIDEOS: string[] = [
   "/video-blinkit-1.mp4",
   "/video-blinkit-2.mp4",
@@ -13,6 +12,10 @@ const HERO_VIDEOS: string[] = [
   "/video-blinkit-4.mp4",
   "/video-blinkit-5.mp4",
   "/video-blinkit-6.mp4",
+  "/video-blinkit-7.mp4",
+  "/video-blinkit-8.mp4",
+  "/video-blinkit-9.mp4",
+  "/video-blinkit-10.mp4",
 ];
 
 /** Deterministic shuffle based on a simple seed */
@@ -70,6 +73,7 @@ export function PhaseIdle({ duels, authenticated, loading, onLaunch }: PhaseIdle
             loop
             muted
             playsInline
+            preload="none"
             className="absolute inset-0 h-full w-full object-cover"
           />
         )}
@@ -117,6 +121,8 @@ export function PhaseIdle({ duels, authenticated, loading, onLaunch }: PhaseIdle
                   <img
                     src={d.img}
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />

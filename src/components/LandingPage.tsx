@@ -13,6 +13,10 @@ const DESKTOP_VIDEOS = [
   "/video-blinkit-4.mp4",
   "/video-blinkit-5.mp4",
   "/video-blinkit-6.mp4",
+  "/video-blinkit-7.mp4",
+  "/video-blinkit-8.mp4",
+  "/video-blinkit-9.mp4",
+  "/video-blinkit-10.mp4",
 ];
 
 
@@ -52,6 +56,7 @@ function VideoSlideshow() {
           src={src}
           muted
           playsInline
+          preload="none"
           className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out"
           style={{ opacity: i === idx ? 1 : 0 }}
         />
