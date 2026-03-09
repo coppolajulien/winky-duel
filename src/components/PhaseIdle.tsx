@@ -44,11 +44,12 @@ function shuffle<T>(arr: T[], seed: number): T[] {
 interface PhaseIdleProps {
   duels: Duel[];
   authenticated: boolean;
+  loading: boolean;
   onLaunch: (duel: Duel) => void;
   onCreate: () => void;
 }
 
-export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdleProps) {
+export function PhaseIdle({ duels, authenticated, loading, onLaunch, onCreate }: PhaseIdleProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const heroVideo = useMemo(
@@ -115,7 +116,16 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
         </div>
       </div>
 
-      {/* Featured battle cards */}
+      {/* Featured battle cards — skeleton while loading */}
+      {loading && featuredDuels.length === 0 && (
+        <div className="w-full max-w-4xl px-8 py-8">
+          <div className="grid grid-cols-3 gap-4" style={{ maxWidth: "56rem" }}>
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="aspect-[4/3] animate-pulse rounded-2xl bg-card" />
+            ))}
+          </div>
+        </div>
+      )}
       {featuredDuels.length > 0 && (
         <div className="w-full max-w-4xl px-8 py-8">
           <div className={`grid gap-4 ${featuredDuels.length >= 3 ? "grid-cols-3" : featuredDuels.length === 2 ? "grid-cols-2 max-w-xl mx-auto" : "grid-cols-1 max-w-xs mx-auto"}`} style={{ maxWidth: "56rem" }}>

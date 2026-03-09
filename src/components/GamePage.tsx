@@ -340,6 +340,7 @@ export default function GamePage() {
             <PhaseIdle
               duels={duels.filter((d) => !wallet.address || d.creatorFull.toLowerCase() !== wallet.address.toLowerCase())}
               authenticated={wallet.authenticated}
+              loading={duelsLoading}
               onLaunch={(duel) => { resetToasts(); launch(duel); }}
               onCreate={() => { resetToasts(); launch(null); }}
             />
