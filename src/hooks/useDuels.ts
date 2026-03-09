@@ -166,9 +166,10 @@ export function useDuels(currentAddress?: string | null) {
         };
 
         if (onChain.status === 0) {
-          // Status.Open — available for challenge (skip private duels)
+          // Status.Open — skip private duels unless you're the creator
           const privateIds = getPrivateDuelIds();
-          if (privateIds.has(String(onChain.id))) continue;
+          const isOwn = currentAddress && onChain.creator.toLowerCase() === currentAddress.toLowerCase();
+          if (privateIds.has(String(onChain.id)) && !isOwn) continue;
           openDuels.push(formatDuel(onChain));
         } else {
           // Status.Locked (3), Settled (1), Cancelled (2) — show in history
