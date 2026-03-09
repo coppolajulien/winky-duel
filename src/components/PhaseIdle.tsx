@@ -107,7 +107,7 @@ export function PhaseIdle({ duels, authenticated, loading, onLaunch }: PhaseIdle
       )}
       {featuredDuels.length > 0 && (
         <div className="w-full max-w-4xl px-8 py-8">
-          <div className={`grid gap-4 ${featuredDuels.length >= 3 ? "grid-cols-3" : featuredDuels.length === 2 ? "grid-cols-2 max-w-xl mx-auto" : "grid-cols-1 max-w-xs mx-auto"}`} style={{ maxWidth: "56rem" }}>
+          <div className="grid grid-cols-3 gap-4" style={{ maxWidth: "56rem" }}>
             {featuredDuels.map((d) => (
               <div
                 key={String(d.id)}
