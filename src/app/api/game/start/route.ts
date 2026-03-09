@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import {
   redis,
+  getSession,
   getOnChainNonce,
   isRateLimited,
   getClientIp,
   isValidAddress,
   ACTIVE_KEY,
+  SESSION_KEY,
   saveSession,
   type GameSession,
 } from "../_lib";
@@ -24,10 +26,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid player address" }, { status: 400 });
     }
 
-    // One active session per player
-    const activeSession = await redis.get(ACTIVE_KEY(player));
-    if (activeSession) {
-      return NextResponse.json({ error: "Active session exists" }, { status: 409 });
+    // Check for existing active session
+    const existingSessionId = await redis.get<string>(ACTIVE_KEY(player));
+    if (existingSessionId) {
+      // Check if the session is still valid and in-progress
+      const existingSession = await getSession(existingSessionId);
+      if (existingSession && !existingSession.finished) {
+        const elapsed = Date.now() - existingSession.startedAt;
+        // If session is less than 60s old, it's likely still playing
+        if (elapsed < 60_000) {
+          return NextResponse.json({ error: "Active session exists" }, { status: 409 });
+        }
+      }
+      // Session is stale, finished, or missing — clean it up
+      await redis.del(ACTIVE_KEY(player));
+      if (existingSessionId) {
+        await redis.del(SESSION_KEY(existingSessionId));
+      }
     }
 
     // Read nonce from contract
