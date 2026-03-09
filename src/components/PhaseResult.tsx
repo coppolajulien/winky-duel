@@ -133,8 +133,8 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
         <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
           {/* Error message */}
           {result.error && (
-            <div className="mb-2 max-w-[260px] text-center text-[11px] text-red-400/80 drop-shadow-lg">
-              Transaction failed — your score was not submitted. Try again.
+            <div className="mb-2 max-w-[280px] text-center text-[11px] text-red-400/80 drop-shadow-lg">
+              {result.error}
             </div>
           )}
 
