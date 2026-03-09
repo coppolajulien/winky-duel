@@ -8,7 +8,8 @@ import { useBlinkDetector } from "@/hooks/useBlinkDetector";
 import { useGameLoop } from "@/hooks/useGameLoop";
 import { useWallet, publicClient } from "@/hooks/useWallet";
 import { useContract } from "@/hooks/useContract";
-import { useDuels } from "@/hooks/useDuels";
+import { useDuels, fetchDuelById } from "@/hooks/useDuels";
+import { DuelStatus } from "@/lib/types";
 import type { Duel } from "@/lib/types";
 import { DESKTOP_SLIDES, MOBILE_SLIDES } from "@/lib/constants";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -102,7 +103,20 @@ export default function GamePage() {
       router.replace("/play", { scroll: false });
       resetToasts();
       launch(targetDuel);
+      return;
     }
+    // Duel not in filtered list — might be a private duel, fetch directly from chain
+    let cancelled = false;
+    fetchDuelById(targetId).then((result) => {
+      if (cancelled || joinHandled.current) return;
+      if (result && result.status === DuelStatus.Open) {
+        joinHandled.current = true;
+        router.replace("/play", { scroll: false });
+        resetToasts();
+        launch(result.duel);
+      }
+    });
+    return () => { cancelled = true; };
   }, [joinDuelId, duels, phase, wallet.authenticated, duelsLoading, router, resetToasts, launch]);
 
   // Reset toasts on game reset
