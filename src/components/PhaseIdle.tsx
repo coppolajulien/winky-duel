@@ -63,10 +63,9 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
     if (picked.length < 3) {
       picked.push(...small.slice(0, 3 - picked.length));
     }
-    const imgs = shuffle(DESKTOP_SLIDES, Date.now() + 1);
-    return picked.slice(0, 3).map((d, i) => ({
+    return picked.slice(0, 3).map((d) => ({
       ...d,
-      img: imgs[i % imgs.length],
+      img: DESKTOP_SLIDES[Number(d.id) % DESKTOP_SLIDES.length],
     }));
   }, [duels]);
 
