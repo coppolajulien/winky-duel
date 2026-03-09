@@ -55,15 +55,15 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
     []
   );
 
-  // Pick up to 3 duels: prioritize $25+, fill remaining slots with cheaper ones
+  // Pick up to 6 duels: prioritize $25+, fill remaining slots with cheaper ones
   const featuredDuels = useMemo(() => {
     const big = shuffle(duels.filter((d) => d.stake >= 25), Date.now());
     const small = shuffle(duels.filter((d) => d.stake < 25), Date.now() + 2);
-    const picked = [...big.slice(0, 3)];
-    if (picked.length < 3) {
-      picked.push(...small.slice(0, 3 - picked.length));
+    const picked = [...big.slice(0, 6)];
+    if (picked.length < 6) {
+      picked.push(...small.slice(0, 6 - picked.length));
     }
-    return picked.slice(0, 3).map((d) => ({
+    return picked.slice(0, 6).map((d) => ({
       ...d,
       img: DESKTOP_SLIDES[Number(d.id) % DESKTOP_SLIDES.length],
     }));
@@ -114,8 +114,8 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
 
       {/* Featured battle cards */}
       {featuredDuels.length > 0 && (
-        <div className="w-full max-w-3xl px-8 py-8">
-          <div className={`grid gap-4 ${featuredDuels.length >= 3 ? "grid-cols-3" : featuredDuels.length === 2 ? "grid-cols-2 max-w-xl mx-auto" : "grid-cols-1 max-w-xs mx-auto"}`}>
+        <div className="w-full max-w-4xl px-8 py-8">
+          <div className={`grid gap-4 ${featuredDuels.length >= 3 ? "grid-cols-3" : featuredDuels.length === 2 ? "grid-cols-2 max-w-xl mx-auto" : "grid-cols-1 max-w-xs mx-auto"}`} style={{ maxWidth: "56rem" }}>
             {featuredDuels.map((d) => (
               <div
                 key={String(d.id)}
