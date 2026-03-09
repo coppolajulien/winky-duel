@@ -25,9 +25,9 @@ export async function fetchPrivateDuelIds(): Promise<Set<string>> {
   const localIds = getLocalIds();
   try {
     const res = await fetch("/api/private-duels", { cache: "no-store" });
-    const { ids } = (await res.json()) as { ids: string[] };
-    // Merge server + local
-    cachedIds = new Set([...ids, ...localIds]);
+    const { ids } = (await res.json()) as { ids: (string | number)[] };
+    // Merge server + local (normalize to strings — Redis may return numbers)
+    cachedIds = new Set([...ids.map(String), ...localIds]);
   } catch {
     // Server down — use localStorage only
     cachedIds = localIds;
