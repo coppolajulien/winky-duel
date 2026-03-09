@@ -9,6 +9,7 @@ import { DuelStatus } from "@/lib/types";
 import type { Duel, HistoryDuel } from "@/lib/types";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { getPrivateDuelIds } from "@/lib/privateDuels";
+import { MegaName } from "./MegaName";
 
 const HISTORY_PAGE_SIZE = 5;
 const DUELS_PAGE_SIZE = 5;
@@ -337,7 +338,7 @@ export function DuelsList({
                         className="hover:text-wink-pink transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {d.creator}
+                        <MegaName address={d.creatorFull} fallback={d.creator} />
                       </a>
                     )}
                     {isDuelPrivate && (
@@ -506,7 +507,7 @@ export function DuelsList({
                               rel="noopener noreferrer"
                               className="hover:text-wink-pink transition-colors"
                             >
-                              {opponent}
+                              <MegaName address={opponentFull} fallback={opponent} />
                             </a>
                           ) : "—"}
                         </div>

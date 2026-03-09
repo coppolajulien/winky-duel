@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { WALLET_PROFILE_URL } from "@/lib/constants";
 import type { LeaderboardEntry } from "@/lib/types";
+import { MegaName } from "./MegaName";
 
 const PAGE_SIZE = 20;
 const MEDALS = ["", "\u{1F947}", "\u{1F948}", "\u{1F949}"] as const; // 1st, 2nd, 3rd
@@ -62,7 +63,7 @@ function LeaderboardRow({
               isMe ? "text-wink-cyan font-semibold" : "text-wink-text"
             )}
           >
-            {r.addr}
+            <MegaName address={r.addrFull} fallback={r.addr} />
           </a>
           {isMe && (
             <span className="rounded-full bg-wink-cyan/20 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-wink-cyan">

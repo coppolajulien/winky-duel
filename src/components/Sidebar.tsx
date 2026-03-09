@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { Duel, HistoryDuel } from "@/lib/types";
 import { DuelsList } from "./DuelsList";
+import { MegaName } from "./MegaName";
 import { isMuted, setMuted } from "@/hooks/useSounds";
 
 interface SidebarProps {
@@ -132,7 +133,9 @@ export function Sidebar({
               className="flex items-center gap-1 text-[10px] text-wink-text-dim transition-colors hover:text-wink-text"
             >
               <span>My wallet</span>
-              <span className="font-mono text-[9px]">{shortAddress}</span>
+              <span className="font-mono text-[9px]">
+                {address ? <MegaName address={address} fallback={shortAddress!} /> : shortAddress}
+              </span>
               {copied ? (
                 <Check className="h-3 w-3 text-wink-pink" />
               ) : (

@@ -4,6 +4,7 @@ import { useMemo, useRef } from "react";
 import Link from "next/link";
 import type { Duel } from "@/lib/types";
 import { netWin, RAKE_BPS, DESKTOP_SLIDES } from "@/lib/constants";
+import { MegaName } from "./MegaName";
 
 const HERO_VIDEOS: string[] = [
   "/video-blinkit-1.mp4",
@@ -136,7 +137,7 @@ export function PhaseIdle({ duels, authenticated, loading, onLaunch }: PhaseIdle
                       {RAKE_BPS / 100}% fee included
                     </p>
                     <p className="mt-1 font-mono text-[9px] text-white/40">
-                      {d.creator}
+                      <MegaName address={d.creatorFull} fallback={d.creator} />
                     </p>
                   </div>
                 </div>
