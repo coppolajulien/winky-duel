@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef } from "react";
+import Link from "next/link";
 import type { Duel } from "@/lib/types";
 import { netWin, RAKE_BPS } from "@/lib/constants";
 
@@ -56,9 +57,11 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
   );
 
   // Pick up to 6 duels: prioritize $25+, fill remaining slots with cheaper ones
+  // Seed is stable (based on duel IDs) so cards don't shuffle on re-renders
   const featuredDuels = useMemo(() => {
-    const big = shuffle(duels.filter((d) => d.stake >= 25), Date.now());
-    const small = shuffle(duels.filter((d) => d.stake < 25), Date.now() + 2);
+    const seed = duels.reduce((s, d) => s + Number(d.id), 0) || 1;
+    const big = shuffle(duels.filter((d) => d.stake >= 25), seed);
+    const small = shuffle(duels.filter((d) => d.stake < 25), seed + 2);
     const picked = [...big.slice(0, 6)];
     if (picked.length < 6) {
       picked.push(...small.slice(0, 6 - picked.length));
@@ -155,6 +158,16 @@ export function PhaseIdle({ duels, authenticated, onLaunch, onCreate }: PhaseIdl
               </div>
             ))}
           </div>
+          {duels.length > 6 && (
+            <div className="mt-6 text-center">
+              <Link
+                href="/duels"
+                className="text-sm font-semibold text-wink-text-dim transition-colors hover:text-wink-pink"
+              >
+                See all duels →
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
