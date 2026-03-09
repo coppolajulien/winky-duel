@@ -275,3 +275,15 @@
   background: var(--wink-border);
   border-radius: 3px;
 }
+
+/* Sonner toast overrides */
+[data-sonner-toaster] {
+  font-family: var(--font-inter), sans-serif !important;
+}
+[data-sonner-toast] a {
+  color: inherit;
+  text-decoration: none;
+}
+[data-sonner-toast] a:hover {
+  text-decoration: underline;
+}

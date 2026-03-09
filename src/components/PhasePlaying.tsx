@@ -4,10 +4,9 @@ import { type RefObject } from "react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { DURATION } from "@/lib/constants";
-import type { Duel, ChartPoint, TxToastData } from "@/lib/types";
+import type { Duel, ChartPoint } from "@/lib/types";
 import { BlinkChart } from "./BlinkChart";
 import { FaceMeshCanvas } from "./FaceMeshCanvas";
-import { TxToast } from "./TxToast";
 
 interface PhasePlayingProps {
   myScore: number;
@@ -16,10 +15,8 @@ interface PhasePlayingProps {
   myBlinking: boolean;
   overtook: boolean;
   chartData: ChartPoint[];
-  txToasts: TxToastData[];
   stake: number;
   canvasRef: RefObject<HTMLCanvasElement | null>;
-  onRemoveTx: (id: number) => void;
   susText?: string | null;
 }
 
@@ -30,10 +27,8 @@ export function PhasePlaying({
   myBlinking,
   overtook,
   chartData,
-  txToasts,
   stake,
   canvasRef,
-  onRemoveTx,
   susText,
 }: PhasePlayingProps) {
   const isMobile = useIsMobile();
@@ -101,13 +96,6 @@ export function PhasePlaying({
       {/* Chart area */}
       <div className="relative min-h-0 flex-1">
         <BlinkChart data={chartData} hasTarget={!!challenge} />
-
-        {/* TX Toasts overlay */}
-        <div className="pointer-events-none absolute bottom-4 right-4 z-[5] flex max-h-[60%] flex-col-reverse gap-1.5 overflow-hidden">
-          {txToasts.map((tx) => (
-            <TxToast key={tx.id} tx={tx} onDone={onRemoveTx} />
-          ))}
-        </div>
       </div>
 
       {/* Bottom bar */}

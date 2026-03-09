@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useAccount } from "wagmi";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { Leaderboard } from "./Leaderboard";
 
 export default function LeaderboardPage() {
   const { entries, loading } = useLeaderboard();
+  const { address } = useAccount();
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-wink-bg font-sans text-wink-text">
@@ -41,7 +43,7 @@ export default function LeaderboardPage() {
       {/* Content */}
       <main className="flex-1 px-6 py-8">
         <div className="mx-auto max-w-2xl">
-          <Leaderboard entries={entries} loading={loading} />
+          <Leaderboard entries={entries} loading={loading} currentAddress={address} />
         </div>
       </main>
     </div>

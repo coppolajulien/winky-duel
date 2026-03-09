@@ -1,25 +1,11 @@
 import type { ChartPoint, GameResult } from "@/lib/types";
+import { DESKTOP_SLIDES } from "@/lib/constants";
 
 const W = 1200;
 const H = 630;
 const PINK = "#e8457a";
 const TEXT = "#ECE8E8";
 const TEXT_DIM = "rgba(236, 232, 232, 0.4)";
-
-const DESKTOP_SLIDES = [
-  "/desktop-bg.jpg",
-  "/desktop-bg-1.jpg",
-  "/desktop-bg-2.jpg",
-  "/desktop-bg-3.jpg",
-  "/desktop-bg-4.jpg",
-  "/desktop-bg-5.jpg",
-  "/desktop-bg-6.jpg",
-  "/desktop-bg-7.jpg",
-  "/desktop-bg-8.jpg",
-  "/desktop-bg-9.jpg",
-  "/desktop-bg-10.jpg",
-  "/desktop-bg-11.jpg",
-];
 
 /** Load an image from a URL */
 function loadImage(src: string): Promise<HTMLImageElement> {

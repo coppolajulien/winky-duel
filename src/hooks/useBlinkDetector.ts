@@ -33,13 +33,20 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   themeColorsRef.current = themeColors;
 
   // Suppress TensorFlow Lite INFO logs that Next.js dev overlay treats as errors
+  // Uses a scoped filter instead of replacing console.error globally
   useEffect(() => {
-    const orig = console.error;
-    console.error = (...args: unknown[]) => {
-      if (typeof args[0] === "string" && (args[0].includes("TensorFlow Lite") || args[0].includes("isActive"))) return;
-      orig.apply(console, args);
+    if (process.env.NODE_ENV !== "development") return;
+    const orig = console.error.bind(console);
+    const filtered = (...args: unknown[]) => {
+      const msg = typeof args[0] === "string" ? args[0] : "";
+      if (msg.includes("TensorFlow Lite") || msg.includes("isActive")) return;
+      orig(...args);
     };
-    return () => { console.error = orig; };
+    console.error = filtered;
+    return () => {
+      // Only restore if we're still the active filter (avoid clobbering other overrides)
+      if (console.error === filtered) console.error = orig;
+    };
   }, []);
 
   const safeDetect = useCallback(

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Web3ProviderWrapper } from "@/components/Web3ProviderWrapper";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const inter = Inter({
@@ -91,6 +92,21 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Toaster
+              theme="dark"
+              position="bottom-right"
+              toastOptions={{
+                style: {
+                  background: "var(--card)",
+                  border: "1px solid var(--wink-border)",
+                  color: "var(--foreground)",
+                  fontSize: "13px",
+                  borderRadius: "12px",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+                },
+              }}
+              closeButton
+            />
           </ThemeProvider>
         </Web3ProviderWrapper>
       </body>

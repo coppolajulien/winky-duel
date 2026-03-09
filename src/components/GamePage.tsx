@@ -10,6 +10,7 @@ import { useWallet, publicClient } from "@/hooks/useWallet";
 import { useContract } from "@/hooks/useContract";
 import { useDuels } from "@/hooks/useDuels";
 import type { Duel } from "@/lib/types";
+import { DESKTOP_SLIDES, MOBILE_SLIDES } from "@/lib/constants";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Sidebar } from "./Sidebar";
 import { MobileGameHeader } from "./MobileGameHeader";
@@ -19,13 +20,12 @@ import { PhasePlaying } from "./PhasePlaying";
 import { PhaseSubmitting } from "./PhaseSubmitting";
 import { PhaseResult } from "./PhaseResult";
 import { SendModal } from "./SendModal";
-import { ErrorBanner } from "./ErrorBanner";
 
 export default function GamePage() {
   // Ref-based callback to resolve circular dependency between hooks
   const onBlinkRef = useRef<(() => void) | null>(null);
 
-  const { txToasts, addTx, removeTx, resetToasts } = useTxToasts();
+  const { addTx, resetToasts } = useTxToasts();
   const { videoRef, canvasRef, initCamera, triggerFlash, cameraStatus, cameraError, isCameraReady } = useBlinkDetector({
     onBlinkRef,
   });
@@ -44,20 +44,6 @@ export default function GamePage() {
   // Keep ref in sync for useGameLoop
   isPrivateRef.current = isPrivate;
 
-  const DESKTOP_SLIDES = [
-    "/desktop-bg.jpg",
-    "/desktop-bg-1.jpg",
-    "/desktop-bg-2.jpg",
-    "/desktop-bg-3.jpg",
-    "/desktop-bg-4.jpg",
-    "/desktop-bg-5.jpg",
-    "/desktop-bg-6.jpg",
-    "/desktop-bg-7.jpg",
-    "/desktop-bg-8.jpg",
-    "/desktop-bg-9.jpg",
-    "/desktop-bg-10.jpg",
-    "/desktop-bg-11.jpg",
-  ];
   const gameBgImage = useMemo(
     () => DESKTOP_SLIDES[Math.floor(Math.random() * DESKTOP_SLIDES.length)],
     []
@@ -78,8 +64,6 @@ export default function GamePage() {
     overtook,
     result,
     resultStake,
-    errorBanner,
-    dismissError,
     launch,
     reset,
     doBlink,
@@ -110,6 +94,7 @@ export default function GamePage() {
   const joinDuelId = searchParams.get("join");
   useEffect(() => {
     if (!joinDuelId || joinHandled.current || phase !== "idle" || !wallet.authenticated || duelsLoading) return;
+    if (!/^\d+$/.test(joinDuelId)) return; // ignore invalid IDs
     const targetId = BigInt(joinDuelId);
     const targetDuel = duels.find((d) => d.id === targetId);
     if (targetDuel) {
@@ -140,20 +125,6 @@ export default function GamePage() {
 
   const isGameActive = phase !== "idle";
 
-  const MOBILE_SLIDES = [
-    "/mobile-bg.png",
-    "/mobile-bg-1.png",
-    "/mobile-bg-2.png",
-    "/mobile-bg-3.png",
-    "/mobile-bg-4.png",
-    "/mobile-bg-5.png",
-    "/mobile-bg-6.png",
-    "/mobile-bg-7.png",
-    "/mobile-bg-8.png",
-    "/mobile-bg-9.png",
-    "/mobile-bg-10.png",
-    "/mobile-bg-11.png",
-  ];
   const [slideIdx, setSlideIdx] = useState(0);
 
   useEffect(() => {
@@ -261,10 +232,6 @@ export default function GamePage() {
           />
         )}
         <div className="relative flex-1 overflow-hidden bg-wink-bg">
-        {/* Error banner overlay */}
-        {errorBanner && (
-          <ErrorBanner error={errorBanner} onDismiss={dismissError} />
-        )}
         <div className="flex h-full flex-col">
           {/* Wrong network overlay */}
           {wallet.wrongNetwork && (
@@ -342,7 +309,6 @@ export default function GamePage() {
               authenticated={wallet.authenticated}
               loading={duelsLoading}
               onLaunch={(duel) => { resetToasts(); launch(duel); }}
-              onCreate={() => { resetToasts(); launch(null); }}
             />
           )}
           {phase === "approving" && (
@@ -460,10 +426,8 @@ export default function GamePage() {
               myBlinking={myBlinking}
               overtook={overtook}
               chartData={chartData}
-              txToasts={txToasts}
               stake={stake}
               canvasRef={canvasRef}
-              onRemoveTx={removeTx}
               susText={susText}
             />
           )}

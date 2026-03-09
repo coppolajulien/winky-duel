@@ -13,10 +13,42 @@ export function netWin(stake: number): string {
   return profit % 1 === 0 ? String(profit) : profit.toFixed(2);
 }
 
+// ─── Background Slides ──────────────────────────────────────────
+export const DESKTOP_SLIDES = [
+  "/desktop-bg.jpg",
+  "/desktop-bg-1.jpg",
+  "/desktop-bg-2.jpg",
+  "/desktop-bg-3.jpg",
+  "/desktop-bg-4.jpg",
+  "/desktop-bg-5.jpg",
+  "/desktop-bg-6.jpg",
+  "/desktop-bg-7.jpg",
+  "/desktop-bg-8.jpg",
+  "/desktop-bg-9.jpg",
+  "/desktop-bg-10.jpg",
+  "/desktop-bg-11.jpg",
+] as const;
+
+export const MOBILE_SLIDES = [
+  "/mobile-bg.png",
+  "/mobile-bg-1.png",
+  "/mobile-bg-2.png",
+  "/mobile-bg-3.png",
+  "/mobile-bg-4.png",
+  "/mobile-bg-5.png",
+  "/mobile-bg-6.png",
+  "/mobile-bg-7.png",
+  "/mobile-bg-8.png",
+  "/mobile-bg-9.png",
+  "/mobile-bg-10.png",
+  "/mobile-bg-11.png",
+] as const;
+
 // ─── Chain & Contract Config ────────────────────────────────────
 export const WINKY_DUEL_ADDRESS = "0xE51A1C6D006f2aD6d34dC31DB904b30546aB764e" as const;
 export const MOCK_USDM_ADDRESS = "0x8A017435e8dD3aeCA65a1eA4411eD81b9302Ae9C" as const;
 export const BLOCK_EXPLORER_URL = "https://megaeth-testnet-v2.blockscout.com" as const;
+export const WALLET_PROFILE_URL = "https://mtrkr.xyz" as const;
 
 // ─── ERC-20 ABI (balanceOf + approve + allowance) ───────────────
 export const ERC20_ABI = [

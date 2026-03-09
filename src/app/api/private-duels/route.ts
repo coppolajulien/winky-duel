@@ -1,6 +1,9 @@
 import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { createPublicClient, http } from "viem";
+import { megaethTestnet } from "viem/chains";
+import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI } from "@/lib/constants";
 
 const redis = new Redis({
   url: process.env.KV_REST_API_URL!,
@@ -8,12 +11,17 @@ const redis = new Redis({
 });
 const KEY = "private-duels";
 
-// Simple rate limit: max 30 POST requests per IP per minute
+const publicClient = createPublicClient({
+  chain: megaethTestnet,
+  transport: http(),
+});
+
+// Simple rate limit: max 10 POST requests per IP per minute
 async function isRateLimited(ip: string): Promise<boolean> {
   const key = `rl:${ip}`;
   const count = await redis.incr(key);
   if (count === 1) await redis.expire(key, 60);
-  return count > 30;
+  return count > 10;
 }
 
 /** GET — return all private duel IDs */
@@ -39,6 +47,24 @@ export async function POST(req: Request) {
     if (!duelId || !/^\d+$/.test(duelId)) {
       return NextResponse.json({ error: "Invalid duelId" }, { status: 400 });
     }
+
+    // Verify duel exists on-chain and is in Open state (status 0)
+    try {
+      const result = await publicClient.readContract({
+        address: WINKY_DUEL_ADDRESS,
+        abi: WINKY_DUEL_ABI,
+        functionName: "getDuel",
+        args: [BigInt(duelId)],
+      });
+
+      const duel = result as { status: number };
+      if (Number(duel.status) !== 0) {
+        return NextResponse.json({ error: "Duel is not open" }, { status: 400 });
+      }
+    } catch {
+      return NextResponse.json({ error: "Duel not found" }, { status: 404 });
+    }
+
     await redis.sadd(KEY, duelId);
     return NextResponse.json({ ok: true });
   } catch {

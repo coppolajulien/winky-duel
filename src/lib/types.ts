@@ -43,13 +43,6 @@ export interface LeaderboardEntry {
   earn: number;
 }
 
-export interface TxToastData {
-  id: number;
-  hash: string;
-  status: "pending" | "confirmed" | "failed";
-  label?: string;
-}
-
 export interface ChartPoint {
   t: number;
   you: number;

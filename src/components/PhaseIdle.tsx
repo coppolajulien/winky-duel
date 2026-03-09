@@ -3,22 +3,7 @@
 import { useMemo, useRef } from "react";
 import Link from "next/link";
 import type { Duel } from "@/lib/types";
-import { netWin, RAKE_BPS } from "@/lib/constants";
-
-const DESKTOP_SLIDES = [
-  "/desktop-bg.jpg",
-  "/desktop-bg-1.jpg",
-  "/desktop-bg-2.jpg",
-  "/desktop-bg-3.jpg",
-  "/desktop-bg-4.jpg",
-  "/desktop-bg-5.jpg",
-  "/desktop-bg-6.jpg",
-  "/desktop-bg-7.jpg",
-  "/desktop-bg-8.jpg",
-  "/desktop-bg-9.jpg",
-  "/desktop-bg-10.jpg",
-  "/desktop-bg-11.jpg",
-];
+import { netWin, RAKE_BPS, DESKTOP_SLIDES } from "@/lib/constants";
 
 // Drop mp4 files in /public/ and add paths here
 const HERO_VIDEOS: string[] = [
@@ -46,10 +31,9 @@ interface PhaseIdleProps {
   authenticated: boolean;
   loading: boolean;
   onLaunch: (duel: Duel) => void;
-  onCreate: () => void;
 }
 
-export function PhaseIdle({ duels, authenticated, loading, onLaunch, onCreate }: PhaseIdleProps) {
+export function PhaseIdle({ duels, authenticated, loading, onLaunch }: PhaseIdleProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const heroVideo = useMemo(
@@ -103,16 +87,6 @@ export function PhaseIdle({ duels, authenticated, loading, onLaunch, onCreate }:
           <p className="max-w-md text-sm text-white/60">
             Open a duel. Deposit USDM. Most blinks takes it all.
           </p>
-
-          {authenticated && (
-            <button
-              onClick={onCreate}
-              className="mt-2 rounded-full border-2 border-white bg-white/10 px-10 py-4 text-lg font-black uppercase tracking-wider text-white backdrop-blur-sm transition-all hover:bg-white hover:text-black active:scale-95"
-            >
-              Create a Duel →
-            </button>
-          )}
-
         </div>
       </div>
 

@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { parseUnits, formatUnits, parseEventLogs } from "viem";
 import type { RefObject } from "react";
+import { toast } from "sonner";
 import { DURATION } from "@/lib/constants";
 import { addPrivateDuel } from "@/lib/privateDuels";
 import { publicClient } from "@/hooks/useWallet";
@@ -20,7 +21,7 @@ interface ContractActions {
 }
 
 interface UseGameLoopOptions {
-  addTx: (hash: `0x${string}`, label?: string) => number;
+  addTx: (hash: `0x${string}`, label?: string) => string | number;
   initCamera: () => Promise<boolean>;
   isCameraReady: () => boolean;
   triggerFlash: () => void;
@@ -29,11 +30,6 @@ interface UseGameLoopOptions {
   refreshBalance: () => Promise<void>;
   walletAddress: `0x${string}` | null;
   isPrivateRef: RefObject<boolean>;
-}
-
-export interface ErrorBanner {
-  message: string;
-  type: "error" | "warning";
 }
 
 /** Check if a duel is still open on-chain. */
@@ -74,7 +70,6 @@ export function useGameLoop({
   const [overtook, setOvertook] = useState(false);
   const [result, setResult] = useState<GameResult | null>(null);
   const [resultStake, setResultStake] = useState<number>(5);
-  const [errorBanner, setErrorBanner] = useState<ErrorBanner | null>(null);
   const [susText, setSusText] = useState<string | null>(null);
 
   const cameraConfirmRef = useRef<(() => void) | null>(null);
@@ -86,28 +81,18 @@ export function useGameLoop({
   const timeLeftRef = useRef(DURATION);
   const challengeRef = useRef<Duel | null>(null);
   const stakeRef = useRef(5);
-  const errorTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   useEffect(() => { timeLeftRef.current = timeLeft; }, [timeLeft]);
   useEffect(() => { challengeRef.current = challenge; }, [challenge]);
   useEffect(() => { stakeRef.current = stake; }, [stake]);
 
-  const showError = useCallback((message: string, type: "error" | "warning" = "error") => {
-    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
-    setErrorBanner({ message, type });
-    errorTimerRef.current = setTimeout(() => setErrorBanner(null), 5000);
-  }, []);
-
-  const dismissError = useCallback(() => {
-    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
-    setErrorBanner(null);
-  }, []);
-
-  // Chart data accumulation
+  // Chart data accumulation — collect every 400ms, render every 1s
+  const chartTickRef = useRef(0);
   useEffect(() => {
     if (phase !== "playing") {
       if (chartIvRef.current) clearInterval(chartIvRef.current);
+      chartTickRef.current = 0;
       return;
     }
     chartIvRef.current = setInterval(() => {
@@ -115,7 +100,11 @@ export function useGameLoop({
       const pt: ChartPoint = { t: elapsed, you: myScoreRef.current };
       if (challenge) pt.target = challenge.score;
       chartRef.current = [...chartRef.current, pt];
-      setChartData([...chartRef.current]);
+      chartTickRef.current += 1;
+      // Only trigger re-render every ~1s (every 2-3 ticks at 400ms)
+      if (chartTickRef.current % 3 === 0) {
+        setChartData([...chartRef.current]);
+      }
     }, 400);
     return () => {
       if (chartIvRef.current) clearInterval(chartIvRef.current);
@@ -158,6 +147,8 @@ export function useGameLoop({
 
   const finish = useCallback(async () => {
     stopMusic();
+    // Final chart flush so result screen has all data points
+    setChartData([...chartRef.current]);
     setPhase("submitting");
 
     // Anti-cheat: cap score at 150
@@ -289,7 +280,7 @@ export function useGameLoop({
 
   const launch = useCallback(
     async (duel: Duel | null = null) => {
-      dismissError();
+      toast.dismiss();
       setChallenge(duel);
       if (duel) setStake(duel.stake);
 
@@ -309,7 +300,7 @@ export function useGameLoop({
           if (balance < stakeAmount) {
             const have = parseFloat(formatUnits(balance, 18)).toFixed(2);
             const need = parseFloat(formatUnits(stakeAmount, 18)).toFixed(2);
-            showError(`Insufficient USDM balance. You have $${have} but need $${need}.`);
+            toast.error(`Insufficient USDM balance. You have $${have} but need $${need}.`);
             setPhase("idle");
             return;
           }
@@ -322,7 +313,7 @@ export function useGameLoop({
       if (duel) {
         const stillOpen = await isDuelStillOpen(duel.id);
         if (!stillOpen) {
-          showError("This duel is no longer available. It was taken or cancelled.");
+          toast.error("This duel is no longer available. It was taken or cancelled.");
           refetchDuels();
           setPhase("idle");
           return;
@@ -363,7 +354,7 @@ export function useGameLoop({
           if (raw.includes("User rejected") || raw.includes("User denied") || raw.includes("rejected the request")) {
             setPhase("idle");
           } else {
-            showError("Failed to join duel. It may have been taken or cancelled.");
+            toast.error("Failed to join duel. It may have been taken or cancelled.");
             refetchDuels();
             setPhase("idle");
           }
@@ -403,7 +394,7 @@ export function useGameLoop({
         }
       }, 1000);
     },
-    [initCamera, isCameraReady, go, contractActions, addTx, walletAddress, showError, dismissError, refetchDuels, refreshBalance]
+    [initCamera, isCameraReady, go, contractActions, addTx, walletAddress, refetchDuels, refreshBalance]
   );
 
   const confirmCamera = useCallback(() => {
@@ -431,7 +422,6 @@ export function useGameLoop({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (chartIvRef.current) clearInterval(chartIvRef.current);
-      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     };
   }, []);
 
@@ -450,8 +440,6 @@ export function useGameLoop({
     overtook,
     result,
     resultStake,
-    errorBanner,
-    dismissError,
     launch,
     reset,
     doBlink,

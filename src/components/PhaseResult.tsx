@@ -1,27 +1,13 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Image, Check, Download, Link2 } from "lucide-react";
+import { Image, Link2 } from "lucide-react";
 import type { GameResult, ChartPoint } from "@/lib/types";
 import { copyShareCard } from "@/lib/shareCard";
-import { netWin, RAKE_BPS, APP_URL } from "@/lib/constants";
-
-const DESKTOP_SLIDES = [
-  "/desktop-bg.jpg",
-  "/desktop-bg-1.jpg",
-  "/desktop-bg-2.jpg",
-  "/desktop-bg-3.jpg",
-  "/desktop-bg-4.jpg",
-  "/desktop-bg-5.jpg",
-  "/desktop-bg-6.jpg",
-  "/desktop-bg-7.jpg",
-  "/desktop-bg-8.jpg",
-  "/desktop-bg-9.jpg",
-  "/desktop-bg-10.jpg",
-  "/desktop-bg-11.jpg",
-];
+import { netWin, RAKE_BPS, APP_URL, DESKTOP_SLIDES } from "@/lib/constants";
 
 interface PhaseResultProps {
   result: GameResult;
@@ -31,8 +17,35 @@ interface PhaseResultProps {
 }
 
 export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultProps) {
-  const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "copied" | "downloaded">("idle");
-  const [linkCopied, setLinkCopied] = useState(false);
+  const [copying, setCopying] = useState(false);
+
+  // Confetti burst on win
+  const isWin = result.isChallenge && result.won === true && !result.error;
+  useEffect(() => {
+    if (!isWin) return;
+    let cancelled = false;
+    import("canvas-confetti").then(({ default: confetti }) => {
+      if (cancelled) return;
+      // First burst — left side
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { x: 0.2, y: 0.5 },
+        colors: ["#FF3B8B", "#FF6DB3", "#FFD700", "#FFFFFF"],
+      });
+      // Second burst — right side (slight delay)
+      setTimeout(() => {
+        if (cancelled) return;
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { x: 0.8, y: 0.5 },
+          colors: ["#FF3B8B", "#FF6DB3", "#FFD700", "#FFFFFF"],
+        });
+      }, 200);
+    });
+    return () => { cancelled = true; };
+  }, [isWin]);
 
   const duelUrl = result.duelId != null ? `${APP_URL}/duel/${result.duelId}` : null;
 
@@ -44,8 +57,7 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
   const copyLink = useCallback(() => {
     if (!duelUrl) return;
     navigator.clipboard.writeText(duelUrl).then(() => {
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2500);
+      toast.success("Link copied!");
     });
   }, [duelUrl]);
 
@@ -66,14 +78,19 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
   }, [result, stake, duelUrl]);
 
   const handleCopyImage = useCallback(async () => {
-    setCopyStatus("copying");
+    setCopying(true);
     try {
       const status = await copyShareCard(chartData, result, stake);
-      setCopyStatus(status);
-      setTimeout(() => setCopyStatus("idle"), 2500);
+      if (status === "copied") {
+        toast.success("Image copied!");
+      } else {
+        toast.success("Image downloaded!");
+      }
     } catch (err) {
       console.error("Share card failed:", err);
-      setCopyStatus("idle");
+      toast.error("Failed to generate share card");
+    } finally {
+      setCopying(false);
     }
   }, [chartData, result, stake]);
 
@@ -189,22 +206,12 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
         </Button>
         <Button
           onClick={handleCopyImage}
-          disabled={copyStatus === "copying"}
+          disabled={copying}
           variant="outline"
           className="rounded-full border-wink-border text-wink-text hover:bg-card"
         >
-          {copyStatus === "copying" ? (
+          {copying ? (
             "Generating..."
-          ) : copyStatus === "copied" ? (
-            <span className="flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5" />
-              Copied!
-            </span>
-          ) : copyStatus === "downloaded" ? (
-            <span className="flex items-center gap-1.5">
-              <Download className="h-3.5 w-3.5" />
-              Downloaded!
-            </span>
           ) : (
             <span className="flex items-center gap-1.5">
               <Image className="h-3.5 w-3.5" />
@@ -219,17 +226,8 @@ export function PhaseResult({ result, stake, chartData, onReset }: PhaseResultPr
             className="rounded-full border-wink-border text-wink-text hover:bg-card"
           >
             <span className="flex items-center gap-1.5">
-              {linkCopied ? (
-                <>
-                  <Check className="h-3.5 w-3.5" />
-                  Link Copied!
-                </>
-              ) : (
-                <>
-                  <Link2 className="h-3.5 w-3.5" />
-                  Copy Link
-                </>
-              )}
+              <Link2 className="h-3.5 w-3.5" />
+              Copy Link
             </span>
           </Button>
         )}

@@ -5,22 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDuels } from "@/hooks/useDuels";
 import { useWallet } from "@/hooks/useWallet";
-import { netWin, RAKE_BPS, STAKES } from "@/lib/constants";
-
-const DESKTOP_SLIDES = [
-  "/desktop-bg.jpg",
-  "/desktop-bg-1.jpg",
-  "/desktop-bg-2.jpg",
-  "/desktop-bg-3.jpg",
-  "/desktop-bg-4.jpg",
-  "/desktop-bg-5.jpg",
-  "/desktop-bg-6.jpg",
-  "/desktop-bg-7.jpg",
-  "/desktop-bg-8.jpg",
-  "/desktop-bg-9.jpg",
-  "/desktop-bg-10.jpg",
-  "/desktop-bg-11.jpg",
-];
+import { netWin, RAKE_BPS, STAKES, DESKTOP_SLIDES } from "@/lib/constants";
 
 export default function DuelsPage() {
   const router = useRouter();
@@ -50,18 +35,21 @@ export default function DuelsPage() {
         <Link href="/play" className="absolute left-6 top-8 text-sm text-wink-text-dim transition-colors hover:text-wink-pink">
           ← Back
         </Link>
-        <span
-          className="inline-block h-[56px] w-[56px]"
-          style={{
-            WebkitMaskImage: "url(/logo-blinkit.svg)",
-            WebkitMaskSize: "contain",
-            WebkitMaskRepeat: "no-repeat",
-            maskImage: "url(/logo-blinkit.svg)",
-            maskSize: "contain",
-            maskRepeat: "no-repeat",
-            backgroundColor: "white",
-          }}
-        />
+        <div className="flex items-center gap-2.5">
+          <span
+            className="inline-block h-[40px] w-[40px]"
+            style={{
+              WebkitMaskImage: "url(/logo-blinkit.svg)",
+              WebkitMaskSize: "contain",
+              WebkitMaskRepeat: "no-repeat",
+              maskImage: "url(/logo-blinkit.svg)",
+              maskSize: "contain",
+              maskRepeat: "no-repeat",
+              backgroundColor: "white",
+            }}
+          />
+          <span className="text-xl font-bold tracking-wide text-white">BLINKIT</span>
+        </div>
         <h1 className="text-3xl font-extrabold text-white">Enter a duel</h1>
       </header>
 
@@ -118,6 +106,8 @@ export default function DuelsPage() {
                   <img
                     src={DESKTOP_SLIDES[Number(d.id) % DESKTOP_SLIDES.length]}
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />

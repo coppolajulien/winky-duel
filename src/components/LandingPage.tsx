@@ -4,36 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { WinBubbles } from "./WinBubbles";
-
-const MOBILE_SLIDES = [
-  "/mobile-bg.png",
-  "/mobile-bg-1.png",
-  "/mobile-bg-2.png",
-  "/mobile-bg-3.png",
-  "/mobile-bg-4.png",
-  "/mobile-bg-5.png",
-  "/mobile-bg-6.png",
-  "/mobile-bg-7.png",
-  "/mobile-bg-8.png",
-  "/mobile-bg-9.png",
-  "/mobile-bg-10.png",
-  "/mobile-bg-11.png",
-];
-
-const DESKTOP_SLIDES = [
-  "/desktop-bg.jpg",
-  "/desktop-bg-1.jpg",
-  "/desktop-bg-2.jpg",
-  "/desktop-bg-3.jpg",
-  "/desktop-bg-4.jpg",
-  "/desktop-bg-5.jpg",
-  "/desktop-bg-6.jpg",
-  "/desktop-bg-7.jpg",
-  "/desktop-bg-8.jpg",
-  "/desktop-bg-9.jpg",
-  "/desktop-bg-10.jpg",
-  "/desktop-bg-11.jpg",
-];
+import { DESKTOP_SLIDES, MOBILE_SLIDES } from "@/lib/constants";
 
 const DESKTOP_VIDEOS = [
   "/video-blinkit-1.mp4",

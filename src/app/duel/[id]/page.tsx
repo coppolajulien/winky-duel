@@ -5,25 +5,10 @@ import { useRouter } from "next/navigation";
 import { formatUnits } from "viem";
 import { fetchDuelById } from "@/hooks/useDuels";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { netWin, RAKE_BPS } from "@/lib/constants";
+import { netWin, RAKE_BPS, WALLET_PROFILE_URL, DESKTOP_SLIDES } from "@/lib/constants";
 import { DuelStatus } from "@/lib/types";
 import type { Duel } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-
-const DESKTOP_SLIDES = [
-  "/desktop-bg.jpg",
-  "/desktop-bg-1.jpg",
-  "/desktop-bg-2.jpg",
-  "/desktop-bg-3.jpg",
-  "/desktop-bg-4.jpg",
-  "/desktop-bg-5.jpg",
-  "/desktop-bg-6.jpg",
-  "/desktop-bg-7.jpg",
-  "/desktop-bg-8.jpg",
-  "/desktop-bg-9.jpg",
-  "/desktop-bg-10.jpg",
-  "/desktop-bg-11.jpg",
-];
 
 export default function DuelPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -45,6 +30,12 @@ export default function DuelPage({ params }: { params: Promise<{ id: string }> }
 
   useEffect(() => {
     async function load() {
+      // Validate duel ID format before parsing as BigInt
+      if (!/^\d+$/.test(id)) {
+        setError("Invalid duel ID");
+        setLoading(false);
+        return;
+      }
       try {
         const result = await fetchDuelById(BigInt(id));
         if (!result) {
@@ -198,7 +189,7 @@ export default function DuelPage({ params }: { params: Promise<{ id: string }> }
                 <p className="text-xs text-white/30">
                   Created by{" "}
                   <a
-                    href={`https://mtrkr.xyz/wallet/${duel.creatorFull}`}
+                    href={`${WALLET_PROFILE_URL}/wallet/${duel.creatorFull}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-white/60 transition-colors underline"

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Monitor, ChevronDown, X, Link2, Check, Info } from "lucide-react";
-import { STAKES, APP_URL, RAKE_BPS } from "@/lib/constants";
+import { STAKES, APP_URL, RAKE_BPS, WALLET_PROFILE_URL } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DuelStatus } from "@/lib/types";
@@ -331,7 +331,7 @@ export function DuelsList({
                   <div className="flex items-center gap-1.5 font-mono text-[10px] text-wink-text">
                     {isOwn ? "You" : (
                       <a
-                        href={`https://mtrkr.xyz/wallet/${d.creatorFull}`}
+                        href={`${WALLET_PROFILE_URL}/wallet/${d.creatorFull}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="hover:text-wink-pink transition-colors"
@@ -501,7 +501,7 @@ export function DuelsList({
                         <div className="font-mono text-[10px] text-wink-text">
                           vs {opponent ? (
                             <a
-                              href={`https://mtrkr.xyz/wallet/${opponentFull}`}
+                              href={`${WALLET_PROFILE_URL}/wallet/${opponentFull}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="hover:text-wink-pink transition-colors"

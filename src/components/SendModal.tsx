@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { parseUnits } from "viem";
+import { toast } from "sonner";
 import { X, ArrowUpRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { publicClient } from "@/hooks/useWallet";
@@ -25,11 +26,9 @@ export function SendModal({
   const [amount, setAmount] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const handleSend = useCallback(async () => {
     setError(null);
-    setSuccess(null);
 
     // Validate address
     if (!/^0x[a-fA-F0-9]{40}$/.test(toAddress)) {
@@ -55,13 +54,18 @@ export function SendModal({
       const amountWei = parseUnits(amount, 18);
       const hash = await transferUSDM(toAddress as `0x${string}`, amountWei);
       await publicClient.waitForTransactionReceipt({ hash });
-      setSuccess(`Sent $${amount} USDM!`);
+      toast.success(`Sent $${amount} USDM!`);
       setAmount("");
       setToAddress("");
       refreshBalance();
+      onClose();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Transfer failed";
-      setError(msg.length > 100 ? msg.slice(0, 100) + "..." : msg);
+      if (msg.includes("User rejected") || msg.includes("User denied") || msg.includes("rejected the request")) {
+        toast.error("Transaction cancelled.");
+      } else {
+        toast.error(msg.length > 100 ? msg.slice(0, 100) + "..." : msg);
+      }
     } finally {
       setSending(false);
     }
@@ -140,15 +144,10 @@ export function SendModal({
           </div>
         </div>
 
-        {/* Error / Success */}
+        {/* Validation error */}
         {error && (
           <div className="mb-3 rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
             {error}
-          </div>
-        )}
-        {success && (
-          <div className="mb-3 rounded-lg bg-wink-cyan/10 px-3 py-2 text-xs text-wink-cyan">
-            {success}
           </div>
         )}
 

@@ -8,13 +8,13 @@ import {
   WINKY_DUEL_ABI,
   MOCK_USDM_ADDRESS,
   ERC20_ABI,
-  BLOCK_EXPLORER_URL,
+  WALLET_PROFILE_URL,
 } from "@/lib/constants";
 import { DuelStatus } from "@/lib/types";
 import { getPrivateDuelIds, fetchPrivateDuelIds } from "@/lib/privateDuels";
 
-// Only this address can access the admin page
-const ADMIN_ADDRESS = "0x55772979783e58BE37109eEa2C4AC83F755aA243".toLowerCase();
+// Only this address can access the admin page (set via NEXT_PUBLIC_ADMIN_ADDRESS env var)
+const ADMIN_ADDRESS = (process.env.NEXT_PUBLIC_ADMIN_ADDRESS ?? "").toLowerCase();
 
 const PAGE_SIZE = 25;
 
@@ -400,7 +400,7 @@ export default function AdminPage() {
                   </td>
                   <td className="px-4 py-2.5 font-mono">
                     <a
-                      href={`${BLOCK_EXPLORER_URL}/address/${d.creator}`}
+                      href={`${WALLET_PROFILE_URL}/wallet/${d.creator}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hover:text-wink-pink hover:underline"
@@ -410,7 +410,7 @@ export default function AdminPage() {
                   </td>
                   <td className="px-4 py-2.5 font-mono">
                     <a
-                      href={`${BLOCK_EXPLORER_URL}/address/${d.challenger}`}
+                      href={`${WALLET_PROFILE_URL}/wallet/${d.challenger}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hover:text-wink-pink hover:underline"
