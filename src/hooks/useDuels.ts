@@ -5,7 +5,7 @@ import { formatUnits } from "viem";
 import { publicClient } from "@/hooks/useWallet";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI, DUEL_HISTORY_WINDOW, DUEL_REFRESH_INTERVAL } from "@/lib/constants";
 import type { Duel, HistoryDuel, OnChainDuel, DuelStatus } from "@/lib/types";
-import { fetchPrivateDuelIds } from "@/lib/privateDuels";
+import { fetchPrivateDuelIds, getPrivateDuelIds } from "@/lib/privateDuels";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -166,7 +166,9 @@ export function useDuels(currentAddress?: string | null) {
         };
 
         if (onChain.status === 0) {
-          // Status.Open — available for challenge
+          // Status.Open — available for challenge (skip private duels)
+          const privateIds = getPrivateDuelIds();
+          if (privateIds.has(String(onChain.id))) continue;
           openDuels.push(formatDuel(onChain));
         } else {
           // Status.Locked (3), Settled (1), Cancelled (2) — show in history
