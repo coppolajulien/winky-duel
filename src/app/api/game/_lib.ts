@@ -60,8 +60,8 @@ export async function getOnChainNonce(player: string): Promise<bigint> {
 }
 
 // ─── Rate limiting ─────────────────────────────────────────────
-export async function isRateLimited(ip: string, limit: number = 200, window: number = 60): Promise<boolean> {
-  const key = `rl:game:${ip}`;
+export async function isRateLimited(ip: string, limit: number = 200, window: number = 60, prefix: string = "game"): Promise<boolean> {
+  const key = `rl:${prefix}:${ip}`;
   const count = await redis.incr(key);
   if (count === 1) await redis.expire(key, window);
   return count > limit;

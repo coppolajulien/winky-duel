@@ -14,7 +14,7 @@ import {
 export async function POST(req: Request) {
   try {
     const ip = await getClientIp();
-    if (await isRateLimited(ip, 30, 60)) {
+    if (await isRateLimited(ip, 30, 60, "start")) {
       return NextResponse.json({ error: "Rate limited" }, { status: 429 });
     }
 

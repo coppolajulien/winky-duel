@@ -20,7 +20,7 @@ import { WINKY_DUEL_ADDRESS } from "@/lib/constants";
 export async function POST(req: Request) {
   try {
     const ip = await getClientIp();
-    if (await isRateLimited(ip, 30, 60)) {
+    if (await isRateLimited(ip, 30, 60, "finish")) {
       return NextResponse.json({ error: "Rate limited" }, { status: 429 });
     }
 
