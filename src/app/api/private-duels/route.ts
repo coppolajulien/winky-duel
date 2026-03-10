@@ -2,7 +2,7 @@ import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { createPublicClient, http } from "viem";
-import { megaethTestnet } from "viem/chains";
+import { appChain } from "@/lib/chain";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI } from "@/lib/constants";
 
 const redis = new Redis({
@@ -12,7 +12,7 @@ const redis = new Redis({
 const KEY = "private-duels";
 
 const publicClient = createPublicClient({
-  chain: megaethTestnet,
+  chain: appChain,
   transport: http(),
 });
 

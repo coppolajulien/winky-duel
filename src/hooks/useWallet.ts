@@ -4,12 +4,12 @@ import { useAccount, useDisconnect, useWalletClient, useChainId, useSwitchChain 
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useState, useEffect, useCallback } from "react";
 import { createPublicClient, http, formatUnits } from "viem";
-import { megaethTestnet } from "viem/chains";
-import { MOCK_USDM_ADDRESS, ERC20_ABI } from "@/lib/constants";
+import { appChain } from "@/lib/chain";
+import { USDM_ADDRESS, ERC20_ABI } from "@/lib/constants";
 
 // Shared public client for read-only calls (exported for other hooks)
 export const publicClient = createPublicClient({
-  chain: megaethTestnet,
+  chain: appChain,
   transport: http(),
 });
 
@@ -27,10 +27,10 @@ export function useWallet() {
   const ready = status !== "connecting" && status !== "reconnecting";
   const authenticated = isConnected;
   const address = rawAddress ?? null;
-  const wrongNetwork = authenticated && chainId !== megaethTestnet.id;
+  const wrongNetwork = authenticated && chainId !== appChain.id;
 
   const switchToMegaETH = useCallback(() => {
-    switchChain({ chainId: megaethTestnet.id });
+    switchChain({ chainId: appChain.id });
   }, [switchChain]);
 
   // Abbreviated: "0x7aB3...c92F"
@@ -61,7 +61,7 @@ export function useWallet() {
     setBalanceLoading(true);
     try {
       const raw = await publicClient.readContract({
-        address: MOCK_USDM_ADDRESS,
+        address: USDM_ADDRESS,
         abi: ERC20_ABI,
         functionName: "balanceOf",
         args: [address],

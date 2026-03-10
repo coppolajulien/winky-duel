@@ -22,6 +22,11 @@ const config: HardhatUserConfig = {
       chainId: 6343,
       accounts: [DEPLOYER_KEY],
     },
+    "megaeth-mainnet": {
+      url: process.env.MEGAETH_MAINNET_RPC || "https://mainnet.megaeth.com/rpc",
+      chainId: 4326,
+      accounts: [DEPLOYER_KEY],
+    },
   },
 };
 

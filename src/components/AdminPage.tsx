@@ -6,7 +6,7 @@ import { useWallet, publicClient } from "@/hooks/useWallet";
 import {
   WINKY_DUEL_ADDRESS,
   WINKY_DUEL_ABI,
-  MOCK_USDM_ADDRESS,
+  USDM_ADDRESS,
   ERC20_ABI,
   WALLET_PROFILE_URL,
 } from "@/lib/constants";
@@ -130,7 +130,7 @@ export default function AdminPage() {
           functionName: "rakeBalance",
         }) as Promise<bigint>,
         publicClient.readContract({
-          address: MOCK_USDM_ADDRESS,
+          address: USDM_ADDRESS,
           abi: ERC20_ABI,
           functionName: "balanceOf",
           args: [WINKY_DUEL_ADDRESS],

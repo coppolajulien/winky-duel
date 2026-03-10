@@ -8,7 +8,7 @@ import { DURATION, MIN_BLINK_INTERVAL, MAX_SCORE, SUS_THRESHOLD } from "@/lib/co
 import { startGame, recordBlink as recordBlinkApi, finishGame } from "@/lib/gameApi";
 import { addPrivateDuel } from "@/lib/privateDuels";
 import { publicClient } from "@/hooks/useWallet";
-import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI, MOCK_USDM_ADDRESS, ERC20_ABI } from "@/lib/constants";
+import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI, USDM_ADDRESS, ERC20_ABI } from "@/lib/constants";
 import { DuelStatus } from "@/lib/types";
 import type { GamePhase, Duel, ChartPoint, GameResult } from "@/lib/types";
 import { playCountdown, playGo, playOvertake, playWin, playLose, startMusic, stopMusic } from "@/hooks/useSounds";
@@ -308,7 +308,7 @@ export function useGameLoop({
       if (walletAddress) {
         try {
           const balance = await publicClient.readContract({
-            address: MOCK_USDM_ADDRESS,
+            address: USDM_ADDRESS,
             abi: ERC20_ABI,
             functionName: "balanceOf",
             args: [walletAddress],

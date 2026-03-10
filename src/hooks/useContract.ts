@@ -5,7 +5,7 @@ import { parseUnits } from "viem";
 import { publicClient, useWallet } from "@/hooks/useWallet";
 import {
   WINKY_DUEL_ADDRESS,
-  MOCK_USDM_ADDRESS,
+  USDM_ADDRESS,
   WINKY_DUEL_ABI,
   ERC20_ABI,
 } from "@/lib/constants";
@@ -44,7 +44,7 @@ export function useContract() {
   const checkAllowance = useCallback(async (): Promise<bigint> => {
     if (!address) return 0n;
     return publicClient.readContract({
-      address: MOCK_USDM_ADDRESS,
+      address: USDM_ADDRESS,
       abi: ERC20_ABI,
       functionName: "allowance",
       args: [address as `0x${string}`, WINKY_DUEL_ADDRESS],
@@ -56,7 +56,7 @@ export function useContract() {
     async (amount: bigint): Promise<`0x${string}`> => {
       const wc = await getWalletClient();
       const hash = await wc.writeContract({
-        address: MOCK_USDM_ADDRESS,
+        address: USDM_ADDRESS,
         abi: ERC20_ABI,
         functionName: "approve",
         args: [WINKY_DUEL_ADDRESS, amount],
@@ -189,7 +189,7 @@ export function useContract() {
     async (to: `0x${string}`, amount: bigint): Promise<`0x${string}`> => {
       const wc = await getWalletClient();
       return wc.writeContract({
-        address: MOCK_USDM_ADDRESS,
+        address: USDM_ADDRESS,
         abi: ERC20_TRANSFER_ABI,
         functionName: "transfer",
         args: [to, amount],

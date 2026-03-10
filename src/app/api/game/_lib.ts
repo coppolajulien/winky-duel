@@ -1,7 +1,7 @@
 import { Redis } from "@upstash/redis";
 import { headers } from "next/headers";
 import { createPublicClient, http } from "viem";
-import { megaethTestnet } from "viem/chains";
+import { appChain } from "@/lib/chain";
 import { privateKeyToAccount } from "viem/accounts";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI } from "@/lib/constants";
 
@@ -13,7 +13,7 @@ export const redis = new Redis({
 
 // ─── On-chain client ───────────────────────────────────────────
 export const publicClient = createPublicClient({
-  chain: megaethTestnet,
+  chain: appChain,
   transport: http(),
 });
 

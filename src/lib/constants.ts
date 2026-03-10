@@ -62,10 +62,10 @@ export const MOBILE_SLIDES = [
   "/mobile-bg-11.png",
 ] as const;
 
-// ─── Chain & Contract Config ────────────────────────────────────
-export const WINKY_DUEL_ADDRESS = "0xA0774b2F5ceCac937065ADA39219A8De60118EBB" as const;
-export const MOCK_USDM_ADDRESS = "0x8A017435e8dD3aeCA65a1eA4411eD81b9302Ae9C" as const;
-export const BLOCK_EXPLORER_URL = "https://megaeth-testnet-v2.blockscout.com" as const;
+// ─── Chain & Contract Config (env-driven, fallback to testnet) ──
+export const WINKY_DUEL_ADDRESS = (process.env.NEXT_PUBLIC_WINKY_DUEL_ADDRESS || "0xA0774b2F5ceCac937065ADA39219A8De60118EBB") as `0x${string}`;
+export const USDM_ADDRESS = (process.env.NEXT_PUBLIC_USDM_ADDRESS || "0x8A017435e8dD3aeCA65a1eA4411eD81b9302Ae9C") as `0x${string}`;
+export const BLOCK_EXPLORER_URL = process.env.NEXT_PUBLIC_BLOCK_EXPLORER_URL || "https://megaeth-testnet-v2.blockscout.com";
 export const WALLET_PROFILE_URL = "https://mtrkr.xyz" as const;
 
 // ─── ERC-20 ABI (balanceOf + approve + allowance) ───────────────
