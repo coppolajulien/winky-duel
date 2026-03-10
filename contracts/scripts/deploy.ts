@@ -3,7 +3,7 @@ import { ethers, network } from "hardhat";
 // USDm token addresses per network
 const USDM_ADDRESSES: Record<string, string> = {
   // MegaETH Mainnet (chain 4326) — official USDm
-  megaeth_mainnet: "0xfafddbb3fc7688494971a79cc65dca3ef82079e7",
+  "megaeth-mainnet": "0xfafddbb3fc7688494971a79cc65dca3ef82079e7",
   // MegaETH Testnet (chain 6343) — existing MockUSDM
   megaeth: "0x8A017435e8dD3aeCA65a1eA4411eD81b9302Ae9C",
 };

@@ -14,6 +14,7 @@ import {
   MAX_BLINKS_PER_SECOND,
   MAX_SCORE,
   GAME_DURATION_MS,
+  SERVER_MIN_BLINK_INTERVAL_MS,
 } from "../_lib";
 import { WINKY_DUEL_ADDRESS } from "@/lib/constants";
 
@@ -42,7 +43,9 @@ export async function POST(req: Request) {
     session.finished = true;
     await saveSession(session);
 
-    // ── Server-side validations ──
+    // ── Client-side timestamp validations ──
+
+    const blinks = session.blinks;
 
     // 1. Game duration check
     const elapsed = Date.now() - session.startedAt;
@@ -51,8 +54,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Game too short" }, { status: 400 });
     }
 
-    // 2. Validate blink intervals
-    const blinks = session.blinks;
+    // 2. Validate client blink intervals
     for (let i = 1; i < blinks.length; i++) {
       if (blinks[i] - blinks[i - 1] < MIN_BLINK_INTERVAL_MS) {
         await cleanup(session.sessionId, session.player);
@@ -60,7 +62,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // 3. Check monotonic timestamps
+    // 3. Check monotonic client timestamps
     for (let i = 1; i < blinks.length; i++) {
       if (blinks[i] <= blinks[i - 1]) {
         await cleanup(session.sessionId, session.player);
@@ -68,7 +70,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // 4. Max blinks per 1s window
+    // 4. Max blinks per 1s window (client timestamps)
     for (let i = 0; i < blinks.length; i++) {
       const windowEnd = blinks[i] + 1000;
       let count = 0;
@@ -85,6 +87,35 @@ export async function POST(req: Request) {
     if (blinks.length > 0 && blinks[blinks.length - 1] > GAME_DURATION_MS) {
       await cleanup(session.sessionId, session.player);
       return NextResponse.json({ error: "Blinks past game end" }, { status: 400 });
+    }
+
+    // ── Server-side real-time validations (anti-bot) ──
+
+    const serverBlinks = session.serverBlinks ?? [];
+
+    // 6. Server blink count must match client blink count
+    if (serverBlinks.length !== blinks.length) {
+      await cleanup(session.sessionId, session.player);
+      return NextResponse.json({ error: "Blink count mismatch" }, { status: 400 });
+    }
+
+    // 7. Validate server-side blink intervals (real time between API calls)
+    for (let i = 1; i < serverBlinks.length; i++) {
+      if (serverBlinks[i] - serverBlinks[i - 1] < SERVER_MIN_BLINK_INTERVAL_MS) {
+        await cleanup(session.sessionId, session.player);
+        return NextResponse.json({ error: "Server interval too fast" }, { status: 400 });
+      }
+    }
+
+    // 8. Correlation check: real time span must cover at least 50% of client time span
+    //    (bot sending blinks for t=0..30000ms but server sees them in 5s → fake)
+    if (blinks.length > 1 && serverBlinks.length > 1) {
+      const clientSpan = blinks[blinks.length - 1] - blinks[0];
+      const serverSpan = serverBlinks[serverBlinks.length - 1] - serverBlinks[0];
+      if (clientSpan > 0 && serverSpan < clientSpan * 0.5) {
+        await cleanup(session.sessionId, session.player);
+        return NextResponse.json({ error: "Timing mismatch" }, { status: 400 });
+      }
     }
 
     // ── Compute score ──

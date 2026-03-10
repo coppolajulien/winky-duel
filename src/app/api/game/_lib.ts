@@ -29,8 +29,9 @@ export interface GameSession {
   sessionId: string;
   player: string;
   nonce: number;
-  startedAt: number; // ms timestamp
-  blinks: number[];  // timestamps (ms since startedAt)
+  startedAt: number;      // ms timestamp (Date.now() at session creation)
+  blinks: number[];       // client-reported timestamps (ms since startedAt)
+  serverBlinks: number[]; // server-recorded timestamps (ms since startedAt)
   finished: boolean;
 }
 
@@ -84,3 +85,11 @@ export const MIN_GAME_DURATION_MS = 25_000;
 export const MIN_BLINK_INTERVAL_MS = 200;
 export const MAX_BLINKS_PER_SECOND = 7;
 export const MAX_SCORE = 150;
+
+// ─── Anti-bot constants (server-side only) ─────────────────
+// Minimum real-time gap between blink API calls (generous to allow network jitter)
+export const SERVER_MIN_BLINK_INTERVAL_MS = 100;
+// Max allowed drift: client timestamp vs real elapsed time
+export const MAX_CLOCK_DRIFT_MS = 5_000;
+// Game window buffer: stop accepting blinks after game duration + buffer
+export const GAME_WINDOW_BUFFER_MS = 5_000;

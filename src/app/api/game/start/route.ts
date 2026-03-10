@@ -56,6 +56,7 @@ export async function POST(req: Request) {
       nonce: Number(nonce),
       startedAt: Date.now(),
       blinks: [],
+      serverBlinks: [],
       finished: false,
     };
 
