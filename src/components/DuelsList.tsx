@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Monitor, ChevronDown, X, Link2, Check, Info } from "lucide-react";
-import { STAKES, APP_URL, RAKE_BPS, WALLET_PROFILE_URL } from "@/lib/constants";
+import { STAKES, APP_URL, RAKE_BPS, WALLET_PROFILE_URL, ABANDON_TIMEOUT_SEC } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DuelStatus } from "@/lib/types";
@@ -14,6 +14,46 @@ import { MegaName } from "./MegaName";
 const HISTORY_PAGE_SIZE = 5;
 const DUELS_PAGE_SIZE = 5;
 
+/** Countdown badge for PENDING duels — shows time left or "Claim Refund" button */
+function PendingBadge({ joinedAt, canClaim, onClaim }: { joinedAt: number; canClaim: boolean; onClaim: () => void }) {
+  const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
+  useEffect(() => {
+    const iv = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
+    return () => clearInterval(iv);
+  }, []);
+
+  const deadline = joinedAt + ABANDON_TIMEOUT_SEC;
+  const remaining = Math.max(0, deadline - now);
+  const expired = remaining === 0;
+
+  const mm = String(Math.floor(remaining / 60)).padStart(2, "0");
+  const ss = String(remaining % 60).padStart(2, "0");
+
+  if (expired && canClaim) {
+    return (
+      <button
+        onClick={(e) => { e.stopPropagation(); onClaim(); }}
+        className="rounded-md bg-wink-pink/10 px-1.5 py-0.5 text-[9px] font-bold text-wink-pink transition-colors hover:bg-wink-pink/20"
+      >
+        Claim Refund
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-0.5">
+      <div className="rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-yellow-500/10 text-yellow-400">
+        PENDING
+      </div>
+      {!expired && (
+        <div className="font-mono text-[8px] text-yellow-400/60">
+          {mm}:{ss}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface DuelsListProps {
   stake: number;
   setStake: (s: number) => void;
@@ -23,6 +63,7 @@ interface DuelsListProps {
   history: HistoryDuel[];
   onLaunch: (duel: Duel | null) => void;
   onCancelDuel?: (duel: Duel) => void;
+  onClaimAbandoned?: (duelId: bigint) => void;
   authenticated: boolean;
   login: () => void;
   duelsLoading: boolean;
@@ -40,6 +81,7 @@ export function DuelsList({
   history,
   onLaunch,
   onCancelDuel,
+  onClaimAbandoned,
   authenticated,
   login,
   duelsLoading,
@@ -533,9 +575,14 @@ export function DuelsList({
                         </div>
                       )}
                       {h.status === DuelStatus.Locked && (
-                        <div className="rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-yellow-500/10 text-yellow-400">
-                          PENDING
-                        </div>
+                        <PendingBadge
+                          joinedAt={h.joinedAt}
+                          canClaim={!!onClaimAbandoned && !!currentAddress && (
+                            h.creatorFull.toLowerCase() === currentAddress.toLowerCase() ||
+                            h.challengerFull.toLowerCase() === currentAddress.toLowerCase()
+                          )}
+                          onClaim={() => onClaimAbandoned?.(h.id)}
+                        />
                       )}
                       {h.status === DuelStatus.Cancelled && (
                         <div className="rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-white/[0.04] text-wink-text-dim">

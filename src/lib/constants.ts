@@ -24,6 +24,9 @@ export const DUEL_REFRESH_INTERVAL = 10_000; // ms between auto-refreshes
 // Platform fee (matches on-chain RAKE_BPS). Change here when contract is redeployed.
 export const RAKE_BPS = 250; // 2.5%
 
+// Abandon timeout (matches on-chain ABANDON_TIMEOUT). Both players refunded after this.
+export const ABANDON_TIMEOUT_SEC = 900; // 15 minutes
+
 /** Net profit: opponent's stake minus rake on the full pool */
 export function netWin(stake: number): string {
   const pool = stake * 2;
@@ -64,7 +67,7 @@ export const MOBILE_SLIDES = [
 ] as const;
 
 // ─── Chain & Contract Config (env-driven, fallback to testnet) ──
-export const WINKY_DUEL_ADDRESS = (process.env.NEXT_PUBLIC_WINKY_DUEL_ADDRESS || "0xA0774b2F5ceCac937065ADA39219A8De60118EBB") as `0x${string}`;
+export const WINKY_DUEL_ADDRESS = (process.env.NEXT_PUBLIC_WINKY_DUEL_ADDRESS || "0x5BD22cD8E19f46F150881638Dd178622A0625643") as `0x${string}`;
 export const USDM_ADDRESS = (process.env.NEXT_PUBLIC_USDM_ADDRESS || "0x8A017435e8dD3aeCA65a1eA4411eD81b9302Ae9C") as `0x${string}`;
 export const BLOCK_EXPLORER_URL = process.env.NEXT_PUBLIC_BLOCK_EXPLORER_URL || "https://megaeth-testnet-v2.blockscout.com";
 export const WALLET_PROFILE_URL = "https://mtrkr.xyz" as const;

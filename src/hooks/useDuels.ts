@@ -53,6 +53,7 @@ function formatHistory(raw: OnChainDuel, currentAddress: string | null): History
     challengerScore: raw.challengerScore,
     status: raw.status,
     won,
+    joinedAt: raw.joinedAt,
   };
 }
 
@@ -71,6 +72,7 @@ export async function fetchDuelById(id: bigint): Promise<{ duel: Duel; status: D
       creatorScore: number;
       challengerScore: number;
       status: number;
+      joinedAt: number;
     };
 
     if (raw.creator === ZERO_ADDRESS) return null;
@@ -83,6 +85,7 @@ export async function fetchDuelById(id: bigint): Promise<{ duel: Duel; status: D
       creatorScore: Number(raw.creatorScore),
       challengerScore: Number(raw.challengerScore),
       status: Number(raw.status) as DuelStatus,
+      joinedAt: Number(raw.joinedAt),
     };
 
     return { duel: formatDuel(onChain), status: onChain.status };
@@ -154,6 +157,7 @@ export function useDuels(currentAddress?: string | null) {
           creatorScore: number;
           challengerScore: number;
           status: number;
+          joinedAt: number;
         };
         const onChain: OnChainDuel = {
           id: allIds[i],
@@ -163,6 +167,7 @@ export function useDuels(currentAddress?: string | null) {
           creatorScore: Number(raw.creatorScore),
           challengerScore: Number(raw.challengerScore),
           status: Number(raw.status) as DuelStatus,
+          joinedAt: Number(raw.joinedAt),
         };
 
         if (onChain.status === 0) {

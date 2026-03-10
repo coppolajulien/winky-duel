@@ -135,6 +135,18 @@ export default function GamePage() {
     }
   }, [contract, addTx, refetchDuels, wallet]);
 
+  const handleClaimAbandoned = useCallback(async (duelId: bigint) => {
+    try {
+      const hash = await contract.claimAbandoned(duelId);
+      addTx(hash, "Claim Abandoned");
+      await publicClient.waitForTransactionReceipt({ hash });
+      refetchDuels();
+      wallet.refreshBalance();
+    } catch (err) {
+      console.error("Claim abandoned failed:", err);
+    }
+  }, [contract, addTx, refetchDuels, wallet]);
+
   const isGameActive = phase !== "idle";
 
   return (
@@ -176,6 +188,7 @@ export default function GamePage() {
             launch(duel);
           }}
           onCancelDuel={handleCancelDuel}
+          onClaimAbandoned={handleClaimAbandoned}
           isPrivate={isPrivate}
           setIsPrivate={setIsPrivate}
         />

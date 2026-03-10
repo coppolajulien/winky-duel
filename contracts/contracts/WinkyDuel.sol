@@ -53,7 +53,7 @@ contract WinkyDuel {
 
     uint256 public constant RAKE_BPS = 250;          // 2.5% (250 basis points)
     uint256 public constant MIN_STAKE = 1e18;         // 1 USDM minimum
-    uint256 public constant ABANDON_TIMEOUT = 300;    // 5 minutes
+    uint256 public constant ABANDON_TIMEOUT = 900;    // 15 minutes
 
     mapping(uint256 => Duel) public duels;
 
@@ -223,9 +223,9 @@ contract WinkyDuel {
     }
 
     /**
-     * @notice Claim a duel where the challenger abandoned (didn't submit score).
-     *         Can only be called after ABANDON_TIMEOUT has passed since joinDuel().
-     *         Creator gets both stakes back (no rake — it's a forfeit, not a win).
+     * @notice Refund a duel where the challenger didn't submit their score.
+     *         Can be called by either player after ABANDON_TIMEOUT (15 min).
+     *         Both players get their own stake back — no rake, no winner.
      * @param duelId The ID of the abandoned duel.
      */
     function claimAbandoned(uint256 duelId) external {
@@ -234,11 +234,11 @@ contract WinkyDuel {
         if (d.status != Status.Locked) revert DuelNotLocked();
         if (block.timestamp < d.joinedAt + ABANDON_TIMEOUT) revert TooEarly();
 
-        d.status = Status.Settled;
+        d.status = Status.Cancelled;
 
-        // Return both stakes to creator (forfeit — no rake)
-        uint256 totalPot = uint256(d.stake) * 2;
-        _safeTransfer(d.creator, totalPot);
+        // Refund each player their own stake
+        _safeTransfer(d.creator, d.stake);
+        _safeTransfer(d.challenger, d.stake);
 
         emit DuelAbandoned(duelId);
     }

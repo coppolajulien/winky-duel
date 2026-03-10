@@ -19,6 +19,7 @@ export interface OnChainDuel {
   creatorScore: number;
   challengerScore: number;
   status: DuelStatus;
+  joinedAt: number; // unix timestamp (seconds) — 0 if not joined yet
 }
 
 // ─── UI types ───────────────────────────────────────────────────
@@ -61,6 +62,7 @@ export interface HistoryDuel {
   challengerScore: number;
   status: DuelStatus;
   won: boolean | null; // relative to currentAddress — null = not involved or draw
+  joinedAt: number; // unix timestamp (seconds) — 0 if not joined yet
 }
 
 export interface GameResult {

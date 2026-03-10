@@ -25,6 +25,7 @@ interface SidebarProps {
   balanceLoading: boolean;
   onLaunch: (duel: Duel | null) => void;
   onCancelDuel?: (duel: Duel) => void;
+  onClaimAbandoned?: (duelId: bigint) => void;
   duels: Duel[];
   history: HistoryDuel[];
   duelsLoading: boolean;
@@ -49,6 +50,7 @@ export function Sidebar({
   balanceLoading,
   onLaunch,
   onCancelDuel,
+  onClaimAbandoned,
   duels,
   history,
   duelsLoading,
@@ -165,6 +167,7 @@ export function Sidebar({
           history={history}
           onLaunch={onLaunch}
           onCancelDuel={onCancelDuel}
+          onClaimAbandoned={onClaimAbandoned}
           authenticated={authenticated}
           login={login}
           duelsLoading={duelsLoading}
