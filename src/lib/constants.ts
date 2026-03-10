@@ -67,7 +67,7 @@ export const MOBILE_SLIDES = [
 ] as const;
 
 // ─── Chain & Contract Config (env-driven, fallback to testnet) ──
-export const WINKY_DUEL_ADDRESS = (process.env.NEXT_PUBLIC_WINKY_DUEL_ADDRESS || "0x5BD22cD8E19f46F150881638Dd178622A0625643") as `0x${string}`;
+export const WINKY_DUEL_ADDRESS = (process.env.NEXT_PUBLIC_WINKY_DUEL_ADDRESS || "0xb4aB085840BA330Fc12c20A664Ad711E5bEa66a2") as `0x${string}`;
 export const USDM_ADDRESS = (process.env.NEXT_PUBLIC_USDM_ADDRESS || "0x8A017435e8dD3aeCA65a1eA4411eD81b9302Ae9C") as `0x${string}`;
 export const BLOCK_EXPLORER_URL = process.env.NEXT_PUBLIC_BLOCK_EXPLORER_URL || "https://megaeth-testnet-v2.blockscout.com";
 export const WALLET_PROFILE_URL = "https://mtrkr.xyz" as const;
@@ -114,6 +114,7 @@ export const WINKY_DUEL_ABI = [
   { inputs: [], name: "DuelNotOpen", type: "error" },
   { inputs: [], name: "DuelNotLocked", type: "error" },
   { inputs: [], name: "InsufficientStake", type: "error" },
+  { inputs: [], name: "InvalidOwner", type: "error" },
   { inputs: [], name: "InvalidSignature", type: "error" },
   { inputs: [], name: "InvalidSigner", type: "error" },
   { inputs: [], name: "InvalidToken", type: "error" },
@@ -121,7 +122,9 @@ export const WINKY_DUEL_ABI = [
   { inputs: [], name: "NotCreator", type: "error" },
   { inputs: [], name: "NotChallenger", type: "error" },
   { inputs: [], name: "NotOwner", type: "error" },
+  { inputs: [], name: "NotParticipant", type: "error" },
   { inputs: [], name: "StakeMismatch", type: "error" },
+  { inputs: [], name: "StakeTooLarge", type: "error" },
   { inputs: [], name: "TooEarly", type: "error" },
   { inputs: [], name: "TransferFailed", type: "error" },
   // Events
@@ -183,6 +186,24 @@ export const WINKY_DUEL_ABI = [
       { indexed: false, name: "amount", type: "uint256" },
     ],
     name: "RakeWithdrawn",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: "previousOwner", type: "address" },
+      { indexed: true, name: "newOwner", type: "address" },
+    ],
+    name: "OwnershipTransferred",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: "previousSigner", type: "address" },
+      { indexed: true, name: "newSigner", type: "address" },
+    ],
+    name: "TrustedSignerUpdated",
     type: "event",
   },
   // Read functions

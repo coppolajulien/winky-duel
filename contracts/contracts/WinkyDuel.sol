@@ -14,7 +14,7 @@ pragma solidity ^0.8.24;
  *   3. Challenger approves USDM → joins via joinDuel(duelId) — deposits stake
  *   4. Challenger plays the game → server signs score
  *   5. Challenger calls submitScore(duelId, score, signature) — auto-settles winner
- *   6. If challenger abandons, creator calls claimAbandoned(duelId) after timeout
+ *   6. If challenger abandons, either player calls claimAbandoned(duelId) after timeout
  */
 
 interface IERC20 {
@@ -61,7 +61,7 @@ contract WinkyDuel {
     uint256[] private _openIds;
     mapping(uint256 => uint256) private _openIndex; // duelId → index in _openIds
 
-    // ─── Events (compact for MegaETH gas model) ────────────────────
+    // ─── Events ─────────────────────────────────────────────────────
     event DuelCreated(
         uint256 indexed duelId,
         address indexed creator,
@@ -81,15 +81,19 @@ contract WinkyDuel {
     event DuelAbandoned(uint256 indexed duelId);
     event BlinkRecorded(uint256 indexed duelId, address indexed player);
     event RakeWithdrawn(address indexed to, uint256 amount);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event TrustedSignerUpdated(address indexed previousSigner, address indexed newSigner);
 
     // ─── Errors ─────────────────────────────────────────────────────
     error InsufficientStake();
+    error StakeTooLarge();
     error DuelNotFound();
     error DuelNotOpen();
     error DuelNotLocked();
     error StakeMismatch();
     error NotCreator();
     error NotChallenger();
+    error NotParticipant();
     error CannotChallengeSelf();
     error NotOwner();
     error NoRake();
@@ -97,6 +101,7 @@ contract WinkyDuel {
     error InvalidToken();
     error InvalidSigner();
     error InvalidSignature();
+    error InvalidOwner();
     error TooEarly();
 
     // ─── Modifiers ──────────────────────────────────────────────────
@@ -119,23 +124,21 @@ contract WinkyDuel {
     /**
      * @notice Create a new duel by depositing USDM as stake.
      *         Caller must have approved this contract to spend `amount` USDM.
-     *         Score must be signed by the trusted server.
+     *         Score must be signed by the trusted server (includes chainId).
      * @param score The creator's blink score (attested by server).
      * @param amount The USDM amount to stake (e.g. 5e18 for $5).
-     * @param signature Server ECDSA signature over (player, score, nonce, contract).
+     * @param signature Server ECDSA signature over (player, score, nonce, contract, chainId).
      * @return duelId The ID of the newly created duel.
      */
     function createDuel(uint32 score, uint256 amount, bytes calldata signature) external returns (uint256 duelId) {
+        // ── Checks ──
         if (amount < MIN_STAKE) revert InsufficientStake();
+        if (amount > type(uint96).max) revert StakeTooLarge();
 
-        // Verify server attestation
         uint256 nonce = nonces[msg.sender]++;
         if (!_verifySignature(msg.sender, score, nonce, signature)) revert InvalidSignature();
 
-        // Pull USDM from caller
-        bool ok = token.transferFrom(msg.sender, address(this), amount);
-        if (!ok) revert TransferFailed();
-
+        // ── Effects ──
         duelId = nextDuelId++;
 
         duels[duelId] = Duel({
@@ -148,9 +151,12 @@ contract WinkyDuel {
             joinedAt: 0
         });
 
-        // Track in open duels array
         _openIndex[duelId] = _openIds.length;
         _openIds.push(duelId);
+
+        // ── Interactions ──
+        bool ok = token.transferFrom(msg.sender, address(this), amount);
+        if (!ok) revert TransferFailed();
 
         emit DuelCreated(duelId, msg.sender, uint96(amount), score);
     }
@@ -163,20 +169,20 @@ contract WinkyDuel {
     function joinDuel(uint256 duelId) external {
         Duel storage d = duels[duelId];
 
+        // ── Checks ──
         if (d.creator == address(0)) revert DuelNotFound();
         if (d.status != Status.Open) revert DuelNotOpen();
         if (msg.sender == d.creator) revert CannotChallengeSelf();
 
-        // Pull USDM from challenger (same amount as creator's stake)
-        bool ok = token.transferFrom(msg.sender, address(this), d.stake);
-        if (!ok) revert TransferFailed();
-
+        // ── Effects ──
         d.challenger = msg.sender;
         d.status = Status.Locked;
         d.joinedAt = uint40(block.timestamp);
-
-        // Remove from open duels (no longer available)
         _removeOpen(duelId);
+
+        // ── Interactions ──
+        bool ok = token.transferFrom(msg.sender, address(this), d.stake);
+        if (!ok) revert TransferFailed();
 
         emit DuelJoined(duelId, msg.sender);
     }
@@ -184,10 +190,10 @@ contract WinkyDuel {
     /**
      * @notice Submit the challenger's score and settle the duel.
      *         Only the locked-in challenger can call this.
-     *         Score must be signed by the trusted server.
+     *         Score must be signed by the trusted server (includes chainId).
      * @param duelId The ID of the locked duel.
      * @param score The challenger's blink score (attested by server).
-     * @param signature Server ECDSA signature over (player, score, nonce, contract).
+     * @param signature Server ECDSA signature over (player, score, nonce, contract, chainId).
      */
     function submitScore(uint256 duelId, uint32 score, bytes calldata signature) external {
         Duel storage d = duels[duelId];
@@ -211,7 +217,7 @@ contract WinkyDuel {
             _safeTransfer(d.challenger, d.stake);
             emit DuelSettled(duelId, address(0), d.stake);
         } else {
-            // Winner takes 95%, 5% rake
+            // Winner takes pool minus rake
             uint256 rake = (totalPot * RAKE_BPS) / 10_000;
             uint256 payout = totalPot - rake;
             rakeBalance += rake;
@@ -224,7 +230,7 @@ contract WinkyDuel {
 
     /**
      * @notice Refund a duel where the challenger didn't submit their score.
-     *         Can be called by either player after ABANDON_TIMEOUT (15 min).
+     *         Only creator or challenger can call this, after ABANDON_TIMEOUT (15 min).
      *         Both players get their own stake back — no rake, no winner.
      * @param duelId The ID of the abandoned duel.
      */
@@ -232,6 +238,7 @@ contract WinkyDuel {
         Duel storage d = duels[duelId];
 
         if (d.status != Status.Locked) revert DuelNotLocked();
+        if (msg.sender != d.creator && msg.sender != d.challenger) revert NotParticipant();
         if (block.timestamp < d.joinedAt + ABANDON_TIMEOUT) revert TooEarly();
 
         d.status = Status.Cancelled;
@@ -310,10 +317,13 @@ contract WinkyDuel {
 
     /**
      * @notice Transfer ownership to a new address.
-     * @param newOwner The new owner address.
+     * @param newOwner The new owner address (must not be zero).
      */
     function transferOwnership(address newOwner) external onlyOwner {
+        if (newOwner == address(0)) revert InvalidOwner();
+        address previous = owner;
         owner = newOwner;
+        emit OwnershipTransferred(previous, newOwner);
     }
 
     /**
@@ -322,7 +332,9 @@ contract WinkyDuel {
      */
     function setTrustedSigner(address _signer) external onlyOwner {
         if (_signer == address(0)) revert InvalidSigner();
+        address previous = trustedSigner;
         trustedSigner = _signer;
+        emit TrustedSignerUpdated(previous, _signer);
     }
 
     // ─── Internal ───────────────────────────────────────────────────
@@ -354,7 +366,8 @@ contract WinkyDuel {
 
     /**
      * @dev Verify that a score was signed by the trustedSigner.
-     *      Message: keccak256(player, score, nonce, contractAddress)
+     *      Message: keccak256(player, score, nonce, contractAddress, chainId)
+     *      ChainId prevents cross-chain signature replay.
      */
     function _verifySignature(
         address player,
@@ -362,7 +375,9 @@ contract WinkyDuel {
         uint256 nonce,
         bytes calldata signature
     ) private view returns (bool) {
-        bytes32 messageHash = keccak256(abi.encodePacked(player, score, nonce, address(this)));
+        bytes32 messageHash = keccak256(
+            abi.encodePacked(player, score, nonce, address(this), block.chainid)
+        );
         bytes32 ethSignedHash = keccak256(
             abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash)
         );

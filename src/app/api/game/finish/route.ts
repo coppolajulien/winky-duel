@@ -17,6 +17,7 @@ import {
   SERVER_MIN_BLINK_INTERVAL_MS,
 } from "../_lib";
 import { WINKY_DUEL_ADDRESS } from "@/lib/constants";
+import { appChain } from "@/lib/chain";
 
 export async function POST(req: Request) {
   try {
@@ -121,16 +122,17 @@ export async function POST(req: Request) {
     // ── Compute score ──
     const score = Math.min(blinks.length, MAX_SCORE);
 
-    // ── Sign the score ──
+    // ── Sign the score (includes chainId to prevent cross-chain replay) ──
     const signer = getSignerAccount();
     const messageHash = keccak256(
       encodePacked(
-        ["address", "uint32", "uint256", "address"],
+        ["address", "uint32", "uint256", "address", "uint256"],
         [
           session.player as `0x${string}`,
           score,
           BigInt(session.nonce),
           WINKY_DUEL_ADDRESS,
+          BigInt(appChain.id),
         ]
       )
     );
