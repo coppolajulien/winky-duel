@@ -9,7 +9,8 @@ const redis = new Redis({
   url: process.env.KV_REST_API_URL!,
   token: process.env.KV_REST_API_TOKEN!,
 });
-const KEY = "private-duels";
+// Include contract address in key so redeployments start fresh
+const KEY = `private-duels:${WINKY_DUEL_ADDRESS.toLowerCase()}`;
 
 const publicClient = createPublicClient({
   chain: appChain,

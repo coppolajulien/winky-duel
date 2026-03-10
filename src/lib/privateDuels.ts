@@ -1,4 +1,7 @@
-const STORAGE_KEY = "blinkit-private-duels";
+import { WINKY_DUEL_ADDRESS } from "@/lib/constants";
+
+// Include contract address so redeployments start fresh
+const STORAGE_KEY = `blinkit-private-duels:${WINKY_DUEL_ADDRESS.toLowerCase()}`;
 
 // In-memory cache (union of localStorage + server)
 let cachedIds: Set<string> = new Set();
