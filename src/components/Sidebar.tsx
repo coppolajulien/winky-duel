@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import { Copy, Check, ArrowUpRight, Trophy, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { X_URL } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import type { Duel, HistoryDuel } from "@/lib/types";
 import { DuelsList } from "./DuelsList";
@@ -189,13 +190,26 @@ export function Sidebar({
           <Trophy className="h-3.5 w-3.5" />
           Leaderboard
         </Link>
-        <button
-          onClick={toggleMute}
-          className="flex items-center gap-1.5 text-[10px] text-wink-text-dim transition-colors hover:text-wink-text"
-          title={muted ? "Unmute sounds" : "Mute sounds"}
-        >
-          {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-        </button>
+        <div className="flex items-center gap-3">
+          <a
+            href={X_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-wink-text-dim transition-colors hover:text-wink-text"
+            title="Follow us on X"
+          >
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+          </a>
+          <button
+            onClick={toggleMute}
+            className="flex items-center gap-1.5 text-[10px] text-wink-text-dim transition-colors hover:text-wink-text"
+            title={muted ? "Unmute sounds" : "Mute sounds"}
+          >
+            {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+          </button>
+        </div>
       </div>
     </div>
   );
