@@ -27,11 +27,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid code" }, { status: 400 });
     }
 
+    // If already used, still accept (user may have lost localStorage)
     if (data.status === "used") {
-      return NextResponse.json({ error: "Code already used" }, { status: 400 });
+      return NextResponse.json({ ok: true });
     }
 
-    // Mark as used
+    // Mark as used on first validation
     await redis.set(key, { status: "used", usedAt: Date.now() });
 
     return NextResponse.json({ ok: true });
