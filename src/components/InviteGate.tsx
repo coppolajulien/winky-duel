@@ -1,22 +1,32 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAccount } from "wagmi";
 import { DESKTOP_SLIDES } from "@/lib/constants";
 
 const STORAGE_KEY = "blinkit-invite-code";
+const ADMIN_ADDRESS = (process.env.NEXT_PUBLIC_ADMIN_ADDRESS ?? "").toLowerCase();
 
 export function InviteGate({ children }: { children: React.ReactNode }) {
+  const { address } = useAccount();
   const [hasAccess, setHasAccess] = useState<boolean | null>(null); // null = loading
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [slideIdx, setSlideIdx] = useState(0);
 
-  // Check localStorage on mount
+  // Admin bypass
+  const isAdmin = !!address && address.toLowerCase() === ADMIN_ADDRESS;
+
+  // Check localStorage on mount (or admin bypass)
   useEffect(() => {
+    if (isAdmin) {
+      setHasAccess(true);
+      return;
+    }
     const stored = localStorage.getItem(STORAGE_KEY);
     setHasAccess(!!stored);
-  }, []);
+  }, [isAdmin]);
 
   // Background slideshow
   useEffect(() => {
