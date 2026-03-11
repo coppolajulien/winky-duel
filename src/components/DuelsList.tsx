@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DuelStatus } from "@/lib/types";
 import type { Duel, HistoryDuel } from "@/lib/types";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import { getPrivateDuelIds } from "@/lib/privateDuels";
 import { MegaName } from "./MegaName";
 
@@ -89,7 +88,6 @@ export function DuelsList({
   isPrivate,
   setIsPrivate,
 }: DuelsListProps) {
-  const isMobile = useIsMobile();
   const privateIds = getPrivateDuelIds();
   const [historyPage, setHistoryPage] = useState(0);
   const [historyFilter, setHistoryFilter] = useState<"all" | "won" | "lost">("all");
@@ -343,17 +341,15 @@ export function DuelsList({
             return (
               <div
                 key={String(d.id)}
-                onClick={() => !isOwn && authenticated && !isMobile && onLaunch(d)}
+                onClick={() => !isOwn && authenticated && onLaunch(d)}
                 className={cn(
                   "group flex items-center gap-1.5 rounded-xl px-3 py-2.5 transition-all",
                   isHighStake && "border border-wink-pink/25 duel-high-stake",
                   isOwn
                     ? "bg-wink-pink/[0.04]"
-                    : isMobile
-                      ? "cursor-not-allowed opacity-50"
-                      : authenticated
-                        ? "cursor-pointer hover:bg-wink-bg"
-                        : "cursor-not-allowed opacity-50"
+                    : authenticated
+                      ? "cursor-pointer hover:bg-wink-bg"
+                      : "cursor-not-allowed opacity-50"
                 )}
               >
                 <div className="flex-1">
