@@ -10,6 +10,7 @@ import type { Duel } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Monitor } from "lucide-react";
+import { MegaName } from "@/components/MegaName";
 
 export default function DuelPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -157,7 +158,7 @@ export default function DuelPage({ params }: { params: Promise<{ id: string }> }
                     rel="noopener noreferrer"
                     className="hover:text-white/60 transition-colors underline"
                   >
-                    {duel.creator}
+                    <MegaName address={duel.creatorFull} fallback={duel.creator} />
                   </a>
                 </p>
 
