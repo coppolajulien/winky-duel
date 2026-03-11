@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { formatUnits } from "viem";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, ChevronDown } from "lucide-react";
 import { useWallet, publicClient } from "@/hooks/useWallet";
 import {
   WINKY_DUEL_ADDRESS,
@@ -51,6 +51,7 @@ export default function AdminPage() {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [inviteOpen, setInviteOpen] = useState(true);
 
   const isAdmin = address?.toLowerCase() === ADMIN_ADDRESS;
 
@@ -398,7 +399,7 @@ export default function AdminPage() {
 
       {/* Invite Codes */}
       <div className="mb-6 rounded-xl border border-wink-border bg-card p-4">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-foreground">Invite Codes</h2>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-muted-foreground">
@@ -411,65 +412,77 @@ export default function AdminPage() {
             >
               {generating ? "Generating..." : "Generate 5"}
             </button>
+            <button
+              onClick={() => setInviteOpen((o) => !o)}
+              className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ChevronDown
+                className={`h-4 w-4 transition-transform duration-200 ${inviteOpen ? "rotate-180" : ""}`}
+              />
+            </button>
           </div>
         </div>
 
-        {inviteLoading && inviteCodes.length === 0 && (
-          <div className="py-4 text-center text-xs text-muted-foreground">Loading codes...</div>
-        )}
+        {inviteOpen && (
+          <div className="mt-3">
+            {inviteLoading && inviteCodes.length === 0 && (
+              <div className="py-4 text-center text-xs text-muted-foreground">Loading codes...</div>
+            )}
 
-        {!inviteLoading && inviteCodes.length === 0 && (
-          <div className="py-4 text-center text-xs text-muted-foreground">No codes yet. Generate some!</div>
-        )}
+            {!inviteLoading && inviteCodes.length === 0 && (
+              <div className="py-4 text-center text-xs text-muted-foreground">No codes yet. Generate some!</div>
+            )}
 
-        {inviteCodes.length > 0 && (
-          <div className="grid gap-1.5">
-            {inviteCodes.map((c) => (
-              <div
-                key={c.code}
-                className="flex items-center justify-between rounded-lg bg-background/50 px-3 py-2"
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      c.status === "available" ? "bg-green-400" : "bg-red-400"
-                    }`}
-                  />
-                  <span className="font-mono text-xs font-bold tracking-wider text-foreground">
-                    {c.code}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {c.status === "used" && c.usedAt && (
-                    <span className="text-[9px] text-muted-foreground">
-                      {new Date(c.usedAt).toLocaleDateString()}
-                    </span>
-                  )}
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${
-                      c.status === "available"
-                        ? "bg-green-400/10 text-green-400"
-                        : "bg-red-400/10 text-red-400"
-                    }`}
+            {inviteCodes.length > 0 && (
+              <div className="grid gap-1.5">
+                {inviteCodes.map((c) => (
+                  <div
+                    key={c.code}
+                    className="flex items-center justify-between rounded-lg bg-background/50 px-3 py-2"
                   >
-                    {c.status === "available" ? "AVAILABLE" : "USED"}
-                  </span>
-                  {c.status === "available" && (
-                    <button
-                      onClick={() => copyCode(c.code)}
-                      className="flex h-6 w-6 items-center justify-center rounded-md border border-wink-border text-muted-foreground transition-colors hover:border-wink-pink/40 hover:text-wink-pink"
-                      title="Copy code"
-                    >
-                      {copiedCode === c.code ? (
-                        <Check className="h-3 w-3 text-green-400" />
-                      ) : (
-                        <Copy className="h-3 w-3" />
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`h-2 w-2 rounded-full ${
+                          c.status === "available" ? "bg-green-400" : "bg-red-400"
+                        }`}
+                      />
+                      <span className="font-mono text-xs font-bold tracking-wider text-foreground">
+                        {c.code}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {c.status === "used" && c.usedAt && (
+                        <span className="text-[9px] text-muted-foreground">
+                          {new Date(c.usedAt).toLocaleDateString()}
+                        </span>
                       )}
-                    </button>
-                  )}
-                </div>
+                      <span
+                        className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${
+                          c.status === "available"
+                            ? "bg-green-400/10 text-green-400"
+                            : "bg-red-400/10 text-red-400"
+                        }`}
+                      >
+                        {c.status === "available" ? "AVAILABLE" : "USED"}
+                      </span>
+                      {c.status === "available" && (
+                        <button
+                          onClick={() => copyCode(c.code)}
+                          className="flex h-6 w-6 items-center justify-center rounded-md border border-wink-border text-muted-foreground transition-colors hover:border-wink-pink/40 hover:text-wink-pink"
+                          title="Copy code"
+                        >
+                          {copiedCode === c.code ? (
+                            <Check className="h-3 w-3 text-green-400" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>
