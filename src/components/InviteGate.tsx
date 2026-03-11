@@ -107,7 +107,7 @@ export function InviteGate({ children }: { children: React.ReactNode }) {
         </p>
 
         {/* Code form */}
-        <form onSubmit={handleSubmit} className="flex flex-col items-center gap-3">
+        <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
           <input
             type="text"
             value={code}
@@ -115,7 +115,7 @@ export function InviteGate({ children }: { children: React.ReactNode }) {
             placeholder="Enter your invite code"
             maxLength={12}
             autoFocus
-            className="w-64 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-center font-mono text-sm font-bold uppercase tracking-[0.15em] text-white placeholder:text-white/20 focus:border-wink-pink/50 focus:outline-none focus:ring-1 focus:ring-wink-pink/30"
+            className="w-80 rounded-2xl border border-white/15 bg-white/5 px-6 py-4 text-center font-mono text-lg font-bold uppercase tracking-[0.2em] text-white placeholder:text-white/25 focus:border-wink-pink/50 focus:outline-none focus:ring-1 focus:ring-wink-pink/30"
           />
 
           {error && (
@@ -125,7 +125,7 @@ export function InviteGate({ children }: { children: React.ReactNode }) {
           <button
             type="submit"
             disabled={loading || !code.trim()}
-            className="rounded-full bg-wink-pink px-10 py-3 text-sm font-bold text-white transition-opacity duration-200 hover:opacity-85 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-80 rounded-2xl bg-wink-pink px-10 py-4 text-base font-bold text-white transition-opacity duration-200 hover:opacity-85 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? "Checking..." : "Enter"}
           </button>
