@@ -8,10 +8,13 @@ import { netWin, RAKE_BPS, WALLET_PROFILE_URL, DESKTOP_SLIDES } from "@/lib/cons
 import { DuelStatus } from "@/lib/types";
 import type { Duel } from "@/lib/types";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { Monitor } from "lucide-react";
 
 export default function DuelPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   const [duel, setDuel] = useState<Duel | null>(null);
   const [status, setStatus] = useState<DuelStatus | null>(null);
@@ -167,12 +170,24 @@ export default function DuelPage({ params }: { params: Promise<{ id: string }> }
                 </div>
 
                 {/* CTA */}
-                <Button
-                  onClick={handleAccept}
-                  className="rounded-full bg-wink-pink px-10 py-6 text-lg font-bold text-white transition-opacity duration-200 hover:opacity-85"
-                >
-                  Accept Challenge ⚔️
-                </Button>
+                {isMobile ? (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="flex items-center gap-2 rounded-full bg-white/10 px-5 py-3">
+                      <Monitor className="h-4 w-4 text-white/60" />
+                      <span className="text-sm font-semibold text-white/80">Open on desktop to play</span>
+                    </div>
+                    <p className="text-[11px] text-white/40">
+                      Blinkit requires a webcam — mobile support coming soon!
+                    </p>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={handleAccept}
+                    className="rounded-full bg-wink-pink px-10 py-6 text-lg font-bold text-white transition-opacity duration-200 hover:opacity-85"
+                  >
+                    Accept Challenge ⚔️
+                  </Button>
+                )}
               </>
             ) : (
               <>

@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { WinBubbles } from "./WinBubbles";
 import { MOBILE_SLIDES } from "@/lib/constants";
 
 export function MobileGate({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
+  const pathname = usePathname();
   const [slideIdx, setSlideIdx] = useState(0);
 
   useEffect(() => {
@@ -19,6 +21,9 @@ export function MobileGate({ children }: { children: React.ReactNode }) {
   }, [isMobile]);
 
   if (!isMobile) return <>{children}</>;
+
+  // Let /duel/[id] pages through on mobile (shared challenge links)
+  if (pathname.startsWith("/duel/")) return <>{children}</>;
 
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden font-sans">
