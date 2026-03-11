@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
-import { DESKTOP_SLIDES } from "@/lib/constants";
+import { DESKTOP_SLIDES, X_URL } from "@/lib/constants";
 
 const STORAGE_KEY = "blinkit-invite-code";
 const ADMIN_ADDRESS = (process.env.NEXT_PUBLIC_ADMIN_ADDRESS ?? "").toLowerCase();
@@ -144,7 +144,16 @@ export function InviteGate({ children }: { children: React.ReactNode }) {
         <p className="max-w-xs text-center text-[11px] text-white/30">
           You need an invite code to access Blinkit.
           <br />
-          Ask a friend or follow us on X to get one.
+          Ask a friend or{" "}
+          <a
+            href={X_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white/50 underline transition-colors hover:text-white/70"
+          >
+            follow us on X
+          </a>{" "}
+          to get one.
         </p>
       </div>
     </div>

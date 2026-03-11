@@ -1,6 +1,7 @@
 export const DURATION = 30;
 export const STAKES = [1, 5, 10, 25, 50, 100] as const;
-export const APP_URL = "https://winky-duel.vercel.app";
+export const APP_URL = "https://www.playblinkit.xyz";
+export const X_URL = "https://x.com/playblinkit";
 export const IS_TESTNET = process.env.NEXT_PUBLIC_CHAIN_ID !== "4326";
 
 // ─── Game Config ────────────────────────────────────────────────
