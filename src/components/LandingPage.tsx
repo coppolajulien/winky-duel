@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { WinBubbles } from "./WinBubbles";
+import { X_URL } from "@/lib/constants";
 
 const DESKTOP_VIDEOS = [
   "/video-blinkit-1.mp4",
@@ -92,12 +93,17 @@ export default function LandingPage() {
           />
           <span className="text-2xl font-bold tracking-wide text-white">BLINKIT</span>
         </a>
-        <Link
-          href="/play"
-          className="rounded-full border border-white/30 px-5 py-2 text-xs font-semibold text-white transition-all hover:border-white/60 hover:bg-white/10"
+        <a
+          href={X_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 transition-all hover:border-white/60 hover:bg-white/10"
+          title="Follow us on X"
         >
-          Launch App
-        </Link>
+          <svg viewBox="0 0 24 24" className="h-4 w-4 fill-white">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          </svg>
+        </a>
       </nav>
 
       {/* Powered by MegaETH — bottom */}
