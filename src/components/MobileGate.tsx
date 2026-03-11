@@ -18,11 +18,8 @@ export function MobileGate({ children }: { children: React.ReactNode }) {
     return () => clearInterval(id);
   }, [isMobile]);
 
-  // Mobile gate disabled — testing mobile gameplay
   if (!isMobile) return <>{children}</>;
-  return <>{children}</>;
 
-  // eslint-disable-next-line no-unreachable
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden font-sans">
       {/* Background slideshow with Ken Burns */}
