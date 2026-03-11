@@ -163,20 +163,7 @@ export function DuelsList({
 
   return (
     <div className="animate-[fade-in_0.3s_ease] flex flex-col gap-2.5">
-      {/* Mobile alert */}
-      {isMobile && (
-        <div className="rounded-xl bg-card p-3">
-          <div className="flex items-center gap-2.5">
-            <Monitor className="h-5 w-5 shrink-0 text-wink-text-dim" />
-            <div>
-              <p className="text-[11px] font-semibold text-wink-text">Desktop only</p>
-              <p className="mt-0.5 text-[10px] text-wink-text-dim">
-                Blinkit uses your webcam to detect blinks. Open this page on a computer to play.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Mobile alert — disabled for mobile testing */}
 
       {/* Rules popup */}
       {showRules && (
@@ -278,11 +265,10 @@ export function DuelsList({
         )}
         <Button
           onClick={() => authenticated ? onLaunch(null) : login()}
-          disabled={isMobile}
           className="w-full rounded-xl bg-wink-pink text-[11px] font-bold text-white transition-opacity duration-200 hover:opacity-85 disabled:opacity-40 disabled:cursor-not-allowed"
           size="sm"
         >
-          {isMobile ? "PLAY ON DESKTOP" : authenticated ? (isPrivate ? "CREATE PRIVATE DUEL" : "CREATE A DUEL") : "CONNECT TO PLAY"}
+          {authenticated ? (isPrivate ? "CREATE PRIVATE DUEL" : "CREATE A DUEL") : "CONNECT TO PLAY"}
         </Button>
       </div>
 
