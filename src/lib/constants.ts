@@ -6,13 +6,16 @@ export const IS_TESTNET = process.env.NEXT_PUBLIC_CHAIN_ID !== "4326";
 // ─── Game Config ────────────────────────────────────────────────
 export const BLINK_THRESHOLD = 0.24;  // blendshape score 0→1 (eyes closed > threshold = blink)
 export const BLINK_COOLDOWN = 120;    // ms between registered blinks (detection)
+export const BLINK_FRAMES = 2;        // consecutive frames above threshold to register a blink
 export const MIN_BLINK_INTERVAL = 200; // ms anti-cheat: max 5 blinks/sec
 export const MAX_SCORE = 150;          // anti-cheat: score cap per game
 export const SUS_THRESHOLD = 120;      // blink count that triggers funny messages
 
 // ─── Camera Config ──────────────────────────────────────────────
-export const CAMERA_WIDTH = 320;
-export const CAMERA_HEIGHT = 240;
+export const CAMERA_WIDTH = 640;
+export const CAMERA_HEIGHT = 480;
+export const CAMERA_WIDTH_MOBILE = 480;
+export const CAMERA_HEIGHT_MOBILE = 360;
 export const CAMERA_TIMEOUT = 10_000; // ms to wait for video stream
 export const CAMERA_WARMUP = 300;     // ms before blink detection starts
 

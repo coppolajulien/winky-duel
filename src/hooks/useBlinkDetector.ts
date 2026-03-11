@@ -7,8 +7,11 @@ import { useThemeColors, type ThemeColors } from "@/lib/theme";
 import {
   BLINK_THRESHOLD,
   BLINK_COOLDOWN,
+  BLINK_FRAMES,
   CAMERA_WIDTH,
   CAMERA_HEIGHT,
+  CAMERA_WIDTH_MOBILE,
+  CAMERA_HEIGHT_MOBILE,
   CAMERA_TIMEOUT,
   CAMERA_WARMUP,
 } from "@/lib/constants";
@@ -131,8 +134,10 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
         if (blinkScore >= BLINK_THRESHOLD) {
           frameCtRef.current++; // eyes closing
         } else {
-          // Eyes opened back up — check if we had a blink
-          if (frameCtRef.current >= 1) {
+          // Eyes opened back up — check if we had a sustained blink
+          // Require BLINK_FRAMES (2) consecutive frames above threshold
+          // to filter out single-frame noise / false positives
+          if (frameCtRef.current >= BLINK_FRAMES) {
             const t = Date.now();
             if (t - lastBlinkRef.current > BLINK_COOLDOWN) {
               lastBlinkRef.current = t;
@@ -186,8 +191,8 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
       );
       console.log("[Blinkit] MediaPipe WASM loaded");
 
-      const MODEL_URL =
-        "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+      // Serve model locally to avoid CDN failures and improve load time
+      const MODEL_URL = "/mediapipe/face_landmarker.task";
 
       try {
         flRef.current = await FaceLandmarker.createFromOptions(fs, {
@@ -208,12 +213,22 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
         console.log("[Blinkit] FaceLandmarker created (CPU + blendshapes)");
       }
 
-      // ── Request camera ──
+      // ── Request camera (higher resolution for better landmark accuracy) ──
       console.log("[Blinkit] Requesting camera access...");
+      const isMobile = typeof window !== "undefined" && (
+        window.innerWidth <= 768 || ("ontouchstart" in window && window.innerWidth <= 1024)
+      );
+      const camW = isMobile ? CAMERA_WIDTH_MOBILE : CAMERA_WIDTH;
+      const camH = isMobile ? CAMERA_HEIGHT_MOBILE : CAMERA_HEIGHT;
       let stream: MediaStream;
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: CAMERA_WIDTH, height: CAMERA_HEIGHT, facingMode: "user" },
+          video: {
+            width: { ideal: camW },
+            height: { ideal: camH },
+            facingMode: "user",
+            frameRate: { ideal: isMobile ? 24 : 30 },
+          },
         });
       } catch (firstErr) {
         console.warn("[Blinkit] Retrying with minimal video constraints...", firstErr);
@@ -274,8 +289,11 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
       }
 
       if (canvasRef.current) {
-        canvasRef.current.width = CAMERA_WIDTH;
-        canvasRef.current.height = CAMERA_HEIGHT;
+        // Match canvas to actual video resolution for accurate landmark drawing
+        const actualW = videoRef.current?.videoWidth || camW;
+        const actualH = videoRef.current?.videoHeight || camH;
+        canvasRef.current.width = actualW;
+        canvasRef.current.height = actualH;
       }
 
       await new Promise<void>((r) => setTimeout(r, CAMERA_WARMUP));
