@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { formatUnits } from "viem";
+import { Copy, Check } from "lucide-react";
 import { useWallet, publicClient } from "@/hooks/useWallet";
 import {
   WINKY_DUEL_ADDRESS,
@@ -45,7 +46,60 @@ export default function AdminPage() {
     contractUsdm: "0",
   });
 
+  // Invite codes state
+  const [inviteCodes, setInviteCodes] = useState<{ code: string; status: string; usedAt?: number }[]>([]);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
   const isAdmin = address?.toLowerCase() === ADMIN_ADDRESS;
+
+  const fetchInviteCodes = useCallback(async () => {
+    if (!address) return;
+    setInviteLoading(true);
+    try {
+      const res = await fetch("/api/invite/codes", {
+        headers: { "x-wallet-address": address },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setInviteCodes(data.codes);
+      }
+    } catch (err) {
+      console.error("Failed to fetch invite codes:", err);
+    } finally {
+      setInviteLoading(false);
+    }
+  }, [address]);
+
+  const generateCodes = useCallback(async (count: number) => {
+    if (!address) return;
+    setGenerating(true);
+    try {
+      const res = await fetch("/api/invite/codes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-wallet-address": address,
+        },
+        body: JSON.stringify({ count }),
+      });
+      if (res.ok) {
+        await fetchInviteCodes(); // Refresh list
+      }
+    } catch (err) {
+      console.error("Failed to generate codes:", err);
+    } finally {
+      setGenerating(false);
+    }
+  }, [address, fetchInviteCodes]);
+
+  const copyCode = useCallback((code: string) => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(null), 2000);
+    });
+  }, []);
 
   const fetchAllDuels = useCallback(async () => {
     setLoading(true);
@@ -150,8 +204,11 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (isAdmin) fetchAllDuels();
-  }, [isAdmin, fetchAllDuels]);
+    if (isAdmin) {
+      fetchAllDuels();
+      fetchInviteCodes();
+    }
+  }, [isAdmin, fetchAllDuels, fetchInviteCodes]);
 
   const shortAddr = (addr: string) =>
     addr === "0x0000000000000000000000000000000000000000"
@@ -338,6 +395,84 @@ export default function AdminPage() {
           </button>
         </div>
       )}
+
+      {/* Invite Codes */}
+      <div className="mb-6 rounded-xl border border-wink-border bg-card p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-foreground">Invite Codes</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground">
+              {inviteCodes.filter((c) => c.status === "available").length} available / {inviteCodes.length} total
+            </span>
+            <button
+              onClick={() => generateCodes(5)}
+              disabled={generating}
+              className="rounded-lg bg-wink-pink px-4 py-1.5 text-[11px] font-bold text-white transition-colors hover:brightness-110 disabled:opacity-50"
+            >
+              {generating ? "Generating..." : "Generate 5"}
+            </button>
+          </div>
+        </div>
+
+        {inviteLoading && inviteCodes.length === 0 && (
+          <div className="py-4 text-center text-xs text-muted-foreground">Loading codes...</div>
+        )}
+
+        {!inviteLoading && inviteCodes.length === 0 && (
+          <div className="py-4 text-center text-xs text-muted-foreground">No codes yet. Generate some!</div>
+        )}
+
+        {inviteCodes.length > 0 && (
+          <div className="grid gap-1.5">
+            {inviteCodes.map((c) => (
+              <div
+                key={c.code}
+                className="flex items-center justify-between rounded-lg bg-background/50 px-3 py-2"
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      c.status === "available" ? "bg-green-400" : "bg-red-400"
+                    }`}
+                  />
+                  <span className="font-mono text-xs font-bold tracking-wider text-foreground">
+                    {c.code}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {c.status === "used" && c.usedAt && (
+                    <span className="text-[9px] text-muted-foreground">
+                      {new Date(c.usedAt).toLocaleDateString()}
+                    </span>
+                  )}
+                  <span
+                    className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${
+                      c.status === "available"
+                        ? "bg-green-400/10 text-green-400"
+                        : "bg-red-400/10 text-red-400"
+                    }`}
+                  >
+                    {c.status === "available" ? "AVAILABLE" : "USED"}
+                  </span>
+                  {c.status === "available" && (
+                    <button
+                      onClick={() => copyCode(c.code)}
+                      className="flex h-6 w-6 items-center justify-center rounded-md border border-wink-border text-muted-foreground transition-colors hover:border-wink-pink/40 hover:text-wink-pink"
+                      title="Copy code"
+                    >
+                      {copiedCode === c.code ? (
+                        <Check className="h-3 w-3 text-green-400" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Filter tabs */}
       <div className="mb-3 flex gap-1">
