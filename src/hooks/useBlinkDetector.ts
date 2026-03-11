@@ -39,6 +39,7 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
   const lastTimestampRef = useRef(0);
   const warmedUpRef = useRef(false);
   const drawTickRef = useRef(0);
+  const isMobileRef = useRef(false);
   const [cameraStatus, setCameraStatus] = useState<"idle" | "loading" | "ready" | "denied">("idle");
   const [cameraError, setCameraError] = useState<string | null>(null);
   const themeColors = useThemeColors();
@@ -150,9 +151,10 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
 
         if (flashRef.current > 0) flashRef.current--;
 
-        // Throttle rendering: draw every 4th frame to keep detection fast
+        // Throttle rendering: mobile draws less to free GPU for MediaPipe
         drawTickRef.current++;
-        if (drawTickRef.current % 4 === 0 || flashRef.current > 0) {
+        const drawEvery = isMobileRef.current ? 8 : 4;
+        if (drawTickRef.current % drawEvery === 0 || flashRef.current > 0) {
           drawMesh(ctx, landmarks, cv.width, cv.height, flashRef.current / 10, themeColorsRef.current);
         }
       } else {
@@ -218,6 +220,7 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
       const isMobile = typeof window !== "undefined" && (
         window.innerWidth <= 768 || ("ontouchstart" in window && window.innerWidth <= 1024)
       );
+      isMobileRef.current = isMobile;
       const camW = isMobile ? CAMERA_WIDTH_MOBILE : CAMERA_WIDTH;
       const camH = isMobile ? CAMERA_HEIGHT_MOBILE : CAMERA_HEIGHT;
       let stream: MediaStream;
@@ -227,7 +230,7 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
             width: { ideal: camW },
             height: { ideal: camH },
             facingMode: "user",
-            frameRate: { ideal: isMobile ? 24 : 30 },
+            frameRate: { ideal: 30 },
           },
         });
       } catch (firstErr) {
