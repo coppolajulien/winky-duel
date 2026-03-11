@@ -191,6 +191,7 @@ export default function GamePage() {
           onClaimAbandoned={handleClaimAbandoned}
           isPrivate={isPrivate}
           setIsPrivate={setIsPrivate}
+          disabled={isGameActive}
         />
       </div>
 

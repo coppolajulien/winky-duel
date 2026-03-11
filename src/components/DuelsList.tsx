@@ -69,6 +69,7 @@ interface DuelsListProps {
   currentAddress: `0x${string}` | null;
   isPrivate: boolean;
   setIsPrivate: (v: boolean) => void;
+  disabled?: boolean;
 }
 
 export function DuelsList({
@@ -87,6 +88,7 @@ export function DuelsList({
   currentAddress,
   isPrivate,
   setIsPrivate,
+  disabled,
 }: DuelsListProps) {
   const privateIds = getPrivateDuelIds();
   const [historyPage, setHistoryPage] = useState(0);
@@ -160,7 +162,7 @@ export function DuelsList({
   );
 
   return (
-    <div className="animate-[fade-in_0.3s_ease] flex flex-col gap-2.5">
+    <div className={cn("animate-[fade-in_0.3s_ease] flex flex-col gap-2.5", disabled && "pointer-events-none opacity-40")}>
       {/* Mobile alert — disabled for mobile testing */}
 
       {/* Rules popup */}

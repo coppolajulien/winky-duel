@@ -33,6 +33,7 @@ interface SidebarProps {
   onOpenSend?: () => void;
   isPrivate: boolean;
   setIsPrivate: (v: boolean) => void;
+  disabled?: boolean;
 }
 
 export function Sidebar({
@@ -58,6 +59,7 @@ export function Sidebar({
   onOpenSend,
   isPrivate,
   setIsPrivate,
+  disabled,
 }: SidebarProps) {
   const [copied, setCopied] = useState(false);
   const [muted, setMutedState] = useState(isMuted);
@@ -174,6 +176,7 @@ export function Sidebar({
           currentAddress={currentAddress}
           isPrivate={isPrivate}
           setIsPrivate={setIsPrivate}
+          disabled={disabled}
         />
       </div>
 
