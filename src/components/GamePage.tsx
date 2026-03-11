@@ -147,7 +147,7 @@ export default function GamePage() {
     }
   }, [contract, addTx, refetchDuels, wallet]);
 
-  const isGameActive = phase !== "idle";
+  const isGameActive = phase !== "idle" && phase !== "posted";
 
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden font-sans text-foreground md:h-screen md:flex-row">
