@@ -98,7 +98,7 @@ export function PhaseIdle({ duels, authenticated, loading, onLaunch }: PhaseIdle
       {/* Featured battle cards — skeleton while loading */}
       {loading && featuredDuels.length === 0 && (
         <div className="w-full max-w-4xl px-8 py-8">
-          <div className="grid grid-cols-3 gap-4" style={{ maxWidth: "56rem" }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ maxWidth: "56rem" }}>
             {[...Array(6)].map((_, i) => (
               <div key={i} className="aspect-[4/3] animate-pulse rounded-2xl bg-card" />
             ))}
@@ -107,7 +107,7 @@ export function PhaseIdle({ duels, authenticated, loading, onLaunch }: PhaseIdle
       )}
       {featuredDuels.length > 0 && (
         <div className="w-full max-w-4xl px-8 py-8">
-          <div className="grid grid-cols-3 gap-4" style={{ maxWidth: "56rem" }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ maxWidth: "56rem" }}>
             {featuredDuels.map((d) => (
               <div
                 key={String(d.id)}

@@ -387,23 +387,23 @@ export function DuelsList({
                   <button
                     onClick={(e) => { e.stopPropagation(); copyDuelLink(d.id); }}
                     className={cn(
-                      "flex h-5 w-5 items-center justify-center rounded-full border transition-colors",
+                      "flex h-7 w-7 items-center justify-center rounded-full border transition-colors",
                       copiedId === String(d.id)
                         ? "border-green-400/40 text-green-400"
                         : "border-wink-border text-wink-text-dim hover:border-wink-pink/40 hover:text-wink-pink"
                     )}
                     title="Copy duel link"
                   >
-                    {copiedId === String(d.id) ? <Check className="h-3 w-3" /> : <Link2 className="h-3 w-3" />}
+                    {copiedId === String(d.id) ? <Check className="h-3.5 w-3.5" /> : <Link2 className="h-3.5 w-3.5" />}
                   </button>
                 )}
                 {isOwn && onCancelDuel && (
                   <button
                     onClick={(e) => { e.stopPropagation(); onCancelDuel(d); }}
-                    className="flex h-5 w-5 items-center justify-center rounded-full border border-wink-border text-wink-text-dim transition-colors hover:border-red-400/40 hover:text-red-400"
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-wink-border text-wink-text-dim transition-colors hover:border-red-400/40 hover:text-red-400"
                     title="Cancel duel"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 )}
               </div>
