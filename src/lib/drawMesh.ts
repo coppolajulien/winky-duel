@@ -67,15 +67,11 @@ export function drawMesh(
   ctx.lineWidth = g ? 2 : 1.2;
   if (g) {
     ctx.strokeStyle = "hsla(345,70%,55%,0.7)";
-    ctx.shadowColor = "rgba(232,69,122,0.3)";
   } else if (dark) {
     ctx.strokeStyle = "rgba(236,232,232,0.2)";
-    ctx.shadowColor = "rgba(236,232,232,0.05)";
   } else {
     ctx.strokeStyle = "hsla(345,60%,55%,0.5)";
-    ctx.shadowColor = "rgba(232,69,122,0.15)";
   }
-  ctx.shadowBlur = g ? 8 : 3;
 
   ctx.beginPath();
   FACE_OVAL.forEach((idx, i) => {
@@ -86,7 +82,6 @@ export function drawMesh(
   });
   ctx.closePath();
   ctx.stroke();
-  ctx.shadowBlur = 0;
 
   // Eyes
   const drawEye = (ids: number[]) => {

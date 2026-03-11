@@ -150,9 +150,9 @@ export function useBlinkDetector({ onBlinkRef }: UseBlinkDetectorOptions) {
 
         if (flashRef.current > 0) flashRef.current--;
 
-        // Throttle rendering: draw every 2nd frame to keep detection fast
+        // Throttle rendering: draw every 4th frame to keep detection fast
         drawTickRef.current++;
-        if (drawTickRef.current % 2 === 0 || flashRef.current > 0) {
+        if (drawTickRef.current % 4 === 0 || flashRef.current > 0) {
           drawMesh(ctx, landmarks, cv.width, cv.height, flashRef.current / 10, themeColorsRef.current);
         }
       } else {
