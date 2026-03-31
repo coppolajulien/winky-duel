@@ -7,6 +7,7 @@ import {
   isRateLimited,
   getClientIp,
   isValidAddress,
+  verifyWalletSignature,
   ACTIVE_KEY,
   SESSION_KEY,
   saveSession,
@@ -20,10 +21,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Rate limited" }, { status: 429 });
     }
 
-    const { player } = (await req.json()) as { player: string };
+    const { player, signature, timestamp } = (await req.json()) as {
+      player: string;
+      signature: string;
+      timestamp: number;
+    };
 
     if (!player || !isValidAddress(player)) {
       return NextResponse.json({ error: "Invalid player address" }, { status: 400 });
+    }
+
+    // Verify wallet ownership via signature
+    if (!signature || !timestamp) {
+      return NextResponse.json({ error: "Signature required" }, { status: 401 });
+    }
+
+    // Reject signatures older than 60 seconds (anti-replay)
+    if (Math.abs(Date.now() - timestamp) > 60_000) {
+      return NextResponse.json({ error: "Signature expired" }, { status: 401 });
+    }
+
+    const message = `Blinkit: start game session\n${timestamp}`;
+    const valid = await verifyWalletSignature(player, message, signature);
+    if (!valid) {
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
     // Check for existing active session

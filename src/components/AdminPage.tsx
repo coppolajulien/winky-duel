@@ -55,13 +55,26 @@ export default function AdminPage() {
 
   const isAdmin = address?.toLowerCase() === ADMIN_ADDRESS;
 
+  // Sign admin request headers for API auth
+  const getAdminHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    if (!address) throw new Error("Not connected");
+    const wc = await getWalletClient();
+    const timestamp = String(Date.now());
+    const message = `Blinkit admin: ${timestamp}`;
+    const signature = await wc.signMessage({ message });
+    return {
+      "x-wallet-address": address,
+      "x-wallet-signature": signature,
+      "x-wallet-timestamp": timestamp,
+    };
+  }, [address, getWalletClient]);
+
   const fetchInviteCodes = useCallback(async () => {
     if (!address) return;
     setInviteLoading(true);
     try {
-      const res = await fetch("/api/invite/codes", {
-        headers: { "x-wallet-address": address },
-      });
+      const headers = await getAdminHeaders();
+      const res = await fetch("/api/invite/codes", { headers });
       if (res.ok) {
         const data = await res.json();
         setInviteCodes(data.codes);
@@ -71,17 +84,18 @@ export default function AdminPage() {
     } finally {
       setInviteLoading(false);
     }
-  }, [address]);
+  }, [address, getAdminHeaders]);
 
   const generateCodes = useCallback(async (count: number) => {
     if (!address) return;
     setGenerating(true);
     try {
+      const headers = await getAdminHeaders();
       const res = await fetch("/api/invite/codes", {
         method: "POST",
         headers: {
+          ...headers,
           "Content-Type": "application/json",
-          "x-wallet-address": address,
         },
         body: JSON.stringify({ count }),
       });
@@ -93,7 +107,7 @@ export default function AdminPage() {
     } finally {
       setGenerating(false);
     }
-  }, [address, fetchInviteCodes]);
+  }, [address, getAdminHeaders, fetchInviteCodes]);
 
   const copyCode = useCallback((code: string) => {
     navigator.clipboard.writeText(code).then(() => {

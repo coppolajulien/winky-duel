@@ -83,6 +83,7 @@ export default function GamePage() {
     refetchDuels,
     refreshBalance: wallet.refreshBalance,
     walletAddress: (wallet.address as `0x${string}`) ?? null,
+    signMessage: wallet.signMessage,
     isPrivateRef,
   });
 

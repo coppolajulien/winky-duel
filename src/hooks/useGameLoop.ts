@@ -30,6 +30,7 @@ interface UseGameLoopOptions {
   refetchDuels: () => Promise<void>;
   refreshBalance: () => Promise<void>;
   walletAddress: `0x${string}` | null;
+  signMessage: (args: { message: string }) => Promise<`0x${string}`>;
   isPrivateRef: RefObject<boolean>;
 }
 
@@ -57,6 +58,7 @@ export function useGameLoop({
   refetchDuels,
   refreshBalance,
   walletAddress,
+  signMessage,
   isPrivateRef,
 }: UseGameLoopOptions) {
   const [phase, setPhase] = useState<GamePhase>("idle");
@@ -396,7 +398,7 @@ export function useGameLoop({
       // ── Step 3.5: Start server game session ──
       if (walletAddress) {
         try {
-          const session = await startGame(walletAddress);
+          const session = await startGame(walletAddress, signMessage);
           sessionIdRef.current = session.sessionId;
         } catch (err) {
           console.error("Failed to start game session:", err);

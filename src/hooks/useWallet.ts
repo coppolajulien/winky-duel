@@ -52,6 +52,12 @@ export function useWallet() {
     return walletClient;
   }, [walletClient]);
 
+  // Sign a message with the connected wallet
+  const signMessage = useCallback(async ({ message }: { message: string }): Promise<`0x${string}`> => {
+    if (!walletClient) throw new Error("Wallet not connected");
+    return walletClient.signMessage({ message });
+  }, [walletClient]);
+
   // Fetch USDM balance
   const fetchBalance = useCallback(async () => {
     if (!address) {
@@ -97,6 +103,7 @@ export function useWallet() {
     balanceLoading,
     refreshBalance: fetchBalance,
     getWalletClient,
+    signMessage,
     wrongNetwork,
     switchToMegaETH,
   };

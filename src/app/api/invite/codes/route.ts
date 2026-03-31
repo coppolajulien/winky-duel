@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { redis } from "@/app/api/game/_lib";
+import { redis, verifyWalletSignature } from "@/app/api/game/_lib";
 import crypto from "crypto";
 
 const ADMIN_ADDRESS = (process.env.NEXT_PUBLIC_ADMIN_ADDRESS ?? "").toLowerCase();
@@ -18,14 +18,25 @@ function generateCode(): string {
     .join("");
 }
 
-function isAdmin(req: Request): boolean {
+async function isAdmin(req: Request): Promise<boolean> {
   const addr = req.headers.get("x-wallet-address") ?? "";
-  return addr.toLowerCase() === ADMIN_ADDRESS;
+  if (addr.toLowerCase() !== ADMIN_ADDRESS) return false;
+
+  // Verify wallet signature to prevent header spoofing
+  const signature = req.headers.get("x-wallet-signature") ?? "";
+  const timestamp = req.headers.get("x-wallet-timestamp") ?? "";
+  if (!signature || !timestamp) return false;
+
+  // Reject signatures older than 5 minutes
+  if (Math.abs(Date.now() - Number(timestamp)) > 300_000) return false;
+
+  const message = `Blinkit admin: ${timestamp}`;
+  return verifyWalletSignature(addr, message, signature);
 }
 
 // GET — list all invite codes (admin only)
 export async function GET(req: Request) {
-  if (!isAdmin(req)) {
+  if (!(await isAdmin(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
@@ -75,7 +86,7 @@ export async function GET(req: Request) {
 
 // POST — generate new invite codes (admin only)
 export async function POST(req: Request) {
-  if (!isAdmin(req)) {
+  if (!(await isAdmin(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 

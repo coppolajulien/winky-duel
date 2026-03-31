@@ -15,12 +15,19 @@ interface FinishResponse {
   player: string;
 }
 
-/** Start a new game session. Must be called before countdown. */
-export async function startGame(player: string): Promise<StartResponse> {
+/** Start a new game session. Requires wallet signature to prove ownership. */
+export async function startGame(
+  player: string,
+  signMessage: (args: { message: string }) => Promise<`0x${string}`>
+): Promise<StartResponse> {
+  const timestamp = Date.now();
+  const message = `Blinkit: start game session\n${timestamp}`;
+  const signature = await signMessage({ message });
+
   const res = await fetch("/api/game/start", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ player }),
+    body: JSON.stringify({ player, signature, timestamp }),
   });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));

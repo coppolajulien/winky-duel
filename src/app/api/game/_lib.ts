@@ -1,6 +1,6 @@
 import { Redis } from "@upstash/redis";
 import { headers } from "next/headers";
-import { createPublicClient, http } from "viem";
+import { createPublicClient, http, verifyMessage } from "viem";
 import { appChain } from "@/lib/chain";
 import { privateKeyToAccount } from "viem/accounts";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI } from "@/lib/constants";
@@ -77,6 +77,24 @@ export async function getClientIp(): Promise<string> {
 // ─── Validation ────────────────────────────────────────────────
 export function isValidAddress(addr: string): boolean {
   return /^0x[a-fA-F0-9]{40}$/.test(addr);
+}
+
+// ─── Wallet signature verification ─────────────────────────────
+export async function verifyWalletSignature(
+  address: string,
+  message: string,
+  signature: string
+): Promise<boolean> {
+  try {
+    const valid = await verifyMessage({
+      address: address as `0x${string}`,
+      message,
+      signature: signature as `0x${string}`,
+    });
+    return valid;
+  } catch {
+    return false;
+  }
 }
 
 // ─── Game constants (must match client) ────────────────────────

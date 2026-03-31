@@ -40,6 +40,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Already finished" }, { status: 400 });
     }
 
+    // Atomic lock to prevent race condition (two concurrent finish requests)
+    const lockKey = `game:finish-lock:${sessionId}`;
+    const locked = await redis.set(lockKey, "1", { nx: true, ex: 30 });
+    if (!locked) {
+      return NextResponse.json({ error: "Already finishing" }, { status: 409 });
+    }
+
     // Mark finished immediately (anti-double-sign)
     session.finished = true;
     await saveSession(session);
