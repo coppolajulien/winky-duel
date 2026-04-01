@@ -1,218 +1,140 @@
-# Winky Duel — Plan de développement
+# Blinkit — Plan de développement
+
+## Infos projet
+
+| | |
+|---|---|
+| **Site** | [playblinkit.xyz](https://www.playblinkit.xyz) |
+| **X** | [@playblinkit](https://x.com/playblinkit) |
+| **Repo** | github.com/coppolajulien/winky-duel |
+| **Chain** | MegaETH Mainnet (Chain ID 4326) |
+| **Contract** | `0x745d7C26Dfc9aD77F8f384Ed089f40e2C356B2c3` |
+| **Contract (testnet)** | `0xb4aB085840BA330Fc12c20A664Ad711E5bEa66a2` |
+| **Token** | USDM (ERC-20) |
+| **Rake** | 2.5% sur les gains |
+| **Hosting** | Vercel (frontend + API) |
+| **DB** | Upstash Redis |
+| **Analytics** | Google Analytics (G-LV239T0EDB) |
+
+---
 
 ## Statut actuel
 
 | Phase | Statut | Description |
 |---|---|---|
-| Phase 1 — Frontend | ✅ Terminé | UI complète, blink detection, game loop, mock data |
-| Phase 2 — Smart Contract | ✅ Terminé | WinkyDuel.sol — escrow + duels + 42 tests passing |
-| Phase 3 — Wallet Auth | ✅ Terminé | Privy login (sans Pimlico — users paient le gas) |
-| Phase 4 — Intégration | ⬜ À faire | Connecter frontend ↔ blockchain |
-| Phase 5 — Real-time | ⬜ À faire | WebSockets live feed + leaderboard on-chain |
-| Phase 6 — Deploy | ⬜ À faire | Vercel (frontend) + MegaETH Testnet |
+| Phase 1 — Frontend | ✅ Terminé | UI, blink detection (TensorFlow.js), game loop, slideshow |
+| Phase 2 — Smart Contract | ✅ Terminé | WinkyDuel.sol — escrow, duels, rake, 46 tests |
+| Phase 3 — Wallet Auth | ✅ Terminé | RainbowKit + wagmi (migration depuis Privy) |
+| Phase 4 — Intégration | ✅ Terminé | Frontend ↔ blockchain, server-attested scores |
+| Phase 5 — Déploiement | ✅ Terminé | Vercel + MegaETH Mainnet + domaine playblinkit.xyz |
+| Phase 6 — Sécurité | ✅ Terminé | Signature wallet, anti-cheat, rate limiting, audit |
+| Phase 7 — API publique | ✅ Terminé | Stats API pour intégrations tierces (MTRKR) |
 
 ---
 
-## Phase 2 — Smart Contract (Solidity)
+## Architecture
 
-### Objectif
-Smart contract sur MegaETH pour gérer les duels et l'escrow des mises.
+### Stack technique
+- **Frontend** : Next.js 16 + React + Tailwind CSS + shadcn/ui
+- **Blink detection** : TensorFlow.js + MediaPipe Face Landmarks
+- **Wallet** : RainbowKit + wagmi + viem
+- **Backend** : Next.js API Routes (serverless)
+- **DB** : Upstash Redis (sessions, rate limiting, invite codes, private duels)
+- **Blockchain** : MegaETH (Solidity 0.8.24, Hardhat)
+- **Noms** : .mega domain resolution (dotmega API)
 
-### Tâches
+### Game flow
+1. Joueur connecte son wallet (RainbowKit)
+2. Signe un message pour prouver la propriété du wallet
+3. Serveur crée une session de jeu (Redis, TTL 5min)
+4. Webcam activée → countdown 3-2-1 → 30s de blinks
+5. Chaque blink envoyé au serveur (timestamp client + server)
+6. À la fin : 8 validations anti-cheat côté serveur
+7. Serveur signe le score (ECDSA EIP-191)
+8. Score soumis on-chain via le smart contract
+9. Settlement automatique (gagnant = plus de blinks)
 
-- [x] Installer Hardhat dans le projet
-  ```
-  winky-duel/
-  └── contracts/
-      ├── hardhat.config.ts
-      ├── package.json
-      ├── tsconfig.json
-      ├── .env.example
-      ├── contracts/
-      │   └── WinkyDuel.sol
-      ├── scripts/
-      │   └── deploy.ts
-      └── test/
-          └── WinkyDuel.test.ts
-  ```
+### Sécurité API
 
-- [x] Écrire `WinkyDuel.sol`
-  - `createDuel(uint32 score)` payable — créer un duel avec stake + score
-  - `challengeDuel(uint256 duelId, uint32 score)` payable — challenge + auto-settlement
-  - `cancelDuel(uint256 duelId)` — créateur annule, récupère sa mise
-  - `recordBlink(uint256 duelId)` — event-only (pas de SSTORE, économise gas)
-  - `getOpenDuels()` / `getDuel()` — lire les duels
-  - `withdrawRake()` — owner retire les 5% de commission
-  - Events: `DuelCreated`, `DuelSettled`, `DuelCancelled`, `BlinkRecorded`, `RakeWithdrawn`
+| Endpoint | Auth | Rate limit |
+|----------|------|------------|
+| `POST /api/game/start` | Signature wallet | 30/min |
+| `POST /api/game/blink` | SessionId 128-bit | 200/min |
+| `POST /api/game/finish` | SessionId + lock atomique Redis | 30/min |
+| `GET /api/stats` | Public | 20/min |
+| `POST /api/private-duels` | Signature wallet + vérif creator on-chain | 10/min |
+| `GET /api/private-duels` | Public (lecture) | — |
+| `GET/POST /api/invite/codes` | Signature wallet admin | — |
+| `POST /api/invite/validate` | Public (désactivé) | 10/min |
 
-- [x] Écrire les tests (Hardhat + Chai) — **46 tests passing**
-  - Création de duel avec stake USDM
-  - Challenge gagnant → challenger gagne 95%
-  - Challenge perdant → creator gagne 95%
-  - Égalité → les deux récupèrent leur mise (pas de rake)
-  - Cancel → creator récupère sa mise
-  - Edge cases (même score, duel déjà settled, mauvais stake, duel inexistant, self-challenge)
-  - recordBlink event
-  - getOpenDuels swap-and-pop correctness
-  - withdrawRake + ownership
-  - USDM balance consistency
-
-- [x] Déployer sur MegaETH Testnet (Chain ID 6343)
-  - **WinkyDuel** : `0x558aB486A0FfA1f4Aa52DeFb9e0d9E03e3CD6F3a`
-  - **MockUSDM** : `0x8A017435e8dD3aeCA65a1eA4411eD81b9302Ae9C`
-  - Explorer : https://megaeth-testnet-v2.blockscout.com/address/0x558aB486A0FfA1f4Aa52DeFb9e0d9E03e3CD6F3a
-
-### Inspiré de winky-starkzap
-Le contract Cairo de ton pote est ultra simple (`record_blink` + compteur). Le nôtre est plus complexe car il gère l'**escrow** des mises et le **settlement** automatique des duels.
+### Anti-cheat (8 validations serveur)
+1. Durée de jeu minimum (25s)
+2. Intervalles entre blinks (min 200ms client)
+3. Timestamps monotoniques
+4. Max blinks par seconde (7/s)
+5. Pas de blinks après fin de partie
+6. Count serveur = count client
+7. Intervalles serveur (min 100ms réel)
+8. Corrélation temps client/serveur (>50%)
 
 ---
 
-## Phase 3 — Wallet Auth (Privy)
+## Features implémentées
 
-### Objectif
-Login via Privy (email, Google, Twitter, MetaMask) — pas de paymaster, les users paient leur gas (~$0.0002/tx sur MegaETH).
-
-### Architecture
-- **Privy** pour l'authentification (embedded wallets pour ceux sans MetaMask)
-- **viem** pour les lectures blockchain (balance USDM)
-- Pas de Pimlico/paymaster — gas trop peu cher pour justifier la complexité
-
-### Tâches
-
-- [x] Installer `@privy-io/react-auth` + `viem`
-- [x] Créer `PrivyClientProvider.tsx` — wrapper PrivyProvider avec config MegaETH
-- [x] Créer `useWallet.ts` — hook auth + lecture balance USDM via viem publicClient
-- [x] Modifier `layout.tsx` — PrivyClientProvider wrapping ThemeProvider
-- [x] Modifier `Sidebar.tsx` — vrai bouton Connect/Disconnect, balance USDM réelle
-- [x] Modifier `DuelsList.tsx` — gating : "Connect to Play" si non authentifié
-- [x] Modifier `GamePage.tsx` — useWallet hook, props auth au Sidebar
-- [x] Ajouter constantes blockchain dans `constants.ts`
-
-### Fichiers créés/modifiés
-| Fichier | Action |
-|---|---|
-| `src/components/PrivyClientProvider.tsx` | **Créé** — Provider Privy avec config MegaETH testnet |
-| `src/hooks/useWallet.ts` | **Créé** — Hook auth + balance USDM |
-| `src/app/layout.tsx` | Modifié — Ajout PrivyClientProvider |
-| `src/components/Sidebar.tsx` | Modifié — Vrai login/logout + balance |
-| `src/components/DuelsList.tsx` | Modifié — Gating authenticated |
-| `src/components/GamePage.tsx` | Modifié — useWallet integration |
-| `src/hooks/useGameLoop.ts` | Modifié — Suppression mock connected state |
-| `src/lib/constants.ts` | Modifié — Adresses contracts + ABI ERC20 |
+- [x] Landing page avec vidéo slideshow
+- [x] Détection de blinks en temps réel (webcam)
+- [x] Duels PvP avec stakes USDM ($1 à $100)
+- [x] Duels privés (liens partageables)
+- [x] Page challenge `/duel/[id]` avec preview
+- [x] Résolution .mega domains
+- [x] Partage sur X (tweet + share card)
+- [x] Copy image / copy link après un duel
+- [x] Sidebar avec liste des duels, filtres par stake, historique
+- [x] Admin dashboard (stats, duels, rake, withdraw)
+- [x] Système d'invite codes (désactivé, réactivable)
+- [x] Mobile gate (avec exception pour /duel/[id])
+- [x] Sidebar désactivée pendant un duel actif, réactivée au résultat
+- [x] Google Analytics
+- [x] API publique `/api/stats` pour MTRKR
+- [x] CORS activé sur l'API stats
+- [x] Sons (countdown, go, overtake, win, lose, musique)
+- [x] Leaderboard page
+- [x] Profil X (@playblinkit) configuré
 
 ---
 
-## Phase 4 — Intégration Frontend ↔ Blockchain
+## Roadmap
 
-### Objectif
-Remplacer les mock data par des données on-chain réelles.
+### Court terme
+- [ ] Bannière X (1500x500)
+- [ ] Premier tweet + stratégie de contenu
+- [ ] OG image dynamique par duel (preview quand on partage un lien)
+- [ ] Leaderboard avec données on-chain (actuellement statique)
 
-### Tâches
+### Moyen terme
+- [ ] Profil joueur `/player/[address]` (stats, historique, .mega)
+- [ ] Referral system (invitations trackées)
+- [ ] Notifications quand un duel est accepté
+- [ ] Mobile support (reprendre le chantier)
 
-- [ ] Remplacer `MOCK_DUELS` par des lectures on-chain
-  - `useContractRead` pour `getOpenDuels()`
-  - Polling ou events pour mise à jour
-
-- [ ] Connecter `doBlink()` à la blockchain
-  - Chaque blink → `recordBlink(duelId)` via Pimlico (gasless)
-  - Les toasts affichent le vrai hash TX
-
-- [ ] Connecter `launch()` → `createDuel()` on-chain
-  - Envoyer le stake avec la transaction
-  - Attendre la confirmation avant de démarrer
-
-- [ ] Connecter le challenge → `challengeDuel()` on-chain
-  - À la fin des 30s, appeler `settleDuel()`
-  - Afficher le résultat réel (gains/pertes)
-
-- [ ] Remplacer `MOCK_LEADERBOARD` par des données on-chain
-  - Lire les events `BlinkRecorded` pour calculer les totaux
-  - Tri par nombre de blinks total
-
-### Migration mock → réel (fichier par fichier)
-
-| Fichier | Actuellement | Après intégration |
-|---|---|---|
-| `mockData.ts` | Données hardcodées | Supprimé |
-| `useTxToasts.ts` | Hash aléatoires | Vrais hash TX MegaETH |
-| `useGameLoop.ts` | Score local | Score envoyé on-chain |
-| `DuelsList.tsx` | `MOCK_DUELS` | `useContractRead()` |
-| `Leaderboard.tsx` | `MOCK_LEADERBOARD` | Events on-chain |
-| `Sidebar.tsx` | Bouton "Connect" toggle | Privy login réel |
+### Long terme
+- [ ] Tournois / brackets
+- [ ] Anti-cheat renforcé (video proof, ZK)
+- [ ] Multi-chain (si pertinent)
 
 ---
 
-## Phase 5 — Real-time & Social (optionnel)
+## Smart Contract
 
-### Objectif
-Live feed des blinks des autres joueurs + intégrations sociales.
+### WinkyDuel.sol
+- **Fonctions** : `createDuel`, `submitScore`, `cancelDuel`, `withdrawRake`
+- **Score attesté** : le serveur signe le score, le contrat vérifie la signature
+- **Rake** : 2.5% prélevé sur les gains (configurable)
+- **Nonces** : anti-replay par joueur
+- **Trusted signer** : adresse du serveur vérifiée on-chain
 
-### Tâches
-
-- [ ] **WebSocket live feed** (Pusher ou SSE)
-  - Voir les blinks des autres joueurs en temps réel
-  - "X vient de blinker 42 fois !"
-
-- [ ] **Twitter/X auth** (optionnel)
-  - Lier son compte Twitter au profil
-  - Afficher le pseudo au lieu de l'adresse wallet
-
-- [ ] **Blink card partageable**
-  - Générer une image avec le score
-  - Partager sur Twitter avec un lien
-
-### Inspiré de winky-starkzap
-Ton pote a implémenté Pusher WebSockets + Twitter OAuth + blink card. On peut reprendre le même concept.
-
----
-
-## Phase 6 — Déploiement
-
-### Frontend → Vercel
-```bash
-# Depuis le repo GitHub
-vercel deploy
-```
-- Variables d'env dans Vercel dashboard
-- Domaine custom (winky-duel.xyz ou autre)
-
-### Smart Contract → MegaETH Testnet puis Mainnet
-```bash
-npx hardhat run scripts/deploy.ts --network megaeth-testnet
-# Puis après tests
-npx hardhat run scripts/deploy.ts --network megaeth-mainnet
-```
-
-### Backend API (si nécessaire)
-- Railway, Render, ou Vercel Serverless Functions
-- Proxy paymaster Pimlico (clé API côté serveur)
-
----
-
-## Déployer sur GitHub maintenant
-
-```bash
-# 1. Créer le repo sur GitHub (via gh CLI ou github.com)
-gh repo create winky-duel --public --description "Blink to win. Every blink is a transaction on MegaETH."
-
-# 2. Ajouter le remote et push
-cd winky-duel
-git remote add origin https://github.com/TON_USERNAME/winky-duel.git
-git add .
-git commit -m "feat: Phase 1 — Frontend with blink detection, game loop, and UI"
-git push -u origin main
-```
-
----
-
-## Timeline estimée
-
-| Phase | Durée estimée | Prérequis |
-|---|---|---|
-| Phase 1 ✅ | — | Fait |
-| Phase 2 (Contract) | 2-3 jours | Connaissance Solidity basique |
-| Phase 3 (Wallet) | 1-2 jours | Comptes Privy + Pimlico créés |
-| Phase 4 (Intégration) | 2-3 jours | Phases 2+3 terminées |
-| Phase 5 (Real-time) | 2-3 jours | Optionnel |
-| Phase 6 (Deploy) | 1 jour | Tout terminé |
-| **Total** | **~10 jours** | |
+### Déploiements
+| Réseau | Adresse | Chain ID |
+|--------|---------|----------|
+| MegaETH Mainnet | `0x745d7C26Dfc9aD77F8f384Ed089f40e2C356B2c3` | 4326 |
+| MegaETH Testnet | `0xb4aB085840BA330Fc12c20A664Ad711E5bEa66a2` | 6343 |
