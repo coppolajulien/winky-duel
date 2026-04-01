@@ -48,7 +48,11 @@ export function getPrivateDuelIds(): Set<string> {
 }
 
 /** Mark a duel as private (save to both localStorage + server) */
-export async function addPrivateDuel(duelId: bigint) {
+export async function addPrivateDuel(
+  duelId: bigint,
+  player?: string,
+  signMessage?: (args: { message: string }) => Promise<`0x${string}`>
+) {
   const idStr = String(duelId);
   cachedIds.add(idStr);
 
@@ -57,15 +61,20 @@ export async function addPrivateDuel(duelId: bigint) {
   localIds.add(idStr);
   saveLocal(localIds);
 
-  // Save to server (for other browsers)
-  try {
-    await fetch("/api/private-duels", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ duelId: idStr }),
-    });
-  } catch (err) {
-    console.error("Failed to mark duel as private on server:", err);
+  // Save to server (for other browsers) — requires wallet signature
+  if (player && signMessage) {
+    try {
+      const timestamp = Date.now();
+      const message = `Blinkit: private duel ${idStr}\n${timestamp}`;
+      const signature = await signMessage({ message });
+      await fetch("/api/private-duels", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ duelId: idStr, player, signature, timestamp }),
+      });
+    } catch (err) {
+      console.error("Failed to mark duel as private on server:", err);
+    }
   }
 }
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createPublicClient, http, formatUnits } from "viem";
 import { appChain } from "@/lib/chain";
 import { WINKY_DUEL_ADDRESS, WINKY_DUEL_ABI } from "@/lib/constants";
+import { isRateLimited, getClientIp } from "@/app/api/game/_lib";
 
 const publicClient = createPublicClient({
   chain: appChain,
@@ -22,6 +23,12 @@ interface DuelData {
 const SETTLED = 2;
 
 export async function GET(req: Request) {
+  // Rate limit: 20 requests per minute per IP
+  const ip = await getClientIp();
+  if (await isRateLimited(ip, 20, 60, "stats")) {
+    return NextResponse.json({ error: "Rate limited" }, { status: 429 });
+  }
+
   const { searchParams } = new URL(req.url);
   const address = searchParams.get("address")?.toLowerCase();
 

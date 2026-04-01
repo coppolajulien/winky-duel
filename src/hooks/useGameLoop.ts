@@ -226,7 +226,7 @@ export function useGameLoop({
         }
         // Mark duel as private on server
         if (createdDuelId != null && isPrivateRef.current) {
-          await addPrivateDuel(createdDuelId);
+          await addPrivateDuel(createdDuelId, walletAddress ?? undefined, signMessage);
         }
         setResult({
           my: score,
